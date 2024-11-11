@@ -19,10 +19,10 @@ body#page-mod-contentdesigner-view {
         }
     }
     .modal {
-        &.modal-dialog {
+        .modal-dialog {
             max-width: 800px;
         }
-        &.modal-content {
+        .modal-content {
             .modal-header {
                 border-bottom: 0;
                 h5 {
@@ -43,19 +43,17 @@ body#page-mod-contentdesigner-view {
                         margin-bottom: 10px;
                         border-bottom: 1px solid rgba(102, 102, 102, .2);
                     }
-                }
-            }
-            .modal-content .modal-body .elements-list .element-item {
-                i.icon {
-                    margin-right: 10px;
-                }
-                .element-name {
-                    width: 85%;
-                    font-weight: bold;
-                    cursor: pointer;
-                }
-                .element-description {
-                    width: 100%;
+                    i.icon {
+                        margin-right: 10px;
+                    }
+                    .element-name {
+                        width: 85%;
+                        font-weight: bold;
+                        cursor: pointer;
+                    }
+                    .element-description {
+                        width: 100%;
+                    }
                 }
             }
         }
