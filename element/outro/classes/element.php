@@ -108,7 +108,7 @@ class element extends \mod_contentdesigner\elements {
      */
     public function element_form(&$mform, $formobj) {
 
-        $options = array('maxfiles' => 1, 'accepted_types' => ['image']);
+        $options = ['maxfiles' => 1, 'accepted_types' => ['image']];
         $mform->addElement('filemanager', 'image', get_string('strimage', 'mod_contentdesigner'), null, $options);
         $mform->addHelpButton('image', 'strimage', 'mod_contentdesigner');
 
@@ -174,7 +174,8 @@ class element extends \mod_contentdesigner\elements {
         // Outro Content.
         $context = $this->get_context();
         $outrocontent = file_rewrite_pluginfile_urls(
-            $data->outrocontent, 'pluginfile.php', $context->id, 'mod_contentdesigner', 'element_outro_outrocontent', $data->instance);
+            $data->outrocontent, 'pluginfile.php', $context->id, 'mod_contentdesigner',
+            'element_outro_outrocontent', $data->instance);
         $outrocontent = format_text($outrocontent, $data->outrocontentformat, ['context' => $context->id]);
 
         $html = html_writer::start_div('element-outro');
@@ -190,7 +191,7 @@ class element extends \mod_contentdesigner\elements {
         }
         if (!empty($data->secondarybutton)) {
             list($secondarybtntext, $secondarybtnurl) = $this->get_button_data($data->secondarybutton, 'secondary', $data);
-            $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // secondary button.
+            $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // Secondary button.
         }
         $html .= html_writer::end_div();
         $html .= html_writer::end_div();
@@ -210,8 +211,8 @@ class element extends \mod_contentdesigner\elements {
         );
 
         if (isset($data->contextid)) {
-        	$context = \context::instance_by_id($data->contextid, MUST_EXIST);
-		}
+            $context = \context::instance_by_id($data->contextid, MUST_EXIST);
+        }
         $editoroptions = $this->editor_options($context);
         if (isset($data->instance)) {
             $itemid = $data->outrocontent_editor['itemid'];
@@ -243,7 +244,7 @@ class element extends \mod_contentdesigner\elements {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('image');
             file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner', 'element_outro_outroimage',
-                $formdata->instance, array('subdirs' => 0, 'maxfiles' => 1));
+                $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
             $formdata->image = $draftitemid;
         }
 
@@ -255,7 +256,7 @@ class element extends \mod_contentdesigner\elements {
             $formdata->outrocontentformat = FORMAT_HTML;
             $formdata->outrocontent = '';
         }
-       file_prepare_standard_editor(
+        file_prepare_standard_editor(
             $formdata,
             'outrocontent',
             $editoroptions,
@@ -305,16 +306,16 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
-            'maxfiles' => EDITOR_UNLIMITED_FILES
+            'maxfiles' => EDITOR_UNLIMITED_FILES,
         ];
     }
 
     /**
      * Get the pre defined outro buttons data.
      *
-     * @param int $buttontype Button.
-     * @param int $type Type of the button
-     * @param int $data instance data.
+     * @param int $button Button.
+     * @param string $type Type of the button
+     * @param stdclass $data instance data.
      *
      * @return array
      */
@@ -351,7 +352,16 @@ class element extends \mod_contentdesigner\elements {
                     if ($CFG->branch >= 404) {
                         $buttonurl = new moodle_url('/course/section.php', ['id' => $section->id]);
                     } else {
-                        $buttonurl = new moodle_url('/course/view.php', ['id' => $this->course->id, 'section' => $section->id]);
+                        $buttonurl = new moodle_url('/course/view.php', ['id' => $this->course->id]);
+                        $sectionno = $section->section;
+                        if ($sectionno != 0) {
+                            $buttonurl->param('section', $sectionno);
+                        } else {
+                            if (empty($CFG->linkcoursesections)) {
+                                return null;
+                            }
+                            $buttonurl->set_anchor('section-'.$sectionno);
+                        }
                     }
                 }
                 break;
