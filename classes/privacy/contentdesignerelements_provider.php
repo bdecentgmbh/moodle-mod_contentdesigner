@@ -28,6 +28,13 @@ namespace mod_contentdesigner\privacy;
 
 use core_privacy\local\request\contextlist;
 
+/**
+ * Content designer elements privacy provider.
+ *
+ * @package   mod_contentdesigner
+ * @copyright 2022, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 interface contentdesignerelements_provider extends \core_privacy\local\request\plugin\subplugin_provider {
 
     /**
