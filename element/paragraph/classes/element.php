@@ -1,0 +1,121 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Extended class of elements for Paragraph.
+ *
+ * @package   element_paragraph
+ * @copyright  2022 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+namespace element_paragraph;
+
+use html_writer;
+
+/**
+ * Paragraph element instance extended the base elements.
+ */
+class element extends \mod_contentdesigner\elements {
+
+    /**
+     * Shortname of the element.
+     */
+    const SHORTNAME = 'paragraph';
+
+    /**
+     * Element name which is visbile for the users
+     *
+     * @return string
+     */
+    public function element_name() {
+        return get_string('pluginname', 'element_paragraph');
+    }
+
+    /**
+     * Element shortname which is used as identical purpose.
+     *
+     * @return string
+     */
+    public function element_shortname() {
+        return self::SHORTNAME;
+    }
+
+    /**
+     * Icon of the element.
+     *
+     * @param renderer $output
+     * @return void
+     */
+    public function icon($output) {
+        return $output->pix_icon('e/styleparagraph', get_string('pluginname', 'element_paragraph'));
+    }
+
+    /**
+     * Element form element definition.
+     *
+     * @param moodle_form $mform
+     * @param genreal_element_form $formobj
+     * @return void
+     */
+    public function element_form(&$mform, $formobj) {
+
+        $mform->addElement('textarea', 'content', get_string('content', 'mod_contentdesigner'), ['rows' => 15, 'cols' => 40]);
+        $mform->addRule('content', null, 'required');
+        $mform->addHelpButton('content', 'content', 'mod_contentdesigner');
+        $horizontalalign = [
+            'left' => get_string('strleft', 'mod_contentdesigner'),
+            'center' => get_string('strcenter', 'mod_contentdesigner'),
+            'right' => get_string('strright', 'mod_contentdesigner')
+        ];
+        $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
+        $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
+
+        $verticalalign = [
+            'top' => get_string('strtop', 'mod_contentdesigner'),
+            'middle' => get_string('strmiddle', 'mod_contentdesigner'),
+            'bottom' => get_string('strbottom', 'mod_contentdesigner')
+        ];
+        $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
+        $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');
+    }
+
+    /**
+     * Load the classes to parent div.
+     *
+     * @param stdclass $instance Instance record
+     * @param stdclass $option General options
+     * @return void
+     */
+    public function generate_element_classes(&$instance, $option) {
+        $instance = $this->load_option_classes($instance, $option);
+        $hozclass = "hl-". $instance->horizontal;
+        $vertclass = "vl-". $instance->vertical;
+        $instance->classes .= ' '.$hozclass. ' '. $vertclass;
+    }
+
+    /**
+     * Render the view of element instance, Which is displayed in the student view.
+     *
+     * @param stdclass $instance
+     * @return void
+     */
+    public function render($instance) {
+        global $DB;
+
+        return html_writer::tag('p', format_string($instance->content), ['class' => "element-paragraph"]);
+    }
+
+}
