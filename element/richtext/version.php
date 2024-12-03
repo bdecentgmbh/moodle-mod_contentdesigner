@@ -27,3 +27,5 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'element_richtext';
 $plugin->version = 2024110800;
 $plugin->requires = 2020061500;
+$plugin->supported = [401, 405];
+$plugin->maturity = MATURITY_STABLE;
