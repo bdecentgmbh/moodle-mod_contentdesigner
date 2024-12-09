@@ -245,9 +245,27 @@
                     data-title="{{outro.instancedata.title}}"
                     data-elementshortname="{{outro.info.shortname}}"
                     data-instanceid="{{outro.instancedata.id}}">
-                    <div class="element-outro element-content">
-                        {{{outro.contents}}}
+
+                    <div class="element-content general-options {{{outro.instancedata.classes}}}"
+                        data-elementid="{{{element}}}"
+                        data-elementshortname="{{outro.info.shortname}}"
+                        data-instanceid="{{outro.instancedata.id}}"
+                        data-contentid="{{id}}"
+                        data-entranceanimation="{{outro.instancedata.entranceanimation}}"
+                        data-replaceonrefresh="{{outro.instancedata.replaceonrefresh}}"
+                        style="{{{outro.instancedata.style}}}"
+                        data-scrolleffect="{{outro.instancedata.scrolleffect}}">
+
+                        <div class="background-options">
+                            <div class="bg-color" style="{{{outro.instancedata.belowcolorbg}}}"></div>
+                            <div class="bg-image" style="{{{outro.instancedata.backimage}}}"></div>
+                            <div class="bg-overlay" style="{{{outro.instancedata.abovecolorbg}}}"></div>
+                        </div>
+                        <div class="element-outro element-content">
+                            {{{outro.contents}}}
+                        </div>
                     </div>
+
                 </li>
                 {{/prevent}}
                 {{/chapterprevent}}

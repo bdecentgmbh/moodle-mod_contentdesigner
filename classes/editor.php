@@ -127,10 +127,10 @@ class editor {
         $data = [
             'cmid' => $this->cm->id,
             'contextid' => \context_module::instance($this->cm->id)->id,
-            'contentdesignerid' => $this->cm->instance
+            'contentdesignerid' => $this->cm->instance,
         ];
         return html_writer::empty_tag('input', [
-            'type' => 'hidden', 'name' => 'contentdesigner_cm_details', 'value' => json_encode($data)
+            'type' => 'hidden', 'name' => 'contentdesigner_cm_details', 'value' => json_encode($data),
         ]);
     }
 
@@ -275,7 +275,7 @@ class editor {
             'cmid' => $this->cm->id,
             'element' => $element->shortname,
             'id' => $instancedata->id,
-            'sesskey' => sesskey()
+            'sesskey' => sesskey(),
         ]);
         return $OUTPUT->render_from_template('mod_contentdesigner/elementbox', [
             'info' => $element->info(),
@@ -283,7 +283,7 @@ class editor {
             'editurl' => $editurl,
             'hidemove' => true,
             'hidevisible' => true,
-            'hidedelete' => true
+            'hidedelete' => true,
         ]);
     }
 
@@ -295,8 +295,12 @@ class editor {
     public function render_module_outro() {
         global $DB;
         $element = self::get_element('outro', $this->cm->id);
+        $editor = self::get_editor($this->cm->id);
         $instance = $DB->get_record('element_outro', ['contentdesignerid' => $this->cm->instance]);
         if ($instance) {
+            $instance = $element->get_instance($instance->id, $instance->visible);
+            $option = $editor->get_option($instance->id, $element->elementid);
+            $element->load_option_classes($instance, $option);
             $instancedata = $element->prepare_formdata($instance->id);
             $data = [
                 'contents' => $element->render($instancedata),
@@ -401,7 +405,7 @@ class editor {
             $data->instancedata->title = ($element->supports_content())
                 ? $element->title_editable($data->instancedata) : $element->element_name();
 
-            // TODO: want to control multiple elements then implement new method in the abstract elements.
+            // Todo: want to control multiple elements then implement new method in the abstract elements.
             if ($element->info()->shortname == 'chapter') {
                 $elementsbox = $OUTPUT->render_from_template('mod_contentdesigner/chapter', $data);
                 return html_writer::tag('li', $elementsbox, ['class' => 'chapters_list']);
@@ -415,7 +419,6 @@ class editor {
             $transaction->rollback($e); // Rethrows exception.
         }
     }
-
 
     /**
      * Add the element instance to the module contents table. which contains the list of instances.
@@ -435,7 +438,7 @@ class editor {
             'instance'          => $instanceid,
             'chapter'           => $chapter,
             'timecreated'       => time(),
-            'timemodified'       => time()
+            'timemodified'       => time(),
         ];
 
         if ($contentid = $element->get_instance_contentid($instanceid)) {
