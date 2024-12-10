@@ -36,17 +36,17 @@ class backup_element_heading_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_heading', array('id'), array(
+        $subpluginelement = new backup_nested_element('element_heading', ['id'], [
             'title', 'visible', 'heading', 'headingurl', 'headingtype',
-            'target', 'horizontal', 'vertical', 'timecreated', 'timemodified'
-        ));
+            'target', 'horizontal', 'vertical', 'timecreated', 'timemodified',
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_heading', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_heading', ['contentdesignerid' => backup::VAR_PARENTID]);
         $subpluginelement->annotate_ids('heading_instanceid', 'id');
 
         return $subplugin;

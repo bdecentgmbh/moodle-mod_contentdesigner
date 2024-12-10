@@ -23,7 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 /**
  * mod_contentdesigner data generator class.
  *
@@ -40,7 +39,7 @@ class mod_contentdesigner_generator extends testing_module_generator {
      * @param array|null $options
      * @return stdclass
      */
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance($record = null, $options = null) {
         $record = (object)(array)$record;
         if (!isset($record->timemodified)) {
             $record->timemodified = time();

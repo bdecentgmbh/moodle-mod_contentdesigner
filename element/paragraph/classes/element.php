@@ -78,7 +78,7 @@ class element extends \mod_contentdesigner\elements {
         $horizontalalign = [
             'left' => get_string('strleft', 'mod_contentdesigner'),
             'center' => get_string('strcenter', 'mod_contentdesigner'),
-            'right' => get_string('strright', 'mod_contentdesigner')
+            'right' => get_string('strright', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
         $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
@@ -86,7 +86,7 @@ class element extends \mod_contentdesigner\elements {
         $verticalalign = [
             'top' => get_string('strtop', 'mod_contentdesigner'),
             'middle' => get_string('strmiddle', 'mod_contentdesigner'),
-            'bottom' => get_string('strbottom', 'mod_contentdesigner')
+            'bottom' => get_string('strbottom', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');

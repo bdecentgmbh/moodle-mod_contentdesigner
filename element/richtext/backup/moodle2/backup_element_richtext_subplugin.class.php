@@ -22,7 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 /**
  * Provides the information to backup richtext content and files.
  *
@@ -39,16 +38,16 @@ class backup_element_richtext_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_richtext', array('id'), array(
-            'contentdesignerid', 'title', 'visible', 'content', 'contentformat', 'timecreated', 'timemodified'
-        ));
+        $subpluginelement = new backup_nested_element('element_richtext', ['id'], [
+            'contentdesignerid', 'title', 'visible', 'content', 'contentformat', 'timecreated', 'timemodified',
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_richtext', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_richtext', ['contentdesignerid' => backup::VAR_PARENTID]);
         $subpluginelement->annotate_ids('richtext_instanceid', 'id');
 
         $subpluginelement->annotate_files('mod_contentdesigner', 'element_richtext_content', null);

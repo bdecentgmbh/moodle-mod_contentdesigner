@@ -38,18 +38,18 @@ class backup_element_outro_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_outro', array('id'), array(
+        $subpluginelement = new backup_nested_element('element_outro', ['id'], [
             'contentdesignerid', 'title', 'visible', 'image', 'primarytext', 'primaryurl',
             'secondarytext', 'secondaryurl', 'outrocontent', 'outrocontentformat', 'primarybutton',
             'secondarybutton', 'timecreated', 'timemodified',
-        ));
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_outro', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_outro', ['contentdesignerid' => backup::VAR_PARENTID]);
         $subpluginelement->annotate_ids('outro_instanceid', 'id');
 
         $subpluginelement->annotate_files('mod_contentdesigner', 'element_outro_outroimage', null);

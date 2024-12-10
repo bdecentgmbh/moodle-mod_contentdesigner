@@ -15,11 +15,11 @@ Feature: Check content designer chapter element settings
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Content Designer" to section "1" and I fill the form with:
-      | Name      | Demo content  |
-      | Description     | Contentdesigner Description |
+    And the following "activity" exists:
+      | activity    | contentdesigner              |
+      | name        | Demo content                 |
+      | intro       | Contentdesigner Description  |
+      | course      | C1                           |
     And I log out
 
   Scenario: Add a chapter element workflow

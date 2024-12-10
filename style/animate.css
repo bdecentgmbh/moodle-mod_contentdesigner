@@ -1,4 +1,5 @@
-@charset "UTF-8";/*!
+@charset "UTF-8";
+/*!
  * animate.css - https://animate.style/
  * Version - 4.1.1
  * Licensed under the MIT license - http://opensource.org/licenses/MIT
@@ -41,6 +42,7 @@
 }
 
 @-webkit-keyframes bounce {
+
     from,
     20%,
     53%,
@@ -74,6 +76,7 @@
 }
 
 @keyframes bounce {
+
     from,
     20%,
     53%,
@@ -114,6 +117,7 @@
 }
 
 @-webkit-keyframes flash {
+
     from,
     50%,
     to {
@@ -127,6 +131,7 @@
 }
 
 @keyframes flash {
+
     from,
     50%,
     to {
@@ -265,6 +270,7 @@
 }
 
 @-webkit-keyframes shake {
+
     from,
     to {
         -webkit-transform: translate3d(0, 0, 0);
@@ -290,6 +296,7 @@
 }
 
 @keyframes shake {
+
     from,
     to {
         -webkit-transform: translate3d(0, 0, 0);
@@ -604,6 +611,7 @@
 }
 
 @-webkit-keyframes jello {
+
     from,
     11.1%,
     to {
@@ -648,6 +656,7 @@
 }
 
 @keyframes jello {
+
     from,
     11.1%,
     to {
@@ -699,6 +708,7 @@
 }
 
 @-webkit-keyframes bounceIn {
+
     from,
     20%,
     40%,
@@ -744,6 +754,7 @@
 }
 
 @keyframes bounceIn {
+
     from,
     20%,
     40%,
@@ -794,6 +805,7 @@
 }
 
 @-webkit-keyframes bounceInDown {
+
     from,
     60%,
     75%,
@@ -832,6 +844,7 @@
 }
 
 @keyframes bounceInDown {
+
     from,
     60%,
     75%,
@@ -875,6 +888,7 @@
 }
 
 @-webkit-keyframes bounceInLeft {
+
     from,
     60%,
     75%,
@@ -913,6 +927,7 @@
 }
 
 @keyframes bounceInLeft {
+
     from,
     60%,
     75%,
@@ -956,6 +971,7 @@
 }
 
 @-webkit-keyframes bounceInRight {
+
     from,
     60%,
     75%,
@@ -994,6 +1010,7 @@
 }
 
 @keyframes bounceInRight {
+
     from,
     60%,
     75%,
@@ -1037,6 +1054,7 @@
 }
 
 @-webkit-keyframes bounceInUp {
+
     from,
     60%,
     75%,
@@ -1075,6 +1093,7 @@
 }
 
 @keyframes bounceInUp {
+
     from,
     60%,
     75%,

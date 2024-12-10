@@ -98,7 +98,7 @@ class element extends \mod_contentdesigner\elements {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('package');
             file_prepare_draft_area($draftitemid, $this->context->id, 'element_h5p', 'package', $formdata->instance,
-                array('subdirs' => 0, 'maxfiles' => 1));
+                ['subdirs' => 0, 'maxfiles' => 1]);
             $formdata->package = $draftitemid;
         }
         return $formdata;
@@ -114,7 +114,7 @@ class element extends \mod_contentdesigner\elements {
         global $USER, $DB;
         if (isset($instance->mandatory) && $instance->mandatory) {
             return !$DB->record_exists('element_h5p_completion', [
-                'instance' => $instance->id, 'userid' => $USER->id, 'completion' => true
+                'instance' => $instance->id, 'userid' => $USER->id, 'completion' => true,
             ]);
         }
         return false;
@@ -141,7 +141,7 @@ class element extends \mod_contentdesigner\elements {
 
         $options = [
             0 => get_string('no'),
-            1 => get_string('yes')
+            1 => get_string('yes'),
         ];
         $mform->addElement('select', 'mandatory', get_string('mandatory', 'mod_contentdesigner'), $options);
         $mform->addHelpButton('mandatory', 'mandatory', 'mod_contentdesigner');
@@ -183,16 +183,16 @@ class element extends \mod_contentdesigner\elements {
         if (!empty($results)) {
             $strings = (array) get_strings(['score', 'maxscore', 'completion'], 'mod_h5pactivity');
             $table = new \html_table();
-            $table->head = array_merge(array('#', get_string('date')), $strings, [get_string('success')]);
+            $table->head = array_merge(['#', get_string('date')], $strings, [get_string('success')]);
             foreach ($results as $record) {
-                $table->data[] = array(
+                $table->data[] = [
                     $record->id,
                     userdate($record->timecreated, get_string('strftimedatefullshort', 'core_langconfig')),
                     $record->score,
                     json_decode($record->scoredata)->max,
                     ($record->completion ? $OUTPUT->pix_icon('e/tick', 'core') : $OUTPUT->pix_icon('t/dockclose', 'core')),
                     ($record->success ? $OUTPUT->pix_icon('e/tick', 'core') : $OUTPUT->pix_icon('t/dockclose', 'core') ),
-                );
+                ];
             }
             return \html_writer::tag('h3', get_string('highestgrade', 'element_h5p')).\html_writer::table($table);
         }

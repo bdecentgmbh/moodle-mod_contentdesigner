@@ -24,11 +24,11 @@
 
 namespace element_h5p\privacy;
 
-use \core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\collection;
 use core_privacy\local\request\transform;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_userlist;
-use \core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\approved_contextlist;
 
 /**
  * Privacy class for requesting user data.
@@ -39,6 +39,7 @@ use \core_privacy\local\request\approved_contextlist;
  */
 class provider implements
         \core_privacy\local\metadata\provider,
+        \core_privacy\local\request\core_userlist_provider,
         \mod_contentdesigner\privacy\contentdesignerelements_provider {
 
     /**
@@ -56,10 +57,10 @@ class provider implements
             'completion' => 'privacy:metadata:completion:completion',
             'success' => 'privacy:metadata:completion:success',
             'score' => 'privacy:metadata:completion:score',
-            'timecreated' => 'privacy:metadata:completion:timecreated'
+            'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
         $collection->add_database_table('element_h5p_completion', $completionmetadata,
-            'privacy:metadata:contentdesignercompletion');
+            'privacy:metadata:h5pcompletion');
 
         return $collection;
     }
@@ -95,7 +96,7 @@ class provider implements
                 'title' => $completion->title,
                 'contentdesignerid' => $completion->contentdesignerid,
                 'success' => ($completion->success == 1) ? get_string('yes') : get_string('no'),
-                'score' => $completion->score
+                'score' => $completion->score,
             ];
         }
         return $data;

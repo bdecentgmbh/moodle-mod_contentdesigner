@@ -37,20 +37,51 @@ global $CFG;
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
+
+    /**
+     * Course.
+     * @var stdclass
+     */
+    public $course;
+
+    /**
+     * User.
+     * @var stdclass
+     */
+    public $user;
+
+    /**
+     * Contentdesigner instance.
+     * @var stdclass
+     */
+    public $contentdesigner;
+
+    /**
+     * Heading element info.
+     * @var stdclass
+     */
+    public $headingelementinfo;
+
+    /**
+     * Heading element.
+     * @var stdclass
+     */
+    public $headingelement;
 
     /**
      * Setup the test.
      */
     public function setUp(): void {
         global $DB;
+        parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
         $this->course = $this->getDataGenerator()->create_course();
         $this->user = $this->getDataGenerator()->create_user();
         $this->setUser($this->user);
-        $this->contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', array('course' => $this->course->id));
-        $this->headingelementinfo = $DB->get_record('contentdesigner_elements', array('shortname' => 'heading'));
+        $this->contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $this->course->id]);
+        $this->headingelementinfo = $DB->get_record('contentdesigner_elements', ['shortname' => 'heading']);
         $this->headingelement = $this->get_element($this->headingelementinfo->id, $this->contentdesigner->cmid);
     }
 
@@ -58,7 +89,7 @@ class lib_test extends \advanced_testcase {
      * Test update_element.
      * @covers ::update_element
      */
-    public function test_element_update_element() {
+    public function test_element_update_element(): void {
         global $DB;
         // Create element.
         $this->create_heading_element();
@@ -92,7 +123,7 @@ class lib_test extends \advanced_testcase {
      * Test get_instance.
      * @covers ::get_instance
      */
-    public function test_element_get_instance() {
+    public function test_element_get_instance(): void {
         $this->create_heading_element();
         $element = $this->get_heading_element();
         $result = $this->headingelement->get_instance($element->id);
@@ -103,7 +134,7 @@ class lib_test extends \advanced_testcase {
      * Test info.
      * @covers ::info
      */
-    public function test_element_info() {
+    public function test_element_info(): void {
         $this->create_heading_element();
         $result = $this->headingelement->info();
         $this->assertEquals($this->headingelementinfo->id, $result->elementid);
@@ -115,7 +146,7 @@ class lib_test extends \advanced_testcase {
      * Test get_contentdesigner.
      * @covers ::get_contentdesigner
      */
-    public function test_get_contentdesigner() {
+    public function test_get_contentdesigner(): void {
         $result = $this->headingelement->get_contentdesigner();
         $this->assertEquals($this->contentdesigner->id, $result->id);
     }
@@ -124,7 +155,7 @@ class lib_test extends \advanced_testcase {
      * Test get_cm_from_modinstance.
      * @covers ::get_cm_from_modinstance
      */
-    public function test_get_cm_from_modinstance() {
+    public function test_get_cm_from_modinstance(): void {
         $result = $this->headingelement->get_cm_from_modinstance($this->contentdesigner->id);
         $this->assertEquals($this->contentdesigner->cmid, $result->id);
     }
@@ -133,7 +164,7 @@ class lib_test extends \advanced_testcase {
      * Test delete_element.
      * @covers ::delete_element
      */
-    public function test_delete_element() {
+    public function test_delete_element(): void {
         global $DB;
         $this->create_heading_element();
         $this->assertEquals($DB->count_records('element_heading'), 2);
@@ -149,15 +180,15 @@ class lib_test extends \advanced_testcase {
      * Test update_visibility.
      * @covers ::update_visibility
      */
-    public function test_update_visibility() {
+    public function test_update_visibility(): void {
         global $DB;
         $this->create_heading_element();
         $element = $this->get_heading_element();
         $instance = $this->headingelement->get_instance($element->id);
         $this->headingelement->update_visibility($instance->id, 0);
-        $this->assertEquals(0, $DB->get_field($this->headingelement->tablename(), 'visible', array('id' => $instance->id)));
+        $this->assertEquals(0, $DB->get_field($this->headingelement->tablename(), 'visible', ['id' => $instance->id]));
         $this->headingelement->update_visibility($instance->id, 1);
-        $this->assertEquals(1, $DB->get_field($this->headingelement->tablename(), 'visible', array('id' => $instance->id)));
+        $this->assertEquals(1, $DB->get_field($this->headingelement->tablename(), 'visible', ['id' => $instance->id]));
 
     }
 
@@ -183,7 +214,7 @@ class lib_test extends \advanced_testcase {
      */
     public function get_heading_element() {
         global $DB;
-        return $DB->get_record('element_heading', array('title' => 'Heading 01'));
+        return $DB->get_record('element_heading', ['title' => 'Heading 01']);
     }
 
 }

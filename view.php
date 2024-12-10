@@ -33,14 +33,14 @@ if (!$cm = get_coursemodule_from_id('contentdesigner', $id)) {
     throw new moodle_exception('invalidcoursemodule');
 }
 
-$PAGE->set_url('/mod/contentdesigner/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/contentdesigner/view.php', ['id' => $cm->id]);
 
-if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
     // Thorw error if the given moulde coure is exists.
     throw new moodle_exception('invalidcourse');
 }
 require_course_login($course, false, $cm);
-if (!$data = $DB->get_record('contentdesigner', array('id' => $cm->instance))) {
+if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
     // NOTE As above.
     throw new moodle_exception('course module is incorrect');
 }

@@ -33,14 +33,14 @@ if (!$cm = get_coursemodule_from_id('contentdesigner', $id)) {
     throw new moodle_exception('invalidcoursemodule');
 }
 
-$PAGE->set_url('/mod/contentdesigner/editor.php', array('id' => $cm->id, 'sesskey' => sesskey()));
+$PAGE->set_url('/mod/contentdesigner/editor.php', ['id' => $cm->id, 'sesskey' => sesskey()]);
 
-if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
     throw new moodle_exception('invalidcourse');  // NOTE As above.
 }
 require_course_login($course, false, $cm);
 
-if (!$data = $DB->get_record('contentdesigner', array('id' => $cm->instance))) {
+if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
     throw new moodle_exception('course module is incorrect'); // NOTE As above.
 }
 $context = context_module::instance($cm->id);

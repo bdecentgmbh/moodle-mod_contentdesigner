@@ -44,14 +44,13 @@ $context = context_module::instance($cm->id);
 $elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
 
 if ($id) {
-    $elementrecord = $DB->get_record("element_".$element, array('id' => $id));
+    $elementrecord = $DB->get_record("element_".$element, ['id' => $id]);
     if (!$elementrecord) {
         throw new moodle_exception('invaildrecord', 'mod_contentdesigner');
     }
     $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
     $chapter = isset($content->chapter) ? $content->chapter : 0;
 }
-
 
 require_login($course, true, $cm);
 
@@ -65,13 +64,13 @@ $record->cmid = $cmid;
 $record->element = $element;
 $record->contentdesignerid = $cm->instance;
 
-$urlparams = array(
+$urlparams = [
     'id' => $id,
     'action' => $action,
     'cmid' => $cmid,
     'element' => $element,
-    'sesskey' => sesskey()
-);
+    'sesskey' => sesskey(),
+];
 $url = new moodle_url('/mod/contentdesigner/element.php', $urlparams);
 $PAGE->set_url($url);
 $PAGE->set_context($context);

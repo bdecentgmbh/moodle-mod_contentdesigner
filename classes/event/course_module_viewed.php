@@ -47,6 +47,6 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return array
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'contentdesigner', 'restore' => 'contentdesigner');
+        return ['db' => 'contentdesigner', 'restore' => 'contentdesigner'];
     }
 }

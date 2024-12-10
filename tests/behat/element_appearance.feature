@@ -15,11 +15,11 @@ Feature: Check content designer element options
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Content Designer" to section "1" and I fill the form with:
-      | Name      | Demo content  |
-      | Description | Contentdesigner Description |
+    And the following "activity" exists:
+      | activity    | contentdesigner              |
+      | name        | Demo content                 |
+      | intro       | Contentdesigner Description  |
+      | course      | C1                           |
     And I log out
 
   Scenario: Add contentdesigner elements.
@@ -94,7 +94,7 @@ Feature: Check content designer element options
     And I should see "Heading 02" in the ".course-content-list .chapters-list:nth-child(1) li.element-item:nth-child(2)" "css_element"
     And I should see "Heading 03" in the ".course-content-list .chapters-list:nth-child(2) li.element-item:nth-child(1)" "css_element"
     And I should see "Heading 04" in the ".course-content-list .chapters-list:nth-child(2) li.element-item:nth-child(2)" "css_element"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit]" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     Then I should see "Heading element settings"
     And I set the following fields to these values:
       | Heading text  | Heading one |

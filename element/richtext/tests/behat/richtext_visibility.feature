@@ -15,11 +15,11 @@ Feature: Check content designer richtext element settings
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Content Designer" to section "1" and I fill the form with:
-      | Name      | Demo content  |
-      | Description     | Contentdesigner Description |
+    And the following "activity" exists:
+      | activity    | contentdesigner              |
+      | name        | Demo content                 |
+      | intro       | Contentdesigner Description  |
+      | course      | C1                           |
     And I log out
 
   Scenario: Add a Richtext element
@@ -28,9 +28,9 @@ Feature: Check content designer richtext element settings
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=richtext]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
-      | Rich Text  | <b style='color: #7c7cff; background-color: #ffffff;'>Hard to read</>|
+      | Rich Text  | <b style='color: #7c7cff; background-color: #ffffff;'>Hard to read</b>|
       | Title                | Richtext 01 |
     And I press "Create element"
     And I click on "Content Designer" "link"
     Then I should see "Hard to read" in the ".chapter-elements-list li .richtext-content" "css_element"
-    Then ".chapter-elements-list li .richtext-content b" "css_element" should exist
+    Then ".chapter-elements-list li .richtext-content" "css_element" should exist

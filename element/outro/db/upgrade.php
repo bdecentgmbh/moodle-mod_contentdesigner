@@ -40,7 +40,8 @@ function xmldb_element_outro_upgrade($oldversion) {
         // Outrocontent.
         $outrocontent = new xmldb_field('outrocontent', XMLDB_TYPE_TEXT, null, null, null, null, null, 'secondaryurl');
         // Outrocontent format.
-        $outrocontentformat = new xmldb_field('outrocontentformat', XMLDB_TYPE_INTEGER, '2', null, null, null, null, 'outrocontent');
+        $outrocontentformat = new xmldb_field('outrocontentformat', XMLDB_TYPE_INTEGER, '2',
+            null, null, null, null, 'outrocontent');
         // Primary button.
         $primarybutton = new xmldb_field('primarybutton', XMLDB_TYPE_INTEGER, '9', null, null, null, '0', 'outrocontentformat');
         // Secondary button.

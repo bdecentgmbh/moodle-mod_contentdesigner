@@ -24,7 +24,5 @@
 
  defined("MOODLE_INTERNAL") || die();
 
-$string['pluginname'] = "Heading";
 $string['elementdescription'] = 'Add a heading';
-
-
+$string['pluginname'] = "Heading";

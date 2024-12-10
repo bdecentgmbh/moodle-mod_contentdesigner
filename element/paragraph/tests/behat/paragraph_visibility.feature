@@ -15,11 +15,11 @@ Feature: Check content designer paragraph element settings
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Content Designer" to section "1" and I fill the form with:
-      | Name      | Demo content  |
-      | Description     | Contentdesigner Description |
+    And the following "activity" exists:
+      | activity    | contentdesigner              |
+      | name        | Demo content                 |
+      | intro       | Contentdesigner Description  |
+      | course      | C1                           |
     And I log out
 
   Scenario: Add a Paragraph element
@@ -38,7 +38,7 @@ Feature: Check content designer paragraph element settings
     Then ".chapter-elements-list li.element-item .hl-center.vl-middle" "css_element" should exist
     Then ".chapter-elements-list li.element-item p.element-paragraph" "css_element" should exist
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit]" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Content  | Various versions have evolved over the years.|
       | Horizontal Alignment | Left |

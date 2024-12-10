@@ -24,14 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$functions = array(
+$functions = [
 
-    'element_chapter_update_completion' => array(
+    'element_chapter_update_completion' => [
         'classname'     => 'element_chapter\external',
         'methodname'    => 'update_completion',
         'description'   => 'Store the user completion result of chapter',
         'type'          => 'write',
         'capabilities'  => 'mod/contentdesigner:view',
-        'ajax'          => true
-    ),
-);
+        'ajax'          => true,
+    ],
+];

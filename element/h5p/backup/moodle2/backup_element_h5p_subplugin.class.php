@@ -40,14 +40,14 @@ class backup_element_h5p_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_h5p', array('id'), array(
-            'contentdesignerid', 'title', 'visible', 'package', 'mandatory', 'timecreated', 'timemodified'
-        ));
+        $subpluginelement = new backup_nested_element('element_h5p', ['id'], [
+            'contentdesignerid', 'title', 'visible', 'package', 'mandatory', 'timecreated', 'timemodified',
+        ]);
 
         $h5pcompletion = new backup_nested_element('elementh5p_completion');
-        $h5pcompletionelement = new backup_nested_element('element_h5p_completion', array('id'), array(
-            'instance', 'userid', 'completion', 'success', 'score', 'scoredata', 'response', 'timecreated', 'timemodified'
-        ));
+        $h5pcompletionelement = new backup_nested_element('element_h5p_completion', ['id'], [
+            'instance', 'userid', 'completion', 'success', 'score', 'scoredata', 'response', 'timecreated', 'timemodified',
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
@@ -57,13 +57,13 @@ class backup_element_h5p_subplugin extends backup_subplugin {
         $h5pcompletion->add_child($h5pcompletionelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_h5p', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_h5p', ['contentdesignerid' => backup::VAR_PARENTID]);
 
         if ($userinfo) {
             $sql = 'SELECT * FROM {element_h5p_completion} WHERE instance IN (
                 SELECT id FROM {element_h5p} WHERE contentdesignerid=:contentdesignerid
             )';
-            $h5pcompletionelement->set_source_sql($sql, array('contentdesignerid' => backup::VAR_PARENTID));
+            $h5pcompletionelement->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
             $h5pcompletionelement->annotate_ids('user', 'userid');
         }
 

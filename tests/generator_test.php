@@ -23,30 +23,30 @@ namespace mod_contentdesigner;
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class generator_test extends \advanced_testcase {
+final class generator_test extends \advanced_testcase {
 
     /**
      * Test test_content_designer_create_instance
      * @covers ::create_instance
      */
-    public function test_content_designer_create_instance() {
+    public function test_content_designer_create_instance(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course();
 
-        $this->assertFalse($DB->record_exists('contentdesigner', array('course' => $course->id)));
-        $contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', array('course' => $course->id));
-        $this->assertEquals(1, $DB->count_records('contentdesigner', array('course' => $course->id)));
-        $this->assertTrue($DB->record_exists('contentdesigner', array('course' => $course->id)));
-        $this->assertTrue($DB->record_exists('contentdesigner', array('id' => $contentdesigner->id)));
+        $this->assertFalse($DB->record_exists('contentdesigner', ['course' => $course->id]));
+        $contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $course->id]);
+        $this->assertEquals(1, $DB->count_records('contentdesigner', ['course' => $course->id]));
+        $this->assertTrue($DB->record_exists('contentdesigner', ['course' => $course->id]));
+        $this->assertTrue($DB->record_exists('contentdesigner', ['id' => $contentdesigner->id]));
 
-        $params = array('course' => $course->id, 'name' => 'One more contentdesigner');
+        $params = ['course' => $course->id, 'name' => 'One more contentdesigner'];
         $contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', $params);
-        $this->assertEquals(2, $DB->count_records('contentdesigner', array('course' => $course->id)));
+        $this->assertEquals(2, $DB->count_records('contentdesigner', ['course' => $course->id]));
         $this->assertEquals('One more contentdesigner', $DB->get_field_select('contentdesigner',
-            'name', 'id = :id', array('id' => $contentdesigner->id)));
+            'name', 'id = :id', ['id' => $contentdesigner->id]));
     }
 
 }

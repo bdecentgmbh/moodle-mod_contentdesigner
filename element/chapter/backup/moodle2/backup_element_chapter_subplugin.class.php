@@ -38,14 +38,14 @@ class backup_element_chapter_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_chapter', array('id'), array(
-            'contentdesignerid', 'title', 'visible', 'contents', 'position','titlestatus',
-            'timecreated', 'timemodified' ));
+        $subpluginelement = new backup_nested_element('element_chapter', ['id'], [
+            'contentdesignerid', 'title', 'visible', 'contents', 'position', 'titlestatus',
+            'timecreated', 'timemodified' ]);
 
         $chaptercompletion = new backup_nested_element('elementchapter_completion');
-        $chaptercompletionelement = new backup_nested_element('element_chapter_completion', array('id'), array(
-            'instance', 'userid', 'completion', 'titlestatus', 'timecreated', 'timemodified'
-        ));
+        $chaptercompletionelement = new backup_nested_element('element_chapter_completion', ['id'], [
+            'instance', 'userid', 'completion', 'titlestatus', 'timecreated', 'timemodified',
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
@@ -55,13 +55,13 @@ class backup_element_chapter_subplugin extends backup_subplugin {
         $chaptercompletion->add_child($chaptercompletionelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_chapter', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_chapter', ['contentdesignerid' => backup::VAR_PARENTID]);
 
         if ($userinfo) {
             $sql = 'SELECT * FROM {element_chapter_completion} WHERE instance IN (
                 SELECT id FROM {element_chapter} WHERE contentdesignerid=:contentdesignerid
             )';
-            $chaptercompletionelement->set_source_sql($sql, array('contentdesignerid' => backup::VAR_PARENTID));
+            $chaptercompletionelement->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
             $chaptercompletionelement->annotate_ids('user', 'userid');
         }
 

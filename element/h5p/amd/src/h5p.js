@@ -1,4 +1,4 @@
-define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notification'], function($, Elements, AJAX, Notification) {
+define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notification'], function ($, Elements, AJAX, Notification) {
 
     var interactedInstances = [];
 
@@ -31,7 +31,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
         }
 
 
-        h5p.externalDispatcher.on('xAPI', function(event) {
+        h5p.externalDispatcher.on('xAPI', function (event) {
 
             // Skip malformed events.
             var hasStatement = event && event.data && event.data.statement;
@@ -46,12 +46,12 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
             }
 
             var isCompleted = statement.verb.id === 'http://adlnet.gov/expapi/verbs/answered'
-                        || statement.verb.id === 'http://adlnet.gov/expapi/verbs/completed';
+                || statement.verb.id === 'http://adlnet.gov/expapi/verbs/completed';
 
             var isChild = statement.context && statement.context.contextActivities &&
-            statement.context.contextActivities.parent &&
-            statement.context.contextActivities.parent[0] &&
-            statement.context.contextActivities.parent[0].id;
+                statement.context.contextActivities.parent &&
+                statement.context.contextActivities.parent[0] &&
+                statement.context.contextActivities.parent[0].id;
             // Attempted response only stored.
             var isInteract = statement.verb.id === 'http://adlnet.gov/expapi/verbs/interacted';
             var isInteracted = false;
@@ -156,7 +156,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
     };
 
     return {
-        init: function(instance) {
+        init: function (instance) {
             elementH5P(instance);
         }
     };
