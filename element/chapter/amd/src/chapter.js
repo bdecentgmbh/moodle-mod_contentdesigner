@@ -23,6 +23,14 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
                 stickyProgress();
             });
 
+            // Popup format support.
+            var popup = document.querySelector('body.format-popups .modal-content .modal-body');
+            if (popup !== null) {
+                popup.addEventListener('scroll', () => {
+                    stickyProgress();
+                });
+            }
+
             window.addEventListener('scroll', () => {
                 stickyProgress();
             });

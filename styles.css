@@ -318,3 +318,10 @@ body#page-mod-contentdesigner-view {
         }
     }
 }
+
+.format-popups .modal .modal-body .contentdesigner-content.sticky-progress {
+    .contentdesigner-progress.fixed-top {
+        position: sticky;
+        top: -20px;
+    }
+}
