@@ -24,8 +24,8 @@
 
 require_once("../../config.php");
 
-$id = required_param('id', PARAM_INT); // course id
-$course = $DB->get_record('course', array('id'=>$id), '*', MUST_EXIST);
+$id = required_param('id', PARAM_INT); // Course id.
+$course = $DB->get_record('course', ['id' => $id], '*', MUST_EXIST);
 
 require_course_login($course, true);
 $PAGE->set_pagelayout('incourse');
@@ -86,7 +86,7 @@ foreach ($contentdesigners as $contentdesigner) {
         $printsection = '<span class="smallinfo">'.userdate($contentdesigner->timemodified)."</span>";
     }
 
-    $class = $contentdesigner->visible ? '' : 'class="dimmed"'; // hidden modules are dimmed
+    $class = $contentdesigner->visible ? '' : 'class="dimmed"'; // Hidden modules are dimmed.
 
     $table->data[] = [
         $printsection,

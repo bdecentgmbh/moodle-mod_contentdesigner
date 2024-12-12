@@ -24,5 +24,5 @@
 
 defined("MOODLE_INTERNAL") || die();
 
-$string['pluginname'] = "Rich text";
 $string['elementdescription'] = 'Add content using the Moodle editor (atto/tinymce)';
+$string['pluginname'] = "Rich text";

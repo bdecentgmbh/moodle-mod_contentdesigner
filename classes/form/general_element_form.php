@@ -31,7 +31,6 @@ use stdClass;
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 
-
 /**
  * General option form to create elements.
  *
@@ -133,7 +132,7 @@ class general_element_form extends \moodleform {
 
         // Background for general element.
         $mform->addElement('text', 'abovecolorbg', get_string('abovecolorbg', 'mod_contentdesigner'),
-            array('placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"));
+            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('abovecolorbg', PARAM_RAW);
         $mform->addHelpButton('abovecolorbg', 'abovecolorbg', 'mod_contentdesigner');
 
@@ -147,7 +146,7 @@ class general_element_form extends \moodleform {
         $mform->addHelpButton('bgimage', 'elementbgimage', 'mod_contentdesigner');
 
         $mform->addElement('text', 'belowcolorbg', get_string('belowcolorbg', 'mod_contentdesigner'),
-            array('placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"));
+            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('belowcolorbg', PARAM_RAW);
         $mform->addHelpButton('belowcolorbg', 'belowcolorbg', 'mod_contentdesigner');
 
@@ -158,7 +157,7 @@ class general_element_form extends \moodleform {
             0 => get_string('none'),
             'fadeIn' => get_string('fadein', 'mod_contentdesigner'),
             'slideInRight' => get_string('slidefromright', 'mod_contentdesigner'),
-            'slideInLeft' => get_string('slidefromleft', 'mod_contentdesigner')
+            'slideInLeft' => get_string('slidefromleft', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'animation', get_string('stranimation', 'mod_contentdesigner'), $animationtype);
         $mform->addHelpButton('animation', 'stranimation', 'mod_contentdesigner');
@@ -180,7 +179,7 @@ class general_element_form extends \moodleform {
         $scrolldirections = [
             0 => get_string('none'),
             'left' => get_string('toleft', 'mod_contentdesigner'),
-            'right' => get_string('toright', 'mod_contentdesigner')
+            'right' => get_string('toright', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'direction', get_string('strdirection', 'mod_contentdesigner'), $scrolldirections);
         $mform->addHelpButton('direction', 'strdirection', 'mod_contentdesigner');

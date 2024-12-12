@@ -73,7 +73,6 @@ class element extends \mod_contentdesigner\elements {
         return ['content'];
     }
 
-
     /**
      * Element form element definition.
      *
@@ -135,9 +134,9 @@ class element extends \mod_contentdesigner\elements {
     public function save_areafiles($data) {
         global $DB;
         parent::save_areafiles($data);
-		if (isset($data->contextid)) {
-        	$context = \context::instance_by_id($data->contextid, MUST_EXIST);
-		}
+        if (isset($data->contextid)) {
+            $context = \context::instance_by_id($data->contextid, MUST_EXIST);
+        }
         $editoroptions = $this->editor_options($context);
         if (isset($data->instance)) {
             $itemid = $data->content_editor['itemid'];
@@ -172,7 +171,7 @@ class element extends \mod_contentdesigner\elements {
             $data->contentformat = FORMAT_HTML;
             $data->content = '';
         }
-       file_prepare_standard_editor(
+        file_prepare_standard_editor(
             $data,
             'content',
             $editoroptions,
@@ -197,7 +196,7 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
-            'maxfiles' => EDITOR_UNLIMITED_FILES
+            'maxfiles' => EDITOR_UNLIMITED_FILES,
         ];
     }
 }

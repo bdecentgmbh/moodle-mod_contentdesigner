@@ -44,7 +44,6 @@ $ADMIN->add('modcontentdesigner', $settings);
 $settings = null; // Reset the settings.
 
 foreach (\core_plugin_manager::instance()->get_plugins_of_type('element') as $plugin) {
-    // Load all the element plugins settings pages
+    // Load all the element plugins settings pages.
     $plugin->load_settings($ADMIN, 'modcontentdesigner', $hassiteconfig);
 }
-

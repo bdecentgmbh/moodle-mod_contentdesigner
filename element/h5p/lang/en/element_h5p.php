@@ -24,14 +24,15 @@
 
  defined("MOODLE_INTERNAL") || die();
 
-$string['pluginname'] = "Interactive content (H5P)";
 $string['elementdescription'] = 'Interactive content using H5P';
+$string['h5p:viewstudentrecords'] = 'View student attempt results';
 $string['highestgrade'] = 'Highest grade';
-$string['privacy:metadata:completion:chapterid'] = 'H5P instance id';
-$string['privacy:metadata:completion:userid'] = 'User id';
+$string['pluginname'] = "Interactive content (H5P)";
+$string['privacy:h5p'] = 'H5P';
 $string['privacy:metadata:completion:completion'] = 'Completion Status';
-$string['privacy:metadata:completion:timecreated'] = 'Time completed the H5P';
+$string['privacy:metadata:completion:h5pid'] = 'H5P instance id';
 $string['privacy:metadata:completion:score'] = 'Attempt score';
 $string['privacy:metadata:completion:success'] = 'Is attempt success';
-$string['privacy:h5p'] = 'H5P';
-$string['h5p:viewstudentrecords'] = 'View student attempt results';
+$string['privacy:metadata:completion:timecreated'] = 'Time completed the H5P';
+$string['privacy:metadata:completion:userid'] = 'User id';
+$string['privacy:metadata:h5pcompletion'] = 'Information about the user\'s completion of the h5p element';

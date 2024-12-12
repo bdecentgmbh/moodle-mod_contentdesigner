@@ -37,27 +37,27 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated - table fields.
-        $contentdesigner = new backup_nested_element('contentdesigner', array('id'), array(
+        $contentdesigner = new backup_nested_element('contentdesigner', ['id'], [
             'course', 'name', 'intro', 'introformat', 'timecreated',
-            'timemodified'));
+            'timemodified']);
 
         $this->add_subplugin_structure('element', $contentdesigner, true);
 
         $elements = new backup_nested_element('elements');
-        $contentdesignerelements = new backup_nested_element('contentdesigner_elements', array('id'), array(
-            'shortname', 'visible', 'timecreated'));
+        $contentdesignerelements = new backup_nested_element('contentdesigner_elements', ['id'], [
+            'shortname', 'visible', 'timecreated']);
 
         $content = new backup_nested_element('content');
-        $contentdesignercontent = new backup_nested_element('contentdesigner_content', array('id'), array(
-            'contentdesignerid', 'element', 'instance', 'chapter', 'position', 'timecreated', 'timemodified'
-        ));
+        $contentdesignercontent = new backup_nested_element('contentdesigner_content', ['id'], [
+            'contentdesignerid', 'element', 'instance', 'chapter', 'position', 'timecreated', 'timemodified',
+        ]);
 
         $options = new backup_nested_element('contentdesigneropitons');
-        $contentdesigneroptions = new backup_nested_element('contentdesigner_options', array('id'), array(
+        $contentdesigneroptions = new backup_nested_element('contentdesigner_options', ['id'], [
             'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'abovegradientbg', 'bgimage', 'belowcolorbg',
             'belowgradientbg', 'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
-            'hidemobile', 'timecreated', 'timemodified'
-        ));
+            'hidemobile', 'timecreated', 'timemodified',
+        ]);
 
         // Build the tree.
         $contentdesigner->add_child($elements);
@@ -71,9 +71,9 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
 
         // Define sources.
         // Define source to backup.
-        $contentdesigner->set_source_table('contentdesigner', array('id' => backup::VAR_ACTIVITYID));
-        $contentdesignerelements->set_source_sql('SELECT * FROM {contentdesigner_elements}', array()); // Get all records.
-        $contentdesignercontent->set_source_table('contentdesigner_content', array('contentdesignerid' => backup::VAR_PARENTID));
+        $contentdesigner->set_source_table('contentdesigner', ['id' => backup::VAR_ACTIVITYID]);
+        $contentdesignerelements->set_source_sql('SELECT * FROM {contentdesigner_elements}', []); // Get all records.
+        $contentdesignercontent->set_source_table('contentdesigner_content', ['contentdesignerid' => backup::VAR_PARENTID]);
 
         $sql = 'SELECT co.* FROM {contentdesigner_content} cc
         JOIN {contentdesigner_options} co ON co.element=cc.element AND co.instance=cc.instance

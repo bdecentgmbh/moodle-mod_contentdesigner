@@ -15,11 +15,11 @@ Feature: Check content designer element settings
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Content Designer" to section "1" and I fill the form with:
-      | Name      | Demo content  |
-      | Description | Contentdesigner Description |
+    And the following "activity" exists:
+      | activity    | contentdesigner              |
+      | name        | Demo content                 |
+      | intro       | Contentdesigner Description  |
+      | course      | C1                           |
     And I log out
 
   Scenario: Check the element general settings.
@@ -40,14 +40,14 @@ Feature: Check content designer element settings
     And I click on "Content Designer" "link"
     Then I should see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit]" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Visibility | Hidden |
     And I press "Update element"
     And I click on "Content Designer" "link"
     Then I should not see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit]" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Visibility | Visible |
       | Margin    | 10 |
@@ -59,4 +59,4 @@ Feature: Check content designer element settings
     And I press "Update element"
     And I click on "Content Designer" "link"
     Then I should see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
-    Then ".chapter-elements-list li.element-item [data-animation=\"slideInRight\"].fast.delay-1000ms" "css_element" should exist
+    Then ".chapter-elements-list li.element-item .general-options[data-entranceanimation='{\"animation\":\"slideInRight\",\"duration\":\"fast\",\"delay\":\"1000\"}']" "css_element" should exist

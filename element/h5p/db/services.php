@@ -24,14 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$functions = array(
+$functions = [
 
-    'element_h5p_store_result' => array(
+    'element_h5p_store_result' => [
         'classname'     => 'element_h5p\external',
         'methodname'    => 'store_result_data',
         'description'   => 'Store the user attempt result of H5P',
         'type'          => 'write',
         'capabilities'  => 'mod/contentdesigner:view',
-        'ajax'          => true
-    ),
-);
+        'ajax'          => true,
+    ],
+];

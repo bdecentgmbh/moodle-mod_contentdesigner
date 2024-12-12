@@ -37,7 +37,7 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
      * Restore steps structure definition.
      */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
 
         $userinfo = $this->get_setting_value('userinfo');
 

@@ -45,7 +45,6 @@ function contentdesigner_add_instance($data, $mform = null) {
     return $moduleid;
 }
 
-
 /**
  * Runs any processes that must run before a contentdesigner insert/update
  *
@@ -86,12 +85,12 @@ function contentdesigner_update_instance($data, $mform) {
 function contentdesigner_delete_instance($id) {
     global $CFG, $DB;
 
-    if (!$record = $DB->get_record('contentdesigner', array('id' => $id))) {
+    if (!$record = $DB->get_record('contentdesigner', ['id' => $id])) {
         return false;
     }
     $cm = get_coursemodule_from_instance('contentdesigner', $id);
     \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $id, null);
-    $DB->delete_records('contentdesigner', array('id' => $record->id));
+    $DB->delete_records('contentdesigner', ['id' => $record->id]);
     return true;
 }
 
@@ -131,7 +130,6 @@ function contentdesigner_supports($feature) {
     }
 }
 
-
 /**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
@@ -144,10 +142,10 @@ function contentdesigner_supports($feature) {
 function contentdesigner_view($data, $course, $cm, $context) {
 
     // Trigger course_module_viewed event.
-    $params = array(
+    $params = [
         'context' => $context,
-        'objectid' => $data->id
-    );
+        'objectid' => $data->id,
+    ];
 
     $event = \mod_contentdesigner\event\course_module_viewed::create($params);
     $event->add_record_snapshot('course_modules', $cm);
@@ -159,7 +157,6 @@ function contentdesigner_view($data, $course, $cm, $context) {
     $completion = new completion_info($course);
     $completion->set_module_viewed($cm);
 }
-
 
 /**
  * This function receives a calendar event and returns the action associated with it, or null if there is none.
@@ -205,7 +202,7 @@ function mod_contentdesigner_core_calendar_provide_event_action($event, $factory
 function contentdesigner_reset_userdata($data) {
     // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
     // See MDL-9367.
-    return array();
+    return [];
 }
 
 /**
@@ -219,7 +216,7 @@ function contentdesigner_reset_userdata($data) {
  * @return array
  */
 function contentdesigner_get_view_actions() {
-    return array('view', 'view all');
+    return ['view', 'view all'];
 }
 
 /**
@@ -233,10 +230,8 @@ function contentdesigner_get_view_actions() {
  * @return array
  */
 function contentdesigner_get_post_actions() {
-    return array('update', 'add');
+    return ['update', 'add'];
 }
-
-
 
 /**
  * Get the element plugins.
@@ -284,8 +279,6 @@ function contentdesigner_output_fragment_insert_element($args) {
 function contentdesigner_output_fragment_load_elements($args) {
     list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $editor = new mod_contentdesigner\editor($cm, $course);
-    // $editor->initiate_js();
-
     return $editor->render_elements();
 }
 
@@ -322,7 +315,7 @@ function contentdesigner_output_fragment_edit_element($args) {
     }
 }
 
-// TODO: Need to implement the capabilities for all fragment tests.
+// Todo: Need to implement the capabilities for all fragment tests.
 /**
  * Fragment output to load the list of elements to insert.
  *
@@ -398,7 +391,7 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
         $PAGE->set_context(context_module::instance($cm->id));
 
         \external_api::validate_context(context_system::instance());
-        // TODO: Need to check capability and table exists.
+        // Todo: Need to check capability and table exists.
         $record->title = clean_param($itemvalue, PARAM_NOTAGS);
         $record->timemodified = time();
         $DB->update_record($element->tablename, $record);
@@ -420,13 +413,12 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
 function contentdesigner_extend_settings_navigation(settings_navigation $settings, navigation_node $node) {
     global $PAGE;
     if (has_capability('mod/contentdesigner:viewcontenteditor', $PAGE->cm->context)) {
-        $url = new moodle_url('/mod/contentdesigner/editor.php', array('id' => $PAGE->cm->id, 'sesskey' => sesskey()));
+        $url = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $PAGE->cm->id, 'sesskey' => sesskey()]);
         $node->add(
             get_string('contenteditor', 'mod_contentdesigner'), $url, navigation_node::TYPE_SETTING, null, 'editorelement', null
         );
     }
 }
-
 
 /**
  * Serves file from image.
@@ -440,7 +432,7 @@ function contentdesigner_extend_settings_navigation(settings_navigation $setting
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
  */
-function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     require_login();
     if ($context->contextlevel != CONTEXT_MODULE) {
         return false;
@@ -464,7 +456,6 @@ function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $f
     }
     send_stored_file($file, 0, 0, 0, $options);
 }
-
 
 /**
  * Add a get_coursemodule_info function in case any pulse type wants to add 'extra' information

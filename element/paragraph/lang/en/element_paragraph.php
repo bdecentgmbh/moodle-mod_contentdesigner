@@ -24,6 +24,6 @@
 
 defined("MOODLE_INTERNAL") || die();
 
-$string['pluginname'] = "Paragraph";
-$string['elementdescription'] = 'Add text';
 $string['content'] = "Content";
+$string['elementdescription'] = 'Add text';
+$string['pluginname'] = "Paragraph";

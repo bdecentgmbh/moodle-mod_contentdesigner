@@ -37,7 +37,7 @@ abstract class elements {
      */
     public $context;
 
-        /**
+    /**
      * Course module ID.
      *
      * @var int $cmid
@@ -173,7 +173,9 @@ abstract class elements {
      * @return void
      */
     public function icon($output) {
-        return $output->pix_icon('t/viewdetails', get_string('plugin'));
+        global $CFG;
+        $icon = ($CFG->branch >= 405) ? 't/index_drawer' : 't/viewdetails';
+        return $output->pix_icon($icon, get_string('plugin'));
     }
 
     /**
@@ -210,7 +212,7 @@ abstract class elements {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('bgimage');
             file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner', $this->element_shortname().'elementbg',
-                $formdata->instance, array('subdirs' => 0, 'maxfiles' => 1));
+                $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
             $formdata->bgimage = $draftitemid;
         }
         return $formdata;
@@ -225,8 +227,6 @@ abstract class elements {
         $context = \context_module::instance($this->cmid);
         return $context;
     }
-
-
 
     /**
      * Simple information about the element. Used in the element box.
@@ -280,7 +280,7 @@ abstract class elements {
     /**
      * Replace the element on refersh the content. Some elements may need to update the content on refresh the elmenet.
      */
-    public function supports_replace_onrefresh() : bool {
+    public function supports_replace_onrefresh(): bool {
         return false;
     }
 
@@ -294,7 +294,7 @@ abstract class elements {
         $data = [
             'cmid' => $this->cmid,
             'contextid' => \context_module::instance($this->cmid)->id,
-            'contentdesignerid' => $this->cm->instance
+            'contentdesignerid' => $this->cm->instance,
         ];
         $PAGE->requires->data_for_js('contentDesignerElementsData', $data);
     }
@@ -322,13 +322,12 @@ abstract class elements {
         global $OUTPUT, $PAGE;
         $title = $instance->title ?: $this->info()->name;
         $name = 'instance_title['.$this->shortname.']['.$instance->id.']';
-        // TODO: Need to implement capability in place of true 4th param.
+        // Todo: Need to implement capability in place of true 4th param.
         $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid.$instance->id,
             true, format_string($title), $title, "Edit the title of instance" ,  'New value for ' . format_string($title));
 
         return $OUTPUT->render($tmpl);
     }
-
 
     /**
      * Add elements in DB. During the plugin installtion elements will inserted and created id for elements.
@@ -455,7 +454,7 @@ abstract class elements {
         global $DB;
 
         return (array) ($DB->get_record('contentdesigner_options', [
-            'instance' => $instanceid, 'element' => $this->elementid
+            'instance' => $instanceid, 'element' => $this->elementid,
         ]) ?: []);
     }
 
@@ -568,14 +567,14 @@ abstract class elements {
             $transaction = $DB->start_delegated_transaction();
             // Delete the element settings.
             if ($this->get_instance($instanceid)) {
-                $DB->delete_records($this->tablename(), array('id' => $instanceid));
+                $DB->delete_records($this->tablename(), ['id' => $instanceid]);
             }
-            $DB->delete_records('contentdesigner_content', array('element' => $this->element_id(),
-            'instance' => $instanceid));
+            $DB->delete_records('contentdesigner_content', ['element' => $this->element_id(),
+            'instance' => $instanceid]);
             if ($this->get_instance_options($instanceid)) {
                 // Delete the element general settings.
-                $DB->delete_records('contentdesigner_options', array('element' => $this->element_id(),
-                    'instance' => $instanceid));
+                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
+                    'instance' => $instanceid]);
             }
             $transaction->allow_commit();
             return true;
@@ -615,7 +614,7 @@ abstract class elements {
         $instance->entranceanimation = json_encode([
             'animation' => $instance->animation,
             'duration' => $instance->duration,
-            'delay' => $instance->delay ? $instance->delay : ''
+            'delay' => $instance->delay ? $instance->delay : '',
         ]);
 
         $class[] = $instance->hidedesktop ? 'd-lg-none' : 'd-lg-block';
@@ -635,7 +634,7 @@ abstract class elements {
         $scrolldata = [
             "start" => $instance->viewport,
             "direction" => $instance->direction,
-            "speed" => $instance->speed ? $instance->speed : 0
+            "speed" => $instance->speed ? $instance->speed : 0,
         ];
         if ($instance->direction) {
             $instance->scrolleffect = json_encode($scrolldata);

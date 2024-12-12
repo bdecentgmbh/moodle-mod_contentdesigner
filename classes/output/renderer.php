@@ -19,7 +19,7 @@
  *
  * @package    mod_contentdesigner
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
- * @author     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_contentdesigner\output;
@@ -43,15 +43,13 @@ class renderer extends core_renderer {
      *
      * @return \core_course\output\activity_navigation
      */
-    public function activity_navigation($contentdesigner=0, $context=null)
-    {
+    public function activity_navigation($contentdesigner=0, $context=null) {
         // First we should check if we want to add navigation.
         $context = $context ?: $this->page->context;
         if (($this->page->pagelayout !== 'incourse' && $this->page->pagelayout !== 'frametop')
             || $context->contextlevel != CONTEXT_MODULE) {
             return '';
         }
-
 
         if ($contentdesigner) {
             list($course, $cm) = get_course_and_cm_from_instance($contentdesigner, 'contentdesigner');
@@ -66,12 +64,6 @@ class renderer extends core_renderer {
         }
 
         $courseformat = course_get_format($course);
-
-        // If the theme implements course index and the current course format uses course index and the current
-        // page layout is not 'frametop' (this layout does not support course index), show no links.
-        /* if ($this->page->theme->usescourseindex && $this->page->pagelayout !== 'frametop') {
-            return '';
-        } */
 
         // Get a list of all the activities in the course.
         $modules = get_fast_modinfo($course->id)->get_cms();
@@ -97,7 +89,7 @@ class renderer extends core_renderer {
                 $modname .= ' ' . get_string('hiddenwithbrackets');
             }
             // Module URL.
-            $linkurl = new moodle_url($module->url, array('forceview' => 1));
+            $linkurl = new moodle_url($module->url, ['forceview' => 1]);
             // Add module URL (as key) and name (as value) to the activity list array.
             $activitylist[$linkurl->out(false)] = $modname;
         }

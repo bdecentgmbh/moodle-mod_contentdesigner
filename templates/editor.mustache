@@ -154,9 +154,11 @@
         <div class="content">
             <ul class="course-content-list">
                 {{^chapterscount}}
+                <li>
                   <div class="contentdesigner-addelement" data-position="bottom">
                       <span><i class="fa fa-plus"> </i></span>
                   </div>
+                </li>
                 {{/chapterscount}}
                 {{#chapters}}
                 <li class="chapters-list {{^count}} no-elements {{/count}}">

@@ -25,7 +25,6 @@
 
  require_once(__DIR__ . '/../../../../../../lib/behat/behat_base.php');
 
-
 /**
  * Designer course format steps definitions.
  *
@@ -47,7 +46,7 @@ class behat_element_outro extends behat_base {
             "//div[contains(@class, 'element-outro')]//img[contains(@src, 'pluginfile.php')
             and contains(@src, '/mod_contentdesigner/element_outro_outroimage/')]",
             "xpath_element",
-            "mod/contentdesigner/element/outro/tests/behat/assets/c1.jpg"
+            "mod/contentdesigner/element/outro/tests/behat/assets/c1.jpg",
         ]);
     }
 

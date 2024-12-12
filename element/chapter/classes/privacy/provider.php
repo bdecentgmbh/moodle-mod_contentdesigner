@@ -24,11 +24,11 @@
 
 namespace element_chapter\privacy;
 
-use \core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\collection;
 use core_privacy\local\request\transform;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_userlist;
-use \core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\approved_contextlist;
 
 /**
  * Privacy class for requesting user data.
@@ -39,6 +39,7 @@ use \core_privacy\local\request\approved_contextlist;
  */
 class provider implements
         \core_privacy\local\metadata\provider,
+        \core_privacy\local\request\core_userlist_provider,
         \mod_contentdesigner\privacy\contentdesignerelements_provider {
 
     /**
@@ -54,10 +55,10 @@ class provider implements
             'instance' => 'privacy:metadata:completion:chapterid',
             'userid' => 'privacy:metadata:completion:userid',
             'completion' => 'privacy:metadata:completion:completion',
-            'timecreated' => 'privacy:metadata:completion:timecreated'
+            'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
         $collection->add_database_table('element_chapter_completion', $completionmetadata,
-            'privacy:metadata:contentdesignercompletion');
+            'privacy:metadata:chaptercompletion');
 
         return $collection;
     }
@@ -90,7 +91,7 @@ class provider implements
                 'completed' => (($completion->completion == 1) ? get_string('yes') : get_string('no')),
                 'completedtime' => $completion->timecreated ? transform::datetime($completion->timecreated) : '-',
                 'title' => $completion->title,
-                'contentdesignerid' => $completion->contentdesignerid
+                'contentdesignerid' => $completion->contentdesignerid,
             ];
         }
         return $data;

@@ -41,10 +41,10 @@ class external extends \external_api {
      */
     public static function update_completion_parameters() {
         return new \external_function_parameters(
-            array(
+            [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'chapter' => new external_value(PARAM_INT, 'Chapter element instance id'),
-            )
+            ]
         );
     }
 

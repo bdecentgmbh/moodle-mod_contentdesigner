@@ -35,7 +35,7 @@ class restore_element_paragraph_subplugin extends restore_subplugin {
      */
     protected function define_contentdesigner_subplugin_structure() {
 
-        $paths = array();
+        $paths = [];
 
         $elename = $this->get_namefor('instance');
         // We used get_recommended_name() so this works.

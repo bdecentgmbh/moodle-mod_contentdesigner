@@ -213,7 +213,6 @@ class element extends \mod_contentdesigner\elements {
         }
     }
 
-
     /**
      * Set element instance for the given chapter as contents.
      *
@@ -273,7 +272,7 @@ class element extends \mod_contentdesigner\elements {
                     'cmid' => $this->cmid,
                     'element' => $element->shortname,
                     'id' => $chapter->id,
-                    'sesskey' => sesskey()
+                    'sesskey' => sesskey(),
                 ]);
 
                 $list[] = [
@@ -356,7 +355,6 @@ class element extends \mod_contentdesigner\elements {
             $instance = $element->get_instance($content->instance, $visible);
             if ($instance) {
                 $instance->title = $element->title_editable($instance) ?: $element->info()->name;
-                //$instance->hideicon = !$element->supports_content();
                 $option = $editor->get_option($instance->id, $element->elementid);
                 // Load the element options classes to instance.
                 $element->generate_element_classes($instance, $option);
@@ -370,7 +368,7 @@ class element extends \mod_contentdesigner\elements {
                     'cmid' => $this->cmid,
                     'element' => $element->shortname,
                     'id' => $instance->id,
-                    'sesskey' => sesskey()
+                    'sesskey' => sesskey(),
                 ]);
                 $list[] = (array) $content + [
                     'info' => $element->info(),
@@ -409,7 +407,7 @@ class element extends \mod_contentdesigner\elements {
         $data = [
             'chapters' => array_values($records),
             'contentdesignerid' => $this->cm->instance,
-            'cmid' => $this->cmid
+            'cmid' => $this->cmid,
         ];
         return $OUTPUT->render_from_template('element_chapter/progressbar', $data);
     }
@@ -435,7 +433,7 @@ class element extends \mod_contentdesigner\elements {
                     $record = (object) [
                         'id' => $item,
                         'position' => $position,
-                        'chapter' => $chapterid
+                        'chapter' => $chapterid,
                     ];
                     $DB->update_record('contentdesigner_content', $record);
                     $position += 1;
@@ -467,7 +465,7 @@ class element extends \mod_contentdesigner\elements {
                 foreach ($list as $item) {
                     $record = (object) [
                         'id' => $item,
-                        'position' => $position
+                        'position' => $position,
                     ];
                     $status = $DB->update_record('element_chapter', $record);
                     $position += 1;
@@ -520,7 +518,7 @@ class element extends \mod_contentdesigner\elements {
                 $transaction = $DB->start_delegated_transaction();
                 // Delete the element settings.
                 if ($this->get_instance($instanceid)) {
-                    $DB->delete_records($this->tablename(), array('id' => $instanceid));
+                    $DB->delete_records($this->tablename(), ['id' => $instanceid]);
                 }
                 if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
                     foreach ($contents as $key => $value) {
@@ -530,8 +528,8 @@ class element extends \mod_contentdesigner\elements {
                 }
                 if ($this->get_instance_options($instanceid)) {
                     // Delete the element general settings.
-                    $DB->delete_records('contentdesigner_options', array('element' => $this->element_id(),
-                        'instance' => $instanceid));
+                    $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
+                        'instance' => $instanceid]);
                 }
                 $transaction->allow_commit();
             } catch (\Exception $e) {

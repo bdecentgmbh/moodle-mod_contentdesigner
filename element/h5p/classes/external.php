@@ -41,26 +41,26 @@ class external extends \external_api {
      */
     public static function store_result_data_parameters() {
         return new \external_function_parameters(
-            array(
+            [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'instanceid' => new external_value(PARAM_INT, 'H5P element instance id'),
                 'result' => new \external_single_structure(
-                    array(
+                    [
                         'completion' => new external_value(PARAM_BOOL, 'Attempt userid'),
                         'success' => new external_value(PARAM_BOOL, 'Attempt userid'),
                         'response' => new external_value(PARAM_TEXT, 'Response of the user attempt', VALUE_OPTIONAL),
                         'duration' => new external_value(PARAM_TEXT, 'Duration of the user attempt', VALUE_OPTIONAL),
                         'score' => new \external_single_structure(
-                            array(
+                            [
                                 'max' => new external_value(PARAM_FLOAT, 'Max number of score'),
                                 'min' => new external_value(PARAM_FLOAT, 'Max number of score'),
                                 'scaled' => new external_value(PARAM_FLOAT, 'Max number of score'),
                                 'raw' => new external_value(PARAM_ALPHANUMEXT, 'Max number of score'),
-                            )
-                        )
-                    )
+                            ]
+                        ),
+                    ]
                 ),
-            )
+            ]
         );
     }
 

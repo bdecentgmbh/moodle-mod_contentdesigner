@@ -15,23 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element chapter services defined.
+ * Upgrade file.
  *
- * @package   element_chapter
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
+ * @package    mod_contentdesigner
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
-$functions = [
-
-    'element_chapter_update_completion' => [
-        'classname'     => 'element_chapter\external',
-        'methodname'    => 'update_completion',
-        'description'   => 'Store the user completion result of chapter',
-        'type'          => 'write',
-        'capabilities'  => 'mod/contentdesigner:view',
-        'ajax'          => true,
-    ],
-];
+/**
+ * Upgrade the Content Designer plugin to a new version.
+ *
+ * This function is responsible for handling the upgrade process
+ * for the Content Designer plugin. It checks the current version
+ * and applies necessary changes to upgrade to the latest version.
+ *
+ * @param string $oldversion The version we are upgrading from.
+ * @return bool True on success.
+ */
+function xmldb_contentdesigner_upgrade($oldversion) {
+    // Automatically generated Moodle v4.4.0 release upgrade line.
+    // Put any upgrade step following this.
+    return true;
+}

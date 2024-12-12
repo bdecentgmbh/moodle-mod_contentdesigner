@@ -81,14 +81,14 @@ class element extends \mod_contentdesigner\elements {
 
         $mform->addElement(
             'url', 'headingurl', get_string('headingurl', 'mod_contentdesigner'),
-            array('size' => '60'), array('usefilepicker' => true)
+            ['size' => '60'], ['usefilepicker' => true]
         );
         $mform->setType('headingurl', PARAM_RAW_TRIMMED);
         $mform->addHelpButton('headingurl', 'headingurl', 'mod_contentdesigner');
 
         $headings = [
             'h2' => get_string('mainheading', 'mod_contentdesigner'),
-            'h3' => get_string('subheading', 'mod_contentdesigner')
+            'h3' => get_string('subheading', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'headingtype', get_string('strheading', 'mod_contentdesigner'), $headings);
         $mform->addHelpButton('headingtype', 'strheading', 'mod_contentdesigner');
@@ -103,7 +103,7 @@ class element extends \mod_contentdesigner\elements {
         $horizontalalign = [
             'left' => get_string('strleft', 'mod_contentdesigner'),
             'center' => get_string('strcenter', 'mod_contentdesigner'),
-            'right' => get_string('strright', 'mod_contentdesigner')
+            'right' => get_string('strright', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
         $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
@@ -111,7 +111,7 @@ class element extends \mod_contentdesigner\elements {
         $verticalalign = [
             'top' => get_string('strtop', 'mod_contentdesigner'),
             'middle' => get_string('strmiddle', 'mod_contentdesigner'),
-            'bottom' => get_string('strbottom', 'mod_contentdesigner')
+            'bottom' => get_string('strbottom', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');

@@ -38,16 +38,16 @@ class backup_element_paragraph_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('element_paragraph', array('id'), array(
+        $subpluginelement = new backup_nested_element('element_paragraph', ['id'], [
             'contentdesignerid', 'title', 'visible', 'content', 'horizontal', 'vertical', 'timecreated', 'timemodified',
-        ));
+        ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
         // Set source to populate the data.
-        $subpluginelement->set_source_table('element_paragraph', array('contentdesignerid' => backup::VAR_PARENTID));
+        $subpluginelement->set_source_table('element_paragraph', ['contentdesignerid' => backup::VAR_PARENTID]);
         $subpluginelement->annotate_ids('paragraph_instanceid', 'id');
 
         return $subplugin;
