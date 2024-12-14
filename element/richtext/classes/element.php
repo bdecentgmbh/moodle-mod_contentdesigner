@@ -37,6 +37,11 @@ class element extends \mod_contentdesigner\elements {
     const SHORTNAME = 'richtext';
 
     /**
+     * Hard-coded value for the 'maxfiles' option.
+     */
+    const EDITOR_UNLIMITED_FILES = -1;
+
+    /**
      * Element name which is visbile for the users
      *
      * @return string
@@ -139,7 +144,6 @@ class element extends \mod_contentdesigner\elements {
         }
         $editoroptions = $this->editor_options($context);
         if (isset($data->instance)) {
-            $itemid = $data->content_editor['itemid'];
             $data->contentformat = $data->content_editor['format'];
             $data = file_postupdate_standard_editor(
                 $data,
@@ -196,7 +200,7 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
-            'maxfiles' => EDITOR_UNLIMITED_FILES,
+            'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
     }
 }

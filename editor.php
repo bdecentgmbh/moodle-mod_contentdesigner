@@ -27,6 +27,9 @@ require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 
 // Course Module ID.
 $id = required_param('id', PARAM_INT);
+$action = optional_param('action', '', PARAM_ALPHA);
+$instanceid = optional_param('instanceid', 0, PARAM_INT);
+$element = optional_param('element', '', PARAM_ALPHANUM);
 
 if (!$cm = get_coursemodule_from_id('contentdesigner', $id)) {
     // NOTE this is invalid use of print_error, must be a lang string id.
@@ -54,9 +57,19 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($data);
 $PAGE->add_body_class('limitedwidth');
 
+$editor = new mod_contentdesigner\editor($cm, $course);
+
+if ($action == 'copy') {
+    if ($element == "chapter") {
+        $editor->chapter_duplicate($instanceid);    
+    } else {
+        $editor->duplicate($instanceid, $element);
+    }
+    redirect($PAGE->url);
+}
+
 echo $OUTPUT->header();
 
-$editor = new mod_contentdesigner\editor($cm, $course);
 echo $editor->display();
 
 $editor->init_data_forjs();

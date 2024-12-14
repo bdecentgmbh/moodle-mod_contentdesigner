@@ -280,6 +280,14 @@ class element extends \mod_contentdesigner\elements {
                     'sesskey' => sesskey(),
                 ]);
 
+                $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
+                    'id' => $this->cmid,
+                    'instanceid' => $chapter->id,
+                    'element' => $element->shortname,
+                    'action' => 'copy',
+                    'sesskey' => sesskey(),
+                ]);
+
                 $list[] = [
                     'instancedata' => $chapter,
                     'info' => $this->info(),
@@ -290,6 +298,7 @@ class element extends \mod_contentdesigner\elements {
                     'chapterprevent' => $chapterprevent,
                     'chaptercta' => ($render) ?: false,
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
+                    'copyurl' => $copyurl,
                 ];
                 // Prevent the next chapters when user needs to complete any of activities.
                 if ($prevent || $chapterprevent) {
@@ -375,12 +384,22 @@ class element extends \mod_contentdesigner\elements {
                     'id' => $instance->id,
                     'sesskey' => sesskey(),
                 ]);
+
+                $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
+                    'id' => $this->cmid,
+                    'instanceid' => $instance->id,
+                    'element' => $element->shortname,
+                    'action' => 'copy',
+                    'sesskey' => sesskey(),
+                ]);
+
                 $list[] = (array) $content + [
                     'info' => $element->info(),
                     'instancedata' => $instance,
                     'option' => $option,
                     'editurl' => $editurl,
                     'content' => $contenthtml,
+                    'copyurl' => $copyurl,
                 ];
 
                 // Prevent the elements next to the manatory elements.

@@ -139,6 +139,11 @@
                     {{/instancedata.visible}}
                 </li>
                 {{/hidevisible}}
+                {{^hideduplicate}}
+                <li data-action="duplicate" class="action-item">
+                    <a href="{{{copyurl}}}"><i class="fa fa-copy" aria-hidden="true"></i></a>
+                </li>
+                {{/hideduplicate}}
             </ul>
         </div>
     </div>
