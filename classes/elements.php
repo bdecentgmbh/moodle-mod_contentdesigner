@@ -394,11 +394,41 @@ abstract class elements {
         if ($this->is_table_exists()) {
 
             if ($this->tablename = 'element_outro') {
-                $record['outrocontent'] = '';
+
+            // Outro general settigns.
+            $content = get_config('element_outro', 'outro_content');
+            $primarybutton = get_config('element_outro', 'primarybutton');
+            $secondarybutton = get_config('element_outro', 'secondarybutton');
+            $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
+                $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
+            $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
+
+                $record['outrocontent'] = $outrocontenthtml ?? '';
                 $record['outrocontentformat'] = FORMAT_HTML;
+                $record['primarybutton'] = $primarybutton ?? 0;
+                $record['secondarybutton'] = $secondarybutton ?? 0;
             }
 
-            return $DB->insert_record($this->tablename, $record);
+            $result = $DB->insert_record($this->tablename, $record);
+            if ($result) {
+                $data = [];
+                $fields = $this->get_options_fields();
+                foreach ($fields as $field) {
+                    $globalvalues = get_config('mod_contentdesigner', $field);
+                    $data[$field] = $globalvalues ?? '';
+                }
+
+                $data['element'] = $this->elementid;
+                $data['instance'] = $result;
+                $data['timecreated'] = time();
+
+                if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
+                    'element' => $this->elementid])) {
+                    $DB->insert_record('contentdesigner_options', $data);
+                }
+
+            }
+            return $result;
         } else {
             throw new \moodle_exception('tablenotfound', 'contentdesigner');
         }
@@ -699,5 +729,17 @@ abstract class elements {
         }
 
         return $completemandatory;
+    }
+
+    /**
+     * Get the options fields for the elements.
+     * @return array
+     */
+    public function get_options_fields() {
+        return [
+            'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'belowcolorbg',
+            'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
+            'hidemobile', 'timecreated', 'timemodified',
+        ];
     }
 }
