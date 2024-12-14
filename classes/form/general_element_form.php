@@ -115,18 +115,24 @@ class general_element_form extends \moodleform {
             1 => get_string('visible'),
             0 => get_string('hidden', 'mod_contentdesigner'),
         ];
+        $default = get_config('mod_contentdesigner', 'visible');
         $mform->addElement('select', 'visible', get_string('visibility', 'mod_contentdesigner'), $visibleoptions);
         $mform->addHelpButton('visible', 'visibility', 'mod_contentdesigner');
+        $mform->setDefault('visible', $default ?: 1);
 
         // Margin for General element.
         $mform->addElement('text', 'margin',  get_string('margin', 'mod_contentdesigner'), 'size="30"');
         $mform->setType('margin', PARAM_RAW);
         $mform->addHelpButton('margin', 'margin', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'margin');
+        $mform->setDefault('margin', $default ?: '');
 
         // Padding for General element.
         $mform->addElement('text', 'padding',  get_string('padding', 'mod_contentdesigner'), 'size="30"');
         $mform->setType('padding', PARAM_RAW);
         $mform->addHelpButton('padding', 'padding', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'padding');
+        $mform->setDefault('padding', $default ?: '');
 
         $mform->addElement('header', 'backgroundsettings', get_string('backgroundtitle', 'mod_contentdesigner'));
 
@@ -135,6 +141,8 @@ class general_element_form extends \moodleform {
             ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('abovecolorbg', PARAM_RAW);
         $mform->addHelpButton('abovecolorbg', 'abovecolorbg', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'abovecolorbg');
+        $mform->setDefault('abovecolorbg', $default ?: '');
 
         $options = [
             'accepted_types' => ['image'],
@@ -149,6 +157,8 @@ class general_element_form extends \moodleform {
             ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('belowcolorbg', PARAM_RAW);
         $mform->addHelpButton('belowcolorbg', 'belowcolorbg', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'belowcolorbg');
+        $mform->setDefault('belowcolorbg', $default ?: '');
 
         $mform->addElement('header', 'animationsettings', get_string('animationtitle', 'mod_contentdesigner'));
 
@@ -161,6 +171,8 @@ class general_element_form extends \moodleform {
         ];
         $mform->addElement('select', 'animation', get_string('stranimation', 'mod_contentdesigner'), $animationtype);
         $mform->addHelpButton('animation', 'stranimation', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'animation');
+        $mform->setDefault('animation', $default ?: 0);
 
         $durations = [
             'slow' => get_string('strslow', 'mod_contentdesigner'),
@@ -169,9 +181,14 @@ class general_element_form extends \moodleform {
         ];
         $mform->addElement('select', 'duration', get_string('strduration', 'mod_contentdesigner'), $durations);
         $mform->addHelpButton('duration', 'strduration', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'duration');
+        $mform->setDefault('duration', $default ?: 'slow');
+
         $mform->addElement('text', 'delay', get_string('strdelay', 'mod_contentdesigner'));
         $mform->setType('delay', PARAM_INT);
         $mform->addHelpButton('delay', 'strdelay', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'delay');
+        $mform->setDefault('delay', $default ?: '');
 
         $mform->addElement('header', 'scrollingsettings', get_string('scrollingeffectstitle', 'mod_contentdesigner'));
 
@@ -183,22 +200,36 @@ class general_element_form extends \moodleform {
         ];
         $mform->addElement('select', 'direction', get_string('strdirection', 'mod_contentdesigner'), $scrolldirections);
         $mform->addHelpButton('direction', 'strdirection', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'direction');
+        $mform->setDefault('direction', $default ?: 0);
 
         $mform->addElement('select', 'speed', get_string('speed', 'mod_contentdesigner'), range(0, 10));
         $mform->addHelpButton('speed', 'speed', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'speed');
+        $mform->setDefault('speed', $default ?: 0);
 
         $mform->addElement('text', 'viewport', get_string('viewport', 'mod_contentdesigner'));
         $mform->setType('viewport', PARAM_INT);
         $mform->addHelpButton('viewport', 'viewport', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'viewport');
+        $mform->setDefault('viewport', $default ?: '');
 
         $mform->addElement('header', 'responsivesettings', get_string('responsivetitle', 'mod_contentdesigner'));
 
         // Responsive for general element.
         $mform->addElement('advcheckbox', 'hidedesktop', get_string('hideondesktop', 'mod_contentdesigner'));
         $mform->addHelpButton('hidedesktop', 'hideondesktop', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'hidedesktop');
+        $mform->setDefault('hidedesktop', $default ?: 0);
+
         $mform->addElement('advcheckbox', 'hidetablet', get_string('hideontablet', 'mod_contentdesigner'));
         $mform->addHelpButton('hidetablet', 'hideontablet', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'hidetablet');
+        $mform->setDefault('hidetablet', $default ?: 0);
+
         $mform->addElement('advcheckbox', 'hidemobile', get_string('hideonmobile', 'mod_contentdesigner'));
         $mform->addHelpButton('hidemobile', 'hideonmobile', 'mod_contentdesigner');
+        $default = get_config('mod_contentdesigner', 'hidemobile');
+        $mform->setDefault('hidemobile', $default ?: 0);
     }
 }

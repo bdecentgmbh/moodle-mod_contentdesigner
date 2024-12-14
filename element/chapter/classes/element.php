@@ -73,24 +73,29 @@ class element extends \mod_contentdesigner\elements {
      * @return void
      */
     public function element_form(&$mform, $formobj) {
+
+        // General settigns.
         $strrequired = get_string('required');
         $mform->addElement('text', 'title',  get_string('elementtitle', 'mod_contentdesigner'),  'maxlength="100" size="30"');
         $mform->addRule('title', $strrequired, 'required', null, 'client');
         $mform->setType('title', PARAM_NOTAGS);
 
         // Display title.
-        $default = get_config('mod_contentdesigner', 'chaptertitlestatus');
+        $default = get_config('element_chapter', 'chaptertitlestatus');
         $mform->addElement('checkbox', 'titlestatus', get_string('titlestatus', 'mod_contentdesigner'));
         $mform->setDefault('titlestatus', $default ?: 0);
         $mform->addHelpButton('titlestatus', 'titlestatus', 'mod_contentdesigner');
+        $chapatertitle = get_config('element_chapter', 'chapatertitle');
 
         // Visibility for General element.
         $visibleoptions = [
             1 => get_string('visible'),
             0 => get_string('hidden', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_chapter', 'visibility');
         $mform->addElement('select', 'visible', get_string('visibility', 'mod_contentdesigner'), $visibleoptions);
         $mform->addHelpButton('visible', 'visibility', 'mod_contentdesigner');
+        $mform->setDefault('visible', $default);
 
     }
 

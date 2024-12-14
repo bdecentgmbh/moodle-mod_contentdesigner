@@ -187,11 +187,15 @@ class element extends \mod_contentdesigner\elements {
         $html .= html_writer::start_div('element-button'); // Outro buttons.
         if (!empty($data->primarybutton)) {
             list($primarybtntext, $primarybtnurl) = $this->get_button_data($data->primarybutton, 'primary', $data);
-            $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
+            if (!empty($primarybtntext)) {
+                $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
+            }
         }
         if (!empty($data->secondarybutton)) {
             list($secondarybtntext, $secondarybtnurl) = $this->get_button_data($data->secondarybutton, 'secondary', $data);
-            $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // Secondary button.
+            if (!empty($secondarybtntext)) {
+                $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // Secondary button.
+            }
         }
         $html .= html_writer::end_div();
         $html .= html_writer::end_div();

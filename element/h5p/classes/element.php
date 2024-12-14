@@ -143,8 +143,10 @@ class element extends \mod_contentdesigner\elements {
             0 => get_string('no'),
             1 => get_string('yes'),
         ];
+        $default = get_config('element_h5p', 'mandatory');
         $mform->addElement('select', 'mandatory', get_string('mandatory', 'mod_contentdesigner'), $options);
         $mform->addHelpButton('mandatory', 'mandatory', 'mod_contentdesigner');
+        $mform->setDefault('mandatory', $default ?: 0);
     }
 
     /**

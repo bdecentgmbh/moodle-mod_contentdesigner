@@ -52,6 +52,7 @@ $string['creategeneral'] = 'Create general';
 $string['createnewelement'] = 'Create new element - Content Designer';
 $string['deletechecktype'] = 'Are you sure that you want to delete this {$a->element} element?';
 $string['element:creategeneral'] = "Create a general element";
+$string['elementstrgeneralsettings'] = "Element general settings";
 $string['element:viewgeneral'] = "View the general element";
 $string['elementbgimage'] = "Background image";
 $string['elementbgimage_help'] = 'Set a background image for the element. You can upload an image or provide a URL to an image. The image will be displayed behind the content of the element.';

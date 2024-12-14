@@ -15,17 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Content designer module version information
+ * H5p element settings.
  *
- * @package    mod_contentdesigner
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   element_h5p
+ * @copyright 2024, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-$plugin->version   = 2024110805;    // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2020061500;    // Requires this Moodle version.
-$plugin->component = 'mod_contentdesigner'; // Full name of the plugin (used for diagnostics).
-$plugin->release = 'v1.1';
-$plugin->supported = [401, 405];
-$plugin->maturity = MATURITY_STABLE;
+defined('MOODLE_INTERNAL') || die;
+
+// Manadatory.
+$name = 'element_h5p/mandatory';
+$title = get_string('mandatory', 'mod_contentdesigner');
+$description = get_string('mandatory_help', 'mod_contentdesigner');
+$options = [
+    0 => get_string('no'),
+    1 => get_string('yes'),
+];
+$setting = new admin_setting_configselect($name, $title, $description, 0, $options);
+$page->add($setting);

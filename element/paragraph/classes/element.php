@@ -80,16 +80,20 @@ class element extends \mod_contentdesigner\elements {
             'center' => get_string('strcenter', 'mod_contentdesigner'),
             'right' => get_string('strright', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_paragraph', 'horizontal');
         $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
         $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
+        $mform->setDefault('horizontal', $default ?: 'left');
 
         $verticalalign = [
             'top' => get_string('strtop', 'mod_contentdesigner'),
             'middle' => get_string('strmiddle', 'mod_contentdesigner'),
             'bottom' => get_string('strbottom', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_paragraph', 'vertical');
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');
+        $mform->setDefault('vertical', $default ?: 'top');
     }
 
     /**
