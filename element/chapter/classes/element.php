@@ -168,7 +168,23 @@ class element extends \mod_contentdesigner\elements {
                 WHERE contentdesignerid = ?', [$this->cm->instance]
             );
             $record['position'] = $lastelement ? $lastelement + 1 : 1;
-            return $DB->insert_record($this->tablename, $record);
+
+            $result = $DB->insert_record($this->tablename, $record);
+            $data = [];
+            $fields = $this->get_options_fields();
+            foreach ($fields as $field) {
+                $globalvalues = get_config('mod_contentdesigner', $field);
+                $data[$field] = $globalvalues ?? '';
+            }
+            $data['element'] = $this->elementid;
+            $data['instance'] = $result;
+            $data['timecreated'] = time();
+            if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
+                'element' => $this->elementid])) {
+                $DB->insert_record('contentdesigner_options', $data);
+            }
+
+            return $result;
         } else {
             throw new \moodle_exception('tablenotfound', 'contentdesigner');
         }
