@@ -181,12 +181,12 @@ The Element General Settings in Content Designer allow you to control the defaul
 The Global Elements Settings allow you to define the default behavior and appearance of various content elements across all chapters and activities, ensuring consistency and alignment with your organization's design standards. These settings control the layout, styling, and functionality of each element type, and can be customized globally for a unified learning experience.
 
 ## Chapter
-Click on the **Chapter** element settings to view and customize its specific options, allowing you to create and organize the chapter within your course module design.
+Click on the <a href="https://github.com/bdecentgmbh/moodle-mod_contentdesigner/wiki#chapter-1">**Chapter**</a> element settings to view and customize its specific options, allowing you to create and organize the chapter within your course module design.
 
 ![chapter-global-setting](https://github.com/user-attachments/assets/06a895e6-ada8-424c-a012-87bd5c0f7549)
 
 ## Heading
-Click on the **Paragraph** element settings to view and customize its specific options, allowing you to adjust the textual element used to introduce or organize sections of content within a chapter or activity.
+Click on the <a href="https://github.com/bdecentgmbh/moodle-mod_contentdesigner/wiki#heading-1">**Heading**</a> element settings to view and customize its specific options, allowing you to adjust the textual element used to introduce or organize sections of content within a chapter or activity.
 
 ![heading-global-setting](https://github.com/user-attachments/assets/0c0b9741-8c9f-4aa9-b37e-1e9d49a6bc49)
 
@@ -208,19 +208,20 @@ H5P allows the creation of rich, interactive content such as quizzes, games, vid
 
     The Save State Frequency setting determines how often the user's progress is saved, measured in seconds. This ensures that the user's current state is updated regularly for a seamless return experience.
 
+![h5p-global-setting](https://github.com/user-attachments/assets/e8bdc627-bec3-4ef4-8e60-1eda5b1b1d0b)
 
 ## Paragraph
-Click on the **Paragraph** element settings to view and customize its specific options, allowing instructional designers to add detailed explanations, descriptions, or narratives that support the learning objectives of the course module.
+Click on the <a href="https://github.com/bdecentgmbh/moodle-mod_contentdesigner/wiki#paragraph-1">**Paragraph**</a> element settings to view and customize its specific options, allowing instructional designers to add detailed explanations, descriptions, or narratives that support the learning objectives of the course module.
 
 ![paragraph-global-setting](https://github.com/user-attachments/assets/63b61811-a1ca-43df-a5a7-38d2f9a63ad6)
 
 ## Outro
-Click on the **Outro** element settings to view and customize its specific options, allowing you to create the final element or section within a chapter or activity that provides closure to the content.
+Click on the <a href="https://github.com/bdecentgmbh/moodle-mod_contentdesigner/wiki#outro-1">**Outro**</a> element settings to view and customize its specific options, allowing you to create the final element or section within a chapter or activity that provides closure to the content.
 
 ![outro-global-setting](https://github.com/user-attachments/assets/66483a06-1831-4aba-bbfe-54a16ecd0394)
 
 ## Question (Pro)
-A Question in Content Designer refers to an interactive element used to assess learner understanding and engagement with the course module content. Questions can be included at various points throughout a course module to reinforce key concepts, check comprehension, or provide learners with opportunities to apply what they have learned.
+A **Question** in Content Designer refers to an interactive element used to assess learner understanding and engagement with the course module content. Questions can be included at various points throughout a course module to reinforce key concepts, check comprehension, or provide learners with opportunities to apply what they have learned.
 
 1. **How the question behaves**
 
@@ -289,9 +290,9 @@ A Question in Content Designer refers to an interactive element used to assess l
 ![question-global-setting](https://github.com/user-attachments/assets/48d60287-1bc6-45f7-9939-c55ccb98f6dd)
 
 ## Table of contents (Pro)
-Click on the **Table of Contents (TOC)** element settings to view and customize its specific options, an element that provides an overview of the structure of a course module or chapter.
+Click on the <a href="https://github.com/bdecentgmbh/moodle-mod_contentdesigner/wiki#table-of-contents">**Table of Contents (TOC)**</a> element settings to view and customize its specific options, an element that provides an overview of the structure of a course module or chapter.
 
-![toc-global-setting](https://github.com/user-attachments/assets/1ba2acd8-698f-49c8-bbb0-6ad607db9d14)
+![TOC-global-setting](https://github.com/user-attachments/assets/1ba2acd8-698f-49c8-bbb0-6ad607db9d14)
 
 
 # Content designer module settings
@@ -312,10 +313,15 @@ The Content Designer Module Settings allow administrators and instructional desi
     - **Completed when user finish the content:** The activity is marked complete when the user goes through and finishes all the provided content.
     - **Complete Mandatory Elements:** Users must complete all elements marked as mandatory to satisfy this condition.
 
-![general-activity-setting](https://github.com/user-attachments/assets/59ef14a3-757e-401c-a859-c6fbe529b02a)
+![activity-completion-condition](https://github.com/user-attachments/assets/f1e7a21a-6e28-4ef4-b51c-c1d673503c22)
 
 # Elements setting
-Element settings in Content Designer are used to control the appearance, behavior, and structure of specific content elements within a course module. These settings allow for the customization of individual elements like headings, paragraphs, video, chapter, and more, ensuring that each element fits the course's module design and instructional needs.
+Element settings in Content Designer are used to control the appearance, behavior, and structure of specific content elements within a course module. These settings allow for the customization of individual elements like headings, paragraphs, videos, chapters, and more, ensuring that each element fits the course's module design and instructional needs.
+
+**Content Designer Progress Bar:**
+The Content Designer Progress Bar is a visual indicator that helps learners track their chapter progress within an activity. With a sticky position feature, the progress bar remains visible as learners scroll through the content, providing real-time updates on completed and pending tasks.
+
+![activity-progress-bar](https://github.com/user-attachments/assets/a41326c0-587f-4c7e-a821-f69655600be1)
 
 ## Chapter
 A Chapter in Content Designer is a primary organizational unit for structuring learning content. It groups related elements, such as headings, paragraphs, videos, and interactive components, into a cohesive section that learners can navigate through. Chapters help break down complex content into manageable, focused segments, making the learning experience more structured and easier to follow.
@@ -506,7 +512,7 @@ The Videotime element in Content Designer allows instructional designers to inte
 
     - **When the user is not enrolled in the selected course that has the VideoTime activity, only a message will be displayed without the "Enrol me" button informing the user to enroll in the course. If self-enrollment is enabled, the "Enrol me" button will be available, allowing the user to enroll directly.**
 
-![videotime-enrol-option](https://github.com/user-attachments/assets/146e9f55-a1dc-4b33-b32c-8e03acda90f2)
+![videotime-enrol-option](https://github.com/user-attachments/assets/762b797d-0c9d-41b6-b35a-3901ff999fee)
 
 2. **Videotime Modules**
 
@@ -521,9 +527,9 @@ The Videotime element in Content Designer allows instructional designers to inte
 ![video-time](https://github.com/user-attachments/assets/ce7780f6-847e-4ad8-a6e1-ea5aade74d29)
 
 ## Table of contents
-A Table of Contents (ToC) in Content Designer is a navigational element that provides an overview of the structure of a chapter. It lists all the sections, chapters, and key content elements within the course, allowing learners to quickly locate and navigate to specific parts of the material.
+A Table of Contents (TOC) in Content Designer is a navigational element that provides an overview of the structure of a chapter. It lists all the sections, chapters, and key content elements within the course, allowing learners to quickly locate and navigate to specific parts of the material.
 
-![toc](https://github.com/user-attachments/assets/a841c184-a030-425f-a7a6-83f2696564bd)
+![TOC](https://github.com/user-attachments/assets/a841c184-a030-425f-a7a6-83f2696564bd)
 
 1. **Intro text**
 
@@ -538,33 +544,42 @@ A Table of Contents (ToC) in Content Designer is a navigational element that pro
 
 This setting helps users navigate the content efficiently based on their current progress.
 
-3. **Sticky table of contents**
+![TOC-view](https://github.com/user-attachments/assets/ca88c247-be2d-4d17-8bfa-5a4039c3625d)
+
+### TOC Sticky State
+
+1. **Sticky table of contents**
 
     This feature enhances navigation by keeping the Table of Contents visible as users scroll through the page. You can configure it as follows:
     - **Disabled:** The TOC remains in its original position and does not move as you scroll.
     - **Enabled:** The TOC becomes sticky and stays visible below the navbar as you scroll down.
     - **Enabled When Scrolling Up:** The TOC becomes sticky only when you scroll up after it has moved out of view, providing quick access to navigation while reviewing content.
 
-4. **Chapter titles in sticky state**
+2. **Chapter titles in sticky state**
 
     These settings determine whether chapter titles remain visible when the Table of Contents (TOC) is in a sticky position. Options include:
      - **Visible (Default):** Chapter titles are always displayed in the sticky state, ensuring users can see them at all times.
      - **Hidden:** Chapter titles are never shown when the TOC is sticky, reducing visual clutter.
      - **Hidden on Mobile:** Chapter titles are hidden in the sticky state only on mobile devices but remain visible on larger screens for better navigation.
 
-5. **Activity title in sticky state**
+3. **Activity title in sticky state**
 
     These settings manage the visibility of the activity title when the Table of Contents (TOC) is in a sticky position. Options include:
     - **Visible (Default):** The activity title is always displayed in the sticky state, ensuring users can see it at all times.
     - **Hidden:** The activity title is never shown in the sticky state, minimizing distractions.
     - **Hidden on Mobile:** The activity title is hidden in the sticky state only on mobile devices but remains visible on larger screens for better navigation.
 
-![toc-view](https://github.com/user-attachments/assets/ca88c247-be2d-4d17-8bfa-5a4039c3625d)
+![sticky-TOC-element](https://github.com/user-attachments/assets/ae168392-0686-477f-acfe-e51045f3dedc)
 
-![sticky-toc-element](https://github.com/user-attachments/assets/ae168392-0686-477f-acfe-e51045f3dedc)
+**TOC Progress bar:**
+
+The TOC progress bar visually tracks the student’s chapter progress through the course, updating as they complete chapters. It remains visible in the sticky position, even when the table of contents (TOC) block is hidden during page scrolling, ensuring it remains easily accessible for students to monitor their progress without distractions.is in its sticky position, ensuring it remains easily accessible.
+
 
 ## Outro
 The Outro in Content Designer is the final element or section within a chapter or activity that provides closure to the content. The outro serves as a conclusion and helps learners reflect on what they have learned while guiding them to the next phase of the course module.
+
+![outro](https://github.com/user-attachments/assets/f91a4802-769a-41c7-9f16-f2f4b49fa528)
 
 1. **Image**
 
@@ -592,14 +607,10 @@ The Outro in Content Designer is the final element or section within a chapter o
     - **Back to Course:** Displays a button that redirects to the course overview page.
     - **Back to Section:** Displays a button that links back to the current activity's section within the course.
 
-![outro](https://github.com/user-attachments/assets/f91a4802-769a-41c7-9f16-f2f4b49fa528)
-
-## Content designer view page
-
-![content-designer-view-element](https://github.com/user-attachments/assets/e8fbb1fc-3cb6-4582-aae6-0568637ad7df)
+![outro-image](https://github.com/user-attachments/assets/a15b684b-bb81-4869-a9f1-2d8a72b07239)
 
 ## Content Designer Reports
 
 Content Designer Reports provide valuable insights into how students interact with learning materials. These reports track student progress, showing completed activities and the last access time for each activity. They help instructors monitor learner engagement and ensure that all required tasks are finished. Reports can be customized to focus on specific students, offering a detailed overview of performance and progress throughout the course module.
 
-![content-designer-report](https://github.com/user-attachments/assets/417fe0f3-2483-4a94-b717-1f32caf5830c)
+![content-designer-report](https://github.com/user-attachments/assets/a3877d80-1056-410d-8546-c93dcac0abd4)
