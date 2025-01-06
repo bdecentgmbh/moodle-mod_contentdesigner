@@ -33,7 +33,20 @@
  * @return bool True on success.
  */
 function xmldb_contentdesigner_upgrade($oldversion) {
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2024110807) {
+        $optionstable = new xmldb_table('contentdesigner_options');
+        $delay = new xmldb_field('delay', XMLDB_TYPE_CHAR, '10', null, null, null, '0', 'duration');
+        if ($dbman->field_exists($optionstable, $delay)) {
+            $dbman->change_field_type($optionstable, $delay);
+        }
+
+        upgrade_mod_savepoint(true, 2024110807, 'contentdesigner');
+    }
+
     return true;
+
 }

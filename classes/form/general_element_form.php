@@ -185,7 +185,7 @@ class general_element_form extends \moodleform {
         $mform->setDefault('duration', $default ?: 'slow');
 
         $mform->addElement('text', 'delay', get_string('strdelay', 'mod_contentdesigner'));
-        $mform->setType('delay', PARAM_INT);
+        $mform->setType('delay', PARAM_TEXT);
         $mform->addHelpButton('delay', 'strdelay', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'delay');
         $mform->setDefault('delay', $default ?: '');
