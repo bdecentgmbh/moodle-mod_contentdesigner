@@ -1,3 +1,32 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Initializes and manages H5P elements within a Moodle environment.
+ *
+ * This module defines functions to handle user interactions with H5P content,
+ * capturing xAPI events, and storing user responses. It listens for specific
+ * xAPI verbs such as 'answered', 'completed', and 'interacted' to determine
+ * when to store user responses. The module also handles the removal of warning
+ * messages and refreshes content elements upon successful data storage.
+ *
+ * @module element_h5p/h5p
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notification'], function ($, Elements, AJAX, Notification) {
 
     var interactedInstances = [];
