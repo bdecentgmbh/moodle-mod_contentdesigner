@@ -95,7 +95,7 @@ class editor {
     /**
      * Render the module elements for student view.
      * @param int $chapterafter Load the chapters after the given chapter.
-     * @return void
+     * @return string
      */
     public function render_elements($chapterafter=false) {
         global $OUTPUT, $DB;

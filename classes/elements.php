@@ -319,12 +319,13 @@ abstract class elements {
      * @return string
      */
     public function title_editable($instance) {
-        global $OUTPUT, $PAGE;
+        global $OUTPUT;
         $title = $instance->title ?: $this->info()->name;
         $name = 'instance_title['.$this->shortname.']['.$instance->id.']';
         // Todo: Need to implement capability in place of true 4th param.
         $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid.$instance->id,
-            true, format_string($title), $title, "Edit the title of instance" ,  'New value for ' . format_string($title));
+            true, format_string($title), $title, get_string('titleeditable', 'mod_contentdesigner'),
+            get_string('newvalue', 'mod_contentdesigner') . format_string($title));
 
         return $OUTPUT->render($tmpl);
     }

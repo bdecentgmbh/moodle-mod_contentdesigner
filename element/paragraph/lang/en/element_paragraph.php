@@ -27,3 +27,4 @@ defined("MOODLE_INTERNAL") || die();
 $string['content'] = "Content";
 $string['elementdescription'] = 'Add text';
 $string['pluginname'] = "Paragraph";
+$string['privacy:metadata'] = 'The pragraph only displays the pragraph content and does not store any user data.';
