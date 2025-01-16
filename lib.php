@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 use mod_contentdesigner\editor;
+require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
 
 /**
  * Chapter element shortname.
@@ -87,12 +88,38 @@ function contentdesigner_update_instance($data, $mform) {
 function contentdesigner_delete_instance($id) {
     global $DB;
 
-    if (!$record = $DB->get_record('contentdesigner', ['id' => $id])) {
+    $cm = get_coursemodule_from_instance('contentdesigner', $id);
+    if (!$record = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
         return false;
     }
-    $cm = get_coursemodule_from_instance('contentdesigner', $id);
-    \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $id, null);
+
+    \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $record->id, null);
     $DB->delete_records('contentdesigner', ['id' => $record->id]);
+
+    $contents = $DB->get_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
+    foreach ($contents as $content) {
+        $elementobj = editor::get_element($content->element, $cm->id);
+        $elementobj->delete_element($content->instance);
+
+        if ($elementobj->get_instance_options($content->instance)) {
+            $DB->delete_records('contentdesigner_options', ['element' => $content->element,
+                    'instance' => $content->instance]);
+        }
+    }
+
+    $celements = $DB->get_records('contentdesigner_elements', ['visible' => 1]);
+    foreach ($celements as $celement) {
+        if ($elementdata = $DB->get_records('element_'.$celement->shortname, ['contentdesignerid' => $record->id])) {
+            foreach ($elementdata as $element) {
+                $elementobj = editor::get_element($celement->id, $cm->id);
+                $elementobj->delete_element($element->id);
+                $DB->delete_records('element_'.$celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
+            }
+        }
+    }
+
+    $DB->delete_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
+
     return true;
 }
 
@@ -172,8 +199,8 @@ function contentdesigner_view($data, $course, $cm, $context) {
  * @return object|null
  */
 function mod_contentdesigner_core_calendar_provide_event_action($event, $factory, $userid = 0) {
-
     global $USER;
+
     if (empty($userid)) {
         $userid = $USER->id;
     }

@@ -23,7 +23,6 @@
  */
 namespace mod_contentdesigner\plugininfo;
 
-use core\plugininfo\base;
 use part_of_admin_tree;
 use admin_settingpage;
 
@@ -94,13 +93,4 @@ class element extends \core\plugininfo\base {
             $ADMIN->add($parentnodename, $page);
         }
     }
-
-    /**
-     * Pre-uninstall hook.
-     */
-    public function uninstall_cleanup() {
-        global $CFG;
-        parent::uninstall_cleanup();
-    }
-
 }

@@ -170,7 +170,7 @@ abstract class elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         global $CFG;
@@ -296,14 +296,14 @@ abstract class elements {
             'contextid' => \context_module::instance($this->cmid)->id,
             'contentdesignerid' => $this->cm->instance,
         ];
-        $PAGE->requires->data_for_js('contentDesignerElementsData', $data);
+        $PAGE->requires->js_call_amd('mod_contentdesigner/elements', 'contentDesignerElementsData', $data);
     }
 
     /**
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return array
      */
     public function render_element($instance) {
         $options = [];
@@ -395,14 +395,13 @@ abstract class elements {
         if ($this->is_table_exists()) {
 
             if ($this->tablename = 'element_outro') {
-
-            // Outro general settigns.
-            $content = get_config('element_outro', 'outro_content');
-            $primarybutton = get_config('element_outro', 'primarybutton');
-            $secondarybutton = get_config('element_outro', 'secondarybutton');
-            $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
-                $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
-            $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
+                // Outro general settigns.
+                $content = get_config('element_outro', 'outro_content');
+                $primarybutton = get_config('element_outro', 'primarybutton');
+                $secondarybutton = get_config('element_outro', 'secondarybutton');
+                $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
+                    $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
+                $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
 
                 $record['outrocontent'] = $outrocontenthtml ?? '';
                 $record['outrocontentformat'] = FORMAT_HTML;
@@ -467,7 +466,7 @@ abstract class elements {
      * Get the content id of the elemnet instance.
      *
      * @param int $instanceid Element instance id.
-     * @return int ID of content.
+     * @return int|bool ID of content.
      */
     public function get_instance_contentid(int $instanceid) {
         global $DB;
@@ -590,7 +589,7 @@ abstract class elements {
      * Delete the element settings.
      *
      * @param int $instanceid
-     * @return boolean status.
+     * @return bool status.
      */
     public function delete_element($instanceid) {
         global $DB;

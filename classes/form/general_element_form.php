@@ -50,7 +50,7 @@ class general_element_form extends \moodleform {
      * Define the form.
      */
     public function definition() {
-        global $USER, $CFG, $COURSE, $PAGE, $DB;
+        global $DB;
         $mform = $this->_form;
         $element = $this->_customdata['element'];
         $instanceid = $this->_customdata['instanceid'];
@@ -97,10 +97,6 @@ class general_element_form extends \moodleform {
      * @return void
      */
     public function standard_element_settings($mform) {
-        global $CFG;
-
-        // Accessibility: "Required" is bad legend text.
-        $strrequired = get_string('required');
 
         // Print the required moodle fields first.
         // Title for General element.

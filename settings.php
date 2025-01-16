@@ -59,7 +59,7 @@ if ($ADMIN->fulltree) {
 
     $elementsettings->add(new admin_setting_configtext('mod_contentdesigner/belowcolorbg',
     get_string('belowcolorbg', 'mod_contentdesigner'), get_string('belowcolorbg_help', 'mod_contentdesigner'), ''));
-    
+
     $elementsettings->add(new admin_setting_configstoredfile('mod_contentdesigner/bgimage',
     get_string('elementbgimage', 'mod_contentdesigner'), get_string('elementbgimage_help', 'mod_contentdesigner'), 'elementbg'));
 

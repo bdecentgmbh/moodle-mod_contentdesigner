@@ -46,7 +46,7 @@ require_course_login($course, false, $cm);
 if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
     throw new moodle_exception('course module is incorrect'); // NOTE As above.
 }
-$context = context_module::instance($cm->id);
+$context = \context_module::instance($cm->id);
 
 require_sesskey();
 
@@ -61,7 +61,7 @@ $editor = new mod_contentdesigner\editor($cm, $course);
 
 if ($action == 'copy') {
     if ($element == "chapter") {
-        $editor->chapter_duplicate($instanceid);    
+        $editor->chapter_duplicate($instanceid);
     } else {
         $editor->duplicate($instanceid, $element);
     }
@@ -72,7 +72,6 @@ echo $OUTPUT->header();
 
 echo $editor->display();
 
-$editor->init_data_forjs();
 $PAGE->requires->js_call_amd('mod_contentdesigner/editor', 'init',
     ['contextid' => $context->id, 'cmid' => $cm->id, 'contentdesignerid' => $cm->instance]);
 echo $OUTPUT->footer();

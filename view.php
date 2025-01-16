@@ -44,7 +44,7 @@ if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
     // NOTE As above.
     throw new moodle_exception('course module is incorrect');
 }
-$context = context_module::instance($cm->id);
+$context = \context_module::instance($cm->id);
 
 require_capability('mod/contentdesigner:view', $context);
 $PAGE->set_title($course->shortname.': '.$data->name);

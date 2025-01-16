@@ -57,7 +57,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('e/styleparagraph', get_string('pluginname', 'element_paragraph'));
@@ -114,11 +114,9 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return string
      */
     public function render($instance) {
-        global $DB;
-
         return html_writer::tag('p', format_string($instance->content), ['class' => "element-paragraph"]);
     }
 

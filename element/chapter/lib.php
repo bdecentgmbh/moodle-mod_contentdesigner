@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
+
  /**
   * Update the completion of chapter and generate the progress bar for the current module contents.
   *

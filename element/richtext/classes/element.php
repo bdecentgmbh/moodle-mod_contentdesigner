@@ -63,7 +63,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('e/source_code', get_string('pluginname', 'element_paragraph'));
@@ -97,7 +97,7 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
-     * @return void
+     * @return string
      */
     public function render($data) {
         $context = $this->get_context();
@@ -111,7 +111,7 @@ class element extends \mod_contentdesigner\elements {
      * Process the update of element instance and genreal options.
      *
      * @param stdclass $data Submitted element moodle form data
-     * @return void
+     * @return int
      */
     public function update_instance($data) {
         global $DB;

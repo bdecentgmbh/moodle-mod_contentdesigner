@@ -41,7 +41,7 @@ class renderer extends core_renderer {
      * @param int $contentdesigner
      * @param \context $context
      *
-     * @return \core_course\output\activity_navigation
+     * @return string|\core_course\output\activity_navigation
      */
     public function activity_navigation($contentdesigner=0, $context=null) {
         // First we should check if we want to add navigation.
@@ -62,8 +62,6 @@ class renderer extends core_renderer {
         if ($cm->is_stealth()) {
             return '';
         }
-
-        $courseformat = course_get_format($course);
 
         // Get a list of all the activities in the course.
         $modules = get_fast_modinfo($course->id)->get_cms();

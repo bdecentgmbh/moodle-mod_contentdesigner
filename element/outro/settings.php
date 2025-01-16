@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use core\plugininfo\mod;
-
 defined('MOODLE_INTERNAL') || die();
 
 use element_outro\element as outro;

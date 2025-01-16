@@ -161,11 +161,9 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
-     * @return void
+     * @return string
      */
     public function render($data) {
-        global $PAGE, $OUTPUT;
-
         if (!isset($data->id)) {
             return '';
         }
@@ -194,7 +192,8 @@ class element extends \mod_contentdesigner\elements {
         if (!empty($data->secondarybutton)) {
             list($secondarybtntext, $secondarybtnurl) = $this->get_button_data($data->secondarybutton, 'secondary', $data);
             if (!empty($secondarybtntext)) {
-                $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // Secondary button.
+                // Secondary button.
+                $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']);
             }
         }
         $html .= html_writer::end_div();
@@ -277,7 +276,7 @@ class element extends \mod_contentdesigner\elements {
      * Process the update of element instance and genreal options.
      *
      * @param stdclass $data Submitted element moodle form data
-     * @return void
+     * @return int Instance id.
      */
     public function update_instance($data) {
         global $DB;

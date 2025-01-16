@@ -45,11 +45,27 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
 
         const detailElement = 'input[name=contentdesigner_cm_details]';
 
+        /**
+         * Get the content designer elements data.
+         *
+         * @param {int} cmID
+         * @param {int} contextID
+         * @param {int} contentdesignerID
+         * @returns {object}
+         */
+        function contentDesignerElementsData (cmID, contextID, contentdesignerID) {
+            var data = {
+                cmid: cmID,
+                contextid: contextID,
+                contentdesignerid: contentdesignerID
+            };
+            return data;
+        }
+
         const contentDesignerData = () => {
             var cmdetails = document.querySelector(detailElement) !== null ? document.querySelector(detailElement).value : '';
             var cmdata = (cmdetails) ? JSON.parse(cmdetails) : '';
-            /* global contentDesignerElementsData */
-            return cmdata || contentDesignerElementsData;
+            return cmdata || contentDesignerElementsData();
         };
 
         let animations = {};
@@ -366,6 +382,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
             courseContent: courseContent,
             removeWarning: removeWarning,
             loadNextElements: loadNextElements,
+            contentDesignerElementsData: contentDesignerElementsData,
             selectors: SELECTORS
         };
     });

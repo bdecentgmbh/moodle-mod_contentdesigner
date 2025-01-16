@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-use element_chapter\element as chapter;
-
 // Chapter visibility.
 $name = 'element_chapter/visibility';
 $title = get_string('visibility', 'mod_contentdesigner');

@@ -25,12 +25,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
     'core/fragment', 'core/templates', 'core/notification', 'core/loadingicon', 'core/modal'],
     function ($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
 
-        /* global contentDesigner */
-        var Data = contentDesigner;
+        var contextID;
 
-        let contextID;
-
-        let cmID;
+        var cmID;
 
         let loaderItem = '.contentdesigner-content';
 
@@ -98,9 +95,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 });
                 let params = {
                     chapters: contents.join(','),
-                    cmid: Data.cm.id
+                    cmid: cmID
                 };
-                promise = Fragment.loadFragment('mod_contentdesigner', 'move_chapter', Data.contextid, params).done((html, js) => {
+                promise = Fragment.loadFragment('mod_contentdesigner', 'move_chapter', contextID, params).done((html, js) => {
                     Templates.replaceNode('.contentdesigner-content', html, js);
                 }).fail(Notification.exception);
                 LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
@@ -157,9 +154,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
             let params = {
                 contents: contents.join(','),
                 chapterid: chapter.dataset.id,
-                cmid: Data.cm.id
+                cmid: cmID
             };
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'move_element', Data.contextid, params);
+            var promise = Fragment.loadFragment('mod_contentdesigner', 'move_element', contextID, params);
             promise.done((html, js) => {
                 Templates.replaceNode('.contentdesigner-content', html, js);
             });
@@ -173,7 +170,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 element: moduleElement.dataset.elementshortname,
                 instance: moduleElement.dataset.instanceid,
                 status: moduleElement.dataset.visibility == true ? false : true,
-                cmid: Data.cm.id
+                cmid: cmID
             };
 
             if (moduleElement.dataset.visibility == true) {
@@ -186,7 +183,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 moduleElement.dataset.visibility = true;
             }
 
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'update_visibility', Data.contextid, params).then(() => {
+            var promise = Fragment.loadFragment('mod_contentdesigner', 'update_visibility', contextID, params).then(() => {
                 return true;
             });
             LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
@@ -246,7 +243,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @returns {Object}
          */
         const buildAddElementModal = (position = "bottom", chapter = 0) => {
-            var params = { cmid: Data.cm.id };
+            var params = { cmid: cmID };
 
             if ((typeof Modal.registerModalType !== 'undefined')) {
                 var promise = Modal.create({
@@ -271,7 +268,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                             if (e.target.closest('.element-item')) {
                                 var element = e.currentTarget.dataset.element;
                                 var params = {
-                                    cmid: Data.cm.id,
+                                    cmid: cmID,
                                     element: element,
                                     chapter: chapter,
                                     position: position,

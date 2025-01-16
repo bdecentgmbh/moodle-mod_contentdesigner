@@ -59,7 +59,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('i/folder', get_string('pluginname', 'element_chapter'));
@@ -194,7 +194,7 @@ class element extends \mod_contentdesigner\elements {
      * Update the element instance. Override the function in elements element class to add custom rules.
      *
      * @param stdclass $data
-     * @return void
+     * @return int Element instance id.
      */
     public function update_instance($data) {
         global $DB;
@@ -239,7 +239,7 @@ class element extends \mod_contentdesigner\elements {
      *
      * @param int $chapterid Chapter id
      * @param int $contentid Content id
-     * @return void
+     * @return bool
      */
     public function set_elements($chapterid, $contentid) {
         global $DB;
@@ -344,6 +344,7 @@ class element extends \mod_contentdesigner\elements {
     /**
      * Find the user is completed the chapter.
      * @param int $chapterid Instance data of chapter.
+     * @return bool
      */
     public function is_chaptercompleted($chapterid): bool {
         global $USER, $DB;
@@ -360,7 +361,7 @@ class element extends \mod_contentdesigner\elements {
      * @param stdclass $chapter
      * @param bool $visible Fetch only visible elements.
      * @param bool $render Render the element instance to student view.
-     * @return void
+     * @return array
      */
     public function generate_chapter_content($chapter, $visible=false, $render=false) {
         global $DB;
@@ -457,7 +458,7 @@ class element extends \mod_contentdesigner\elements {
      *
      * @param int $chapterid  Chapter id.
      * @param string $contents Contents in order position.
-     * @return void
+     * @return bool
      */
     public function update_postion($chapterid, $contents) {
         global $DB;
@@ -492,7 +493,7 @@ class element extends \mod_contentdesigner\elements {
      * Move the chapter position in the given position.
      *
      * @param string $chapters Chapters list in the position
-     * @return void
+     * @return bool
      */
     public function move_chapter($chapters) {
         global $DB;
@@ -538,7 +539,7 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return bool
      */
     public function render($instance) {
         return false;
@@ -548,37 +549,34 @@ class element extends \mod_contentdesigner\elements {
      * Delete the element settings.
      *
      * @param int $instanceid
-     * @return boolean status.
+     * @return bool $status
      */
     public function delete_element($instanceid) {
         global $DB;
-        if ($this->get_instance_options($instanceid)) {
-
-            try {
-                $transaction = $DB->start_delegated_transaction();
-                // Delete the element settings.
-                if ($this->get_instance($instanceid)) {
-                    $DB->delete_records($this->tablename(), ['id' => $instanceid]);
-                }
-                if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
-                    foreach ($contents as $key => $value) {
-                        $element = editor::get_element($value->element, $this->cmid);
-                        $element->delete_element($value->instance);
-                    }
-                }
-                if ($this->get_instance_options($instanceid)) {
-                    // Delete the element general settings.
-                    $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
-                        'instance' => $instanceid]);
-                }
-                $transaction->allow_commit();
-            } catch (\Exception $e) {
-                // Extra cleanup steps.
-                $transaction->rollback($e); // Rethrows exception.
-                throw new \moodle_exception('chapternotdeleted', 'element_chapter');
+        try {
+            $transaction = $DB->start_delegated_transaction();
+            // Delete the element settings.
+            if ($this->get_instance($instanceid)) {
+                $DB->delete_records($this->tablename(), ['id' => $instanceid]);
+                $DB->delete_records('element_chapter_completion', ['instance' => $instanceid]);
             }
-            return true;
+            if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
+                foreach ($contents as $key => $value) {
+                    $element = editor::get_element($value->element, $this->cmid);
+                    $element->delete_element($value->instance);
+                }
+            }
+            if ($this->get_instance_options($instanceid)) {
+                // Delete the element general settings.
+                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
+                    'instance' => $instanceid]);
+            }
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            // Extra cleanup steps.
+            $transaction->rollback($e); // Rethrows exception.
+            throw new \moodle_exception('chapternotdeleted', 'element_chapter');
         }
-        return false;
+        return true;
     }
 }

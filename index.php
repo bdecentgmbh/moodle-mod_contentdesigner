@@ -32,7 +32,7 @@ $PAGE->set_pagelayout('incourse');
 
 // Trigger instances list viewed event.
 $event = \mod_contentdesigner\event\course_module_instance_list_viewed::create(
-    ['context' => context_course::instance($course->id)]);
+    ['context' => \context_course::instance($course->id)]);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 

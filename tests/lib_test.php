@@ -94,7 +94,6 @@ final class lib_test extends \advanced_testcase {
         // Create element.
         $this->create_heading_element();
         $this->assertEquals($DB->count_records('element_heading'), 2);
-        $this->assertEquals($DB->count_records('contentdesigner_options'), 2);
         $this->assertEquals($DB->count_records('contentdesigner_content'), 2);
     }
 
@@ -172,7 +171,6 @@ final class lib_test extends \advanced_testcase {
         $instance = $this->headingelement->get_instance($element->id);
         $this->headingelement->delete_element($instance->id);
         $this->assertEquals($DB->count_records('element_heading'), 1);
-        $this->assertEquals($DB->count_records('contentdesigner_options'), 1);
         $this->assertEquals($DB->count_records('contentdesigner_content'), 1);
     }
 
