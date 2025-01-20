@@ -66,6 +66,8 @@ jobs:
         env:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+          IGNORE_PATHS: '/amd/src/anime/*.js'
+          IGNORE_NAMES: 'anime.js'
 
       - name: PHP Lint
         if: ${{ always() }}
@@ -101,7 +103,7 @@ jobs:
 
       - name: Grunt
         if: ${{ always() }}
-        run: moodle-plugin-ci grunt || true
+        run: moodle-plugin-ci grunt
 
       - name: PHPUnit tests
         if: ${{ always() }}

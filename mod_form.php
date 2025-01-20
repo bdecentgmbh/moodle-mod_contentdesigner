@@ -37,7 +37,7 @@ class mod_contentdesigner_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
-        global $CFG, $DB, $OUTPUT;
+        global $CFG;
 
         $mform =& $this->_form;
 

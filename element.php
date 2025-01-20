@@ -39,7 +39,7 @@ if (!in_array($element, $elements)) {
 }
 
 list ($course, $cm) = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
-$context = context_module::instance($cm->id);
+$context = \context_module::instance($cm->id);
 
 $elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
 

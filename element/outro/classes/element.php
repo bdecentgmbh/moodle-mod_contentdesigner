@@ -161,11 +161,9 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
-     * @return void
+     * @return string
      */
     public function render($data) {
-        global $PAGE, $OUTPUT;
-
         if (!isset($data->id)) {
             return '';
         }
@@ -187,11 +185,16 @@ class element extends \mod_contentdesigner\elements {
         $html .= html_writer::start_div('element-button'); // Outro buttons.
         if (!empty($data->primarybutton)) {
             list($primarybtntext, $primarybtnurl) = $this->get_button_data($data->primarybutton, 'primary', $data);
-            $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
+            if (!empty($primarybtntext)) {
+                $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
+            }
         }
         if (!empty($data->secondarybutton)) {
             list($secondarybtntext, $secondarybtnurl) = $this->get_button_data($data->secondarybutton, 'secondary', $data);
-            $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']); // Secondary button.
+            if (!empty($secondarybtntext)) {
+                // Secondary button.
+                $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']);
+            }
         }
         $html .= html_writer::end_div();
         $html .= html_writer::end_div();
@@ -273,7 +276,7 @@ class element extends \mod_contentdesigner\elements {
      * Process the update of element instance and genreal options.
      *
      * @param stdclass $data Submitted element moodle form data
-     * @return void
+     * @return int Instance id.
      */
     public function update_instance($data) {
         global $DB;

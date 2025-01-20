@@ -73,6 +73,7 @@ class provider implements
      *
      * @param array $contentdesignerids Array of completions to export the logs for.
      * @param stdclass $user User record object.
+     * @return array
      */
     public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
         global $DB;

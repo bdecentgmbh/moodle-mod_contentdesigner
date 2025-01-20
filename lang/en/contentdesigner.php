@@ -52,6 +52,7 @@ $string['creategeneral'] = 'Create general';
 $string['createnewelement'] = 'Create new element - Content Designer';
 $string['deletechecktype'] = 'Are you sure that you want to delete this {$a->element} element?';
 $string['element:creategeneral'] = "Create a general element";
+$string['elementstrgeneralsettings'] = "Element general settings";
 $string['element:viewgeneral'] = "View the general element";
 $string['elementbgimage'] = "Background image";
 $string['elementbgimage_help'] = 'Set a background image for the element. You can upload an image or provide a URL to an image. The image will be displayed behind the content of the element.';
@@ -92,6 +93,7 @@ $string['margin'] = "Margin";
 $string['margin_help'] = 'Margin controls the space outside the element, creating distance between it and other elements. Set a single value to apply the same margin on all sides of the element.<br> <b>Example:</b> 10px (This will apply a 10px margin on all four sides: top, right, bottom, and left).';
 $string['modulename'] = 'Content Designer';
 $string['modulenameplural'] = "Content Designers";
+$string['newvalue'] = 'New value for';
 $string['outro:btnbacktocourse'] = 'Back to course';
 $string['outro:btnbacktosection'] = 'Back to section';
 $string['outro:btncustom'] = 'Custom';
@@ -167,6 +169,7 @@ $string['target_help'] = 'Select how the link should open if a Heading URL is pr
 <b>Same Window:</b> Opens the link in the current browser tab, replacing the current page.<br>
 <b>New Window:</b> Opens the link in a new browser tab, keeping the current page open.
 Choose ‘New Window’ if you want users to keep this page open while viewing the link.';
+$string['titleeditable'] = 'Edit instance title';
 $string['titlestatus'] = 'Display title';
 $string['titlestatus_help'] = 'Enable this option to display the chapter\'s title to learners. When unchecked, the title will only be used for administrative purposes and will not be visible to learners. Checking this option makes the chapter title visible on the learner\'s view.';
 $string['toleft'] = "To left";
@@ -181,3 +184,4 @@ $string['viewport'] = "Viewport";
 $string['viewport_help'] = 'Define when the scrolling effect should start relative to the user\'s viewport. This helps control how soon the effect is triggered based on how much of the element is visible on the screen.';
 $string['visibility'] = "Visibility";
 $string['visibility_help'] = "Show / Hide the element";
+

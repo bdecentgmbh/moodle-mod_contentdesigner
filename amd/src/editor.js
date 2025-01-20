@@ -1,13 +1,33 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Provides actions for the content designer editor, including update, edit, and move element functionalities.
+ *
+ * @module mod_contentdesigner/editor
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
     'core/fragment', 'core/templates', 'core/notification', 'core/loadingicon', 'core/modal'],
     function ($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
 
-        /* global contentDesigner */
-        var Data = contentDesigner;
+        var contextID;
 
-        let contextID;
-
-        let cmID;
+        var cmID;
 
         let loaderItem = '.contentdesigner-content';
 
@@ -75,9 +95,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 });
                 let params = {
                     chapters: contents.join(','),
-                    cmid: Data.cm.id
+                    cmid: cmID
                 };
-                promise = Fragment.loadFragment('mod_contentdesigner', 'move_chapter', Data.contextid, params).done((html, js) => {
+                promise = Fragment.loadFragment('mod_contentdesigner', 'move_chapter', contextID, params).done((html, js) => {
                     Templates.replaceNode('.contentdesigner-content', html, js);
                 }).fail(Notification.exception);
                 LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
@@ -134,9 +154,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
             let params = {
                 contents: contents.join(','),
                 chapterid: chapter.dataset.id,
-                cmid: Data.cm.id
+                cmid: cmID
             };
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'move_element', Data.contextid, params);
+            var promise = Fragment.loadFragment('mod_contentdesigner', 'move_element', contextID, params);
             promise.done((html, js) => {
                 Templates.replaceNode('.contentdesigner-content', html, js);
             });
@@ -150,7 +170,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 element: moduleElement.dataset.elementshortname,
                 instance: moduleElement.dataset.instanceid,
                 status: moduleElement.dataset.visibility == true ? false : true,
-                cmid: Data.cm.id
+                cmid: cmID
             };
 
             if (moduleElement.dataset.visibility == true) {
@@ -163,7 +183,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 moduleElement.dataset.visibility = true;
             }
 
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'update_visibility', Data.contextid, params).then(() => {
+            var promise = Fragment.loadFragment('mod_contentdesigner', 'update_visibility', contextID, params).then(() => {
                 return true;
             });
             LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
@@ -223,7 +243,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @returns {Object}
          */
         const buildAddElementModal = (position = "bottom", chapter = 0) => {
-            var params = { cmid: Data.cm.id };
+            var params = { cmid: cmID };
 
             if ((typeof Modal.registerModalType !== 'undefined')) {
                 var promise = Modal.create({
@@ -248,7 +268,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                             if (e.target.closest('.element-item')) {
                                 var element = e.currentTarget.dataset.element;
                                 var params = {
-                                    cmid: Data.cm.id,
+                                    cmid: cmID,
                                     element: element,
                                     chapter: chapter,
                                     position: position,

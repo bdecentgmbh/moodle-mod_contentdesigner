@@ -78,7 +78,7 @@ class editor {
      * @return string HTML of the available elments elementbox.
      */
     public function display() {
-        global $OUTPUT, $DB;
+        global $OUTPUT;
 
         $data = [
             'cm' => $this->cm,
@@ -95,10 +95,10 @@ class editor {
     /**
      * Render the module elements for student view.
      * @param int $chapterafter Load the chapters after the given chapter.
-     * @return void
+     * @return string  HTML of the elements.
      */
     public function render_elements($chapterafter=false) {
-        global $OUTPUT, $DB;
+        global $OUTPUT;
 
         $data = [
             'cm' => $this->cm,
@@ -135,17 +135,6 @@ class editor {
     }
 
     /**
-     * Generate the course and cm data used in the JS.
-     *
-     * @return void
-     */
-    public function init_data_forjs() {
-        global $PAGE;
-        $data = ['cm' => $this->cm, 'course' => $this->course, 'contextid' => \context_module::instance($this->cm->id)->id];
-        $PAGE->requires->data_for_js('contentDesigner', $data);
-    }
-
-    /**
      * Initialize the javascript modules from the available elements.
      *
      * Note: if you want to add js for each instance then insert your module call on render function insteed of here.
@@ -153,7 +142,6 @@ class editor {
      * @return void
      */
     public function initiate_js() {
-        global $PAGE;
         $plugins = \core_plugin_manager::instance()->get_installed_plugins('element');
         foreach ($plugins as $plugin => $version) {
             $elementobj = self::get_element($plugin, $this->cm->id);
@@ -284,6 +272,7 @@ class editor {
             'hidemove' => true,
             'hidevisible' => true,
             'hidedelete' => true,
+            'hideduplicate' => true,
         ]);
     }
 
@@ -318,7 +307,7 @@ class editor {
      *
      * @param int $instanceid Element instance id
      * @param int $elementid Element list id.
-     * @return void
+     * @return mixed
      */
     public function get_option($instanceid, $elementid) {
         global $DB;
@@ -468,11 +457,109 @@ class editor {
      *
      * @param int $chapterid Chapter id need to insert.
      * @param int $contentid contentdesigner_content id of the element instance.
-     * @return void
+     * @return bool
      */
     public function set_elements_inchapter($chapterid, $contentid) {
-        global $DB;
         $chapter = new \element_chapter\element($this->cm->id);
         return $chapter->set_elements($chapterid, $contentid);
+    }
+
+    /**
+     * Duplicate an element instance within the editor.
+     *
+     * @param int $id The ID of the element instance to duplicate.
+     * @param string $element Element shortname.
+     * @param int $newchapterid The ID of the new chapter to insert the duplicated instance into.
+     * @return void
+     */
+    public function duplicate($id, $element, $newchapterid = 0) {
+        global $DB;
+        $tablename = 'element_'.$element;
+        $context = \context_module::instance($this->cm->id);
+        $elementobj = self::get_element($element, $this->cm->id);
+
+        if ($record = $DB->get_record($tablename, ['id' => $id])) {
+            $record = $elementobj->get_instance($record->id, $record->visible);
+
+            $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
+            $chapter = isset($content->chapter) ? $content->chapter : 0;
+
+            $record->instanceid = 0;
+            $record->chapterid = !empty($newchapterid) ? $newchapterid : $chapter;
+            $record->cmid = $this->cm->id;
+            $record->contextid = $context->id;
+            $record->course = $this->course->id;
+            $record->element = $elementobj->elementid; // ID of the element in elements table.
+            $record->contentdesignerid = $this->cm->instance;
+            $record->elementshortname = $elementobj->shortname;
+            $record->timecreated = time();
+
+            if ($element == "richtext") {
+                $record->content_editor['format'] = $record->contentformat;
+                $record->content_editor['text'] = $record->content;
+            }
+
+            if ($element == "poll") {
+                if ($options = $DB->get_records("element_poll_options", ["pollid" => $id], "id")) {
+                    foreach ($options as $option) {
+                        $data[$option->id] = $option->text;
+                    }
+                    $record->option = $data;
+                }
+            }
+
+            $elementobj->update_element($record);
+        }
+    }
+
+    /**
+     * Duplicate a chapter, including all of its associated elements.
+     *
+     * @param int $id The ID of the chapter to duplicate.
+     * @return void
+     */
+    public function chapter_duplicate($id) {
+        global $DB;
+
+        // Retrieve the original chapter record.
+        $chapter = $DB->get_record('element_chapter', ['id' => $id], '*', MUST_EXIST);
+        if ($chapter) {
+
+            // Get the element object for the chapter element.
+            $elementobj = self::get_element('chapter', $this->cm->id);
+
+            // Retrieve the chapter instance data.
+            $record = $elementobj->get_instance($chapter->id, $chapter->visible);
+
+            // Set the new chapter data.
+            $record->instanceid = 0;
+            $record->contents = null;
+            $record->chapterid = $chapter->id;
+            $record->contentdesignerid = $this->cm->instance;
+            $record->timecreated = time();
+
+            // Duplicate the chapter.
+            $newchapterid = $elementobj->update_instance($record);
+            $record->instance = $newchapterid;
+
+            $elementobj->save_areafiles($record);
+
+            // Update the element general options.
+            $elementobj->update_options($record);
+
+            // Retrieve all elements associated with the original chapter.
+            $sql = 'SELECT cc.*, ce.id as elementid, ce.shortname as elementname
+                    FROM {contentdesigner_content} cc
+                    JOIN {contentdesigner_elements} ce ON ce.id = cc.element
+                    WHERE cc.chapter = ? ORDER BY position ASC';
+            $params = [$chapter->id];
+            $contents = $DB->get_records_sql($sql, $params);
+
+            // Duplicate each element and associate it with the new chapter.
+            foreach ($contents as $content) {
+                // Duplicate the element.
+                $this->duplicate($content->instance, $content->elementname, $newchapterid);
+            }
+        }
     }
 }

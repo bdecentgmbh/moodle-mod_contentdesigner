@@ -15,14 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element plugin "Outro" - string file.
+ * H5p element settings.
  *
- * @package   element_outro
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   element_h5p
+ * @copyright 2024, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined("MOODLE_INTERNAL") || die();
+defined('MOODLE_INTERNAL') || die;
 
-$string['pluginname'] = "Outro";
-$string['privacy:metadata'] = 'The outro only displays the outro content and does not store any user data.';
+// Manadatory.
+$name = 'element_h5p/mandatory';
+$title = get_string('mandatory', 'mod_contentdesigner');
+$description = get_string('mandatory_help', 'mod_contentdesigner');
+$options = [
+    0 => get_string('no'),
+    1 => get_string('yes'),
+];
+$setting = new admin_setting_configselect($name, $title, $description, 0, $options);
+$page->add($setting);

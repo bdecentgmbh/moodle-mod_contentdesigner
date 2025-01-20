@@ -15,14 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element plugin "Outro" - string file.
+ * Privacy class for requesting user data.
  *
  * @package   element_outro
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined("MOODLE_INTERNAL") || die();
+namespace element_outro\privacy;
 
-$string['pluginname'] = "Outro";
-$string['privacy:metadata'] = 'The outro only displays the outro content and does not store any user data.';
+/**
+ * Privacy class for requesting user data for this plugin.
+ */
+class provider implements
+    // This plugin does not store any personal user data.
+    \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return string
+     */
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+}

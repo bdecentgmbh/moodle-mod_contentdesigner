@@ -58,7 +58,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         global $CFG;
@@ -143,15 +143,17 @@ class element extends \mod_contentdesigner\elements {
             0 => get_string('no'),
             1 => get_string('yes'),
         ];
+        $default = get_config('element_h5p', 'mandatory');
         $mform->addElement('select', 'mandatory', get_string('mandatory', 'mod_contentdesigner'), $options);
         $mform->addHelpButton('mandatory', 'mandatory', 'mod_contentdesigner');
+        $mform->setDefault('mandatory', $default ?: 0);
     }
 
     /**
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
-     * @return void
+     * @return string
      */
     public function render($data) {
         global $PAGE;
@@ -170,7 +172,7 @@ class element extends \mod_contentdesigner\elements {
      * Generate the result table to display the user atempts to user. It display the highest grade of the user attempt.
      *
      * @param stdclass $data Instance data of the element.
-     * @return void
+     * @return string
      */
     public function generate_completion_table($data) {
         global $USER, $DB, $OUTPUT;
@@ -199,4 +201,35 @@ class element extends \mod_contentdesigner\elements {
 
     }
 
+    /**
+     * Delete the element settings.
+     *
+     * @param int $instanceid
+     * @return bool $status
+     */
+    public function delete_element($instanceid) {
+        global $DB;
+        try {
+            $transaction = $DB->start_delegated_transaction();
+
+            // Delete the element settings.
+            if ($this->get_instance($instanceid)) {
+                $DB->delete_records($this->tablename(), ['id' => $instanceid]);
+                $DB->delete_records('element_h5p_completion', ['instance' => $instanceid]);
+            }
+
+            if ($this->get_instance_options($instanceid)) {
+                // Delete the element general settings.
+                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
+                    'instance' => $instanceid]);
+            }
+
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            // Extra cleanup steps.
+            $transaction->rollback($e); // Rethrows exception.
+            throw new \moodle_exception('h5pnotdeleted', 'element_h5p');
+        }
+        return true;
+    }
 }

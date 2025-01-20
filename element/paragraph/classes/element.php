@@ -57,7 +57,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('e/styleparagraph', get_string('pluginname', 'element_paragraph'));
@@ -80,16 +80,20 @@ class element extends \mod_contentdesigner\elements {
             'center' => get_string('strcenter', 'mod_contentdesigner'),
             'right' => get_string('strright', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_paragraph', 'horizontal');
         $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
         $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
+        $mform->setDefault('horizontal', $default ?: 'left');
 
         $verticalalign = [
             'top' => get_string('strtop', 'mod_contentdesigner'),
             'middle' => get_string('strmiddle', 'mod_contentdesigner'),
             'bottom' => get_string('strbottom', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_paragraph', 'vertical');
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');
+        $mform->setDefault('vertical', $default ?: 'top');
     }
 
     /**
@@ -110,11 +114,9 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return string
      */
     public function render($instance) {
-        global $DB;
-
         return html_writer::tag('p', format_string($instance->content), ['class' => "element-paragraph"]);
     }
 

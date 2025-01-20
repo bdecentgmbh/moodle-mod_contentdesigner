@@ -59,7 +59,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('i/folder', get_string('pluginname', 'element_chapter'));
@@ -73,24 +73,29 @@ class element extends \mod_contentdesigner\elements {
      * @return void
      */
     public function element_form(&$mform, $formobj) {
+
+        // General settigns.
         $strrequired = get_string('required');
         $mform->addElement('text', 'title',  get_string('elementtitle', 'mod_contentdesigner'),  'maxlength="100" size="30"');
         $mform->addRule('title', $strrequired, 'required', null, 'client');
         $mform->setType('title', PARAM_NOTAGS);
 
         // Display title.
-        $default = get_config('mod_contentdesigner', 'chaptertitlestatus');
+        $default = get_config('element_chapter', 'chaptertitlestatus');
         $mform->addElement('checkbox', 'titlestatus', get_string('titlestatus', 'mod_contentdesigner'));
         $mform->setDefault('titlestatus', $default ?: 0);
         $mform->addHelpButton('titlestatus', 'titlestatus', 'mod_contentdesigner');
+        $chapatertitle = get_config('element_chapter', 'chapatertitle');
 
         // Visibility for General element.
         $visibleoptions = [
             1 => get_string('visible'),
             0 => get_string('hidden', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_chapter', 'visibility');
         $mform->addElement('select', 'visible', get_string('visibility', 'mod_contentdesigner'), $visibleoptions);
         $mform->addHelpButton('visible', 'visibility', 'mod_contentdesigner');
+        $mform->setDefault('visible', $default);
 
     }
 
@@ -163,7 +168,23 @@ class element extends \mod_contentdesigner\elements {
                 WHERE contentdesignerid = ?', [$this->cm->instance]
             );
             $record['position'] = $lastelement ? $lastelement + 1 : 1;
-            return $DB->insert_record($this->tablename, $record);
+
+            $result = $DB->insert_record($this->tablename, $record);
+            $data = [];
+            $fields = $this->get_options_fields();
+            foreach ($fields as $field) {
+                $globalvalues = get_config('mod_contentdesigner', $field);
+                $data[$field] = $globalvalues ?? '';
+            }
+            $data['element'] = $this->elementid;
+            $data['instance'] = $result;
+            $data['timecreated'] = time();
+            if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
+                'element' => $this->elementid])) {
+                $DB->insert_record('contentdesigner_options', $data);
+            }
+
+            return $result;
         } else {
             throw new \moodle_exception('tablenotfound', 'contentdesigner');
         }
@@ -173,7 +194,7 @@ class element extends \mod_contentdesigner\elements {
      * Update the element instance. Override the function in elements element class to add custom rules.
      *
      * @param stdclass $data
-     * @return void
+     * @return int Element instance id.
      */
     public function update_instance($data) {
         global $DB;
@@ -218,7 +239,7 @@ class element extends \mod_contentdesigner\elements {
      *
      * @param int $chapterid Chapter id
      * @param int $contentid Content id
-     * @return void
+     * @return bool
      */
     public function set_elements($chapterid, $contentid) {
         global $DB;
@@ -275,6 +296,14 @@ class element extends \mod_contentdesigner\elements {
                     'sesskey' => sesskey(),
                 ]);
 
+                $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
+                    'id' => $this->cmid,
+                    'instanceid' => $chapter->id,
+                    'element' => $element->shortname,
+                    'action' => 'copy',
+                    'sesskey' => sesskey(),
+                ]);
+
                 $list[] = [
                     'instancedata' => $chapter,
                     'info' => $this->info(),
@@ -285,6 +314,7 @@ class element extends \mod_contentdesigner\elements {
                     'chapterprevent' => $chapterprevent,
                     'chaptercta' => ($render) ?: false,
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
+                    'copyurl' => $copyurl,
                 ];
                 // Prevent the next chapters when user needs to complete any of activities.
                 if ($prevent || $chapterprevent) {
@@ -314,6 +344,7 @@ class element extends \mod_contentdesigner\elements {
     /**
      * Find the user is completed the chapter.
      * @param int $chapterid Instance data of chapter.
+     * @return bool
      */
     public function is_chaptercompleted($chapterid): bool {
         global $USER, $DB;
@@ -330,7 +361,7 @@ class element extends \mod_contentdesigner\elements {
      * @param stdclass $chapter
      * @param bool $visible Fetch only visible elements.
      * @param bool $render Render the element instance to student view.
-     * @return void
+     * @return array
      */
     public function generate_chapter_content($chapter, $visible=false, $render=false) {
         global $DB;
@@ -370,12 +401,22 @@ class element extends \mod_contentdesigner\elements {
                     'id' => $instance->id,
                     'sesskey' => sesskey(),
                 ]);
+
+                $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
+                    'id' => $this->cmid,
+                    'instanceid' => $instance->id,
+                    'element' => $element->shortname,
+                    'action' => 'copy',
+                    'sesskey' => sesskey(),
+                ]);
+
                 $list[] = (array) $content + [
                     'info' => $element->info(),
                     'instancedata' => $instance,
                     'option' => $option,
                     'editurl' => $editurl,
                     'content' => $contenthtml,
+                    'copyurl' => $copyurl,
                 ];
 
                 // Prevent the elements next to the manatory elements.
@@ -417,7 +458,7 @@ class element extends \mod_contentdesigner\elements {
      *
      * @param int $chapterid  Chapter id.
      * @param string $contents Contents in order position.
-     * @return void
+     * @return bool
      */
     public function update_postion($chapterid, $contents) {
         global $DB;
@@ -452,7 +493,7 @@ class element extends \mod_contentdesigner\elements {
      * Move the chapter position in the given position.
      *
      * @param string $chapters Chapters list in the position
-     * @return void
+     * @return bool
      */
     public function move_chapter($chapters) {
         global $DB;
@@ -498,7 +539,7 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return bool
      */
     public function render($instance) {
         return false;
@@ -508,37 +549,34 @@ class element extends \mod_contentdesigner\elements {
      * Delete the element settings.
      *
      * @param int $instanceid
-     * @return boolean status.
+     * @return bool $status
      */
     public function delete_element($instanceid) {
         global $DB;
-        if ($this->get_instance_options($instanceid)) {
-
-            try {
-                $transaction = $DB->start_delegated_transaction();
-                // Delete the element settings.
-                if ($this->get_instance($instanceid)) {
-                    $DB->delete_records($this->tablename(), ['id' => $instanceid]);
-                }
-                if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
-                    foreach ($contents as $key => $value) {
-                        $element = editor::get_element($value->element, $this->cmid);
-                        $element->delete_element($value->instance);
-                    }
-                }
-                if ($this->get_instance_options($instanceid)) {
-                    // Delete the element general settings.
-                    $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
-                        'instance' => $instanceid]);
-                }
-                $transaction->allow_commit();
-            } catch (\Exception $e) {
-                // Extra cleanup steps.
-                $transaction->rollback($e); // Rethrows exception.
-                throw new \moodle_exception('chapternotdeleted', 'element_chapter');
+        try {
+            $transaction = $DB->start_delegated_transaction();
+            // Delete the element settings.
+            if ($this->get_instance($instanceid)) {
+                $DB->delete_records($this->tablename(), ['id' => $instanceid]);
+                $DB->delete_records('element_chapter_completion', ['instance' => $instanceid]);
             }
-            return true;
+            if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
+                foreach ($contents as $key => $value) {
+                    $element = editor::get_element($value->element, $this->cmid);
+                    $element->delete_element($value->instance);
+                }
+            }
+            if ($this->get_instance_options($instanceid)) {
+                // Delete the element general settings.
+                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
+                    'instance' => $instanceid]);
+            }
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            // Extra cleanup steps.
+            $transaction->rollback($e); // Rethrows exception.
+            throw new \moodle_exception('chapternotdeleted', 'element_chapter');
         }
-        return false;
+        return true;
     }
 }

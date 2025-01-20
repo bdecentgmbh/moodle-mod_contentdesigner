@@ -26,6 +26,7 @@
  * Upgrede chapter element.
  *
  * @param string $oldversion the version we are upgrading from.
+ * @return bool
  */
 function xmldb_element_chapter_upgrade($oldversion) {
     global $DB;

@@ -22,7 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 use mod_contentdesigner\editor;
+require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
 
 /**
  * Chapter element shortname.
@@ -36,7 +39,7 @@ define('CONTENTDESIGNER_CHAPTER', 'chapter');
  * @return int instance id
  */
 function contentdesigner_add_instance($data, $mform = null) {
-    global $CFG, $DB, $OUTPUT;
+    global$DB;
     contentdesigner_process_pre_save($data);
     $moduleid = $DB->insert_record('contentdesigner', $data);
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
@@ -67,7 +70,7 @@ function contentdesigner_process_pre_save(&$data) {
  * @return bool true
  */
 function contentdesigner_update_instance($data, $mform) {
-    global $CFG, $DB;
+    global $DB;
     $data->id = $data->instance;
     contentdesigner_process_pre_save($data);
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
@@ -83,14 +86,40 @@ function contentdesigner_update_instance($data, $mform) {
  * @return bool true
  */
 function contentdesigner_delete_instance($id) {
-    global $CFG, $DB;
+    global $DB;
 
-    if (!$record = $DB->get_record('contentdesigner', ['id' => $id])) {
+    $cm = get_coursemodule_from_instance('contentdesigner', $id);
+    if (!$record = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
         return false;
     }
-    $cm = get_coursemodule_from_instance('contentdesigner', $id);
-    \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $id, null);
+
+    \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $record->id, null);
     $DB->delete_records('contentdesigner', ['id' => $record->id]);
+
+    $contents = $DB->get_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
+    foreach ($contents as $content) {
+        $elementobj = editor::get_element($content->element, $cm->id);
+        $elementobj->delete_element($content->instance);
+
+        if ($elementobj->get_instance_options($content->instance)) {
+            $DB->delete_records('contentdesigner_options', ['element' => $content->element,
+                    'instance' => $content->instance]);
+        }
+    }
+
+    $celements = $DB->get_records('contentdesigner_elements', ['visible' => 1]);
+    foreach ($celements as $celement) {
+        if ($elementdata = $DB->get_records('element_'.$celement->shortname, ['contentdesignerid' => $record->id])) {
+            foreach ($elementdata as $element) {
+                $elementobj = editor::get_element($celement->id, $cm->id);
+                $elementobj->delete_element($element->id);
+                $DB->delete_records('element_'.$celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
+            }
+        }
+    }
+
+    $DB->delete_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
+
     return true;
 }
 
@@ -170,8 +199,8 @@ function contentdesigner_view($data, $course, $cm, $context) {
  * @return object|null
  */
 function mod_contentdesigner_core_calendar_provide_event_action($event, $factory, $userid = 0) {
-
     global $USER;
+
     if (empty($userid)) {
         $userid = $USER->id;
     }
@@ -263,7 +292,6 @@ function contentdesigner_output_fragment_get_elements_list($args) {
  * @return string
  */
 function contentdesigner_output_fragment_insert_element($args) {
-    global $OUTPUT;
     list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $editor = new mod_contentdesigner\editor($cm, $course);
     $chapter = $args['chapter'] ?? 0;
@@ -286,7 +314,7 @@ function contentdesigner_output_fragment_load_elements($args) {
  * Prepare the next available chapters to users view after the chapter completed.
  *
  * @param array $args
- * @return void
+ * @return bool|string
  */
 function contentdesigner_output_fragment_load_next_chapters($args) {
     list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
@@ -302,10 +330,9 @@ function contentdesigner_output_fragment_load_next_chapters($args) {
  * Fragment output to load the list of elements to insert.
  *
  * @param array $args Context and cmid.
- * @return string
+ * @return string|bool
  */
 function contentdesigner_output_fragment_edit_element($args) {
-    global $DB;
     $elementid = $args['elementid'];
     $instanceid = $args['instanceid'];
     $cmid = $args['cmid'];
@@ -323,8 +350,6 @@ function contentdesigner_output_fragment_edit_element($args) {
  * @return string
  */
 function contentdesigner_output_fragment_move_element($args) {
-    global $OUTPUT;
-
     if (isset($args['context']) && !empty($args['chapterid'])) {
         $editor = editor::get_editor($args['cmid']);
         if ($editor->chapter->update_postion($args['chapterid'], $args['contents'])) {
@@ -398,8 +423,8 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
 
         return new \core\output\inplace_editable(
             'mod_contentdesigner', $itemtype, $element->elementid.$record->id, true,
-            format_string($record->title), $record->title, 'Edit instance title',
-            'New value for ' . format_string($record->title)
+            format_string($record->title), $record->title, get_string('titleeditable', 'mod_contentdesigner'),
+            get_string('newvalue', 'mod_contentdesigner') . format_string($record->title)
         );
     }
 }

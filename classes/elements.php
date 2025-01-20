@@ -170,7 +170,7 @@ abstract class elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         global $CFG;
@@ -296,14 +296,14 @@ abstract class elements {
             'contextid' => \context_module::instance($this->cmid)->id,
             'contentdesignerid' => $this->cm->instance,
         ];
-        $PAGE->requires->data_for_js('contentDesignerElementsData', $data);
+        $PAGE->requires->js_call_amd('mod_contentdesigner/elements', 'contentDesignerElementsData', $data);
     }
 
     /**
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return array
      */
     public function render_element($instance) {
         $options = [];
@@ -319,12 +319,13 @@ abstract class elements {
      * @return string
      */
     public function title_editable($instance) {
-        global $OUTPUT, $PAGE;
+        global $OUTPUT;
         $title = $instance->title ?: $this->info()->name;
         $name = 'instance_title['.$this->shortname.']['.$instance->id.']';
         // Todo: Need to implement capability in place of true 4th param.
         $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid.$instance->id,
-            true, format_string($title), $title, "Edit the title of instance" ,  'New value for ' . format_string($title));
+            true, format_string($title), $title, get_string('titleeditable', 'mod_contentdesigner'),
+            get_string('newvalue', 'mod_contentdesigner') . format_string($title));
 
         return $OUTPUT->render($tmpl);
     }
@@ -394,11 +395,40 @@ abstract class elements {
         if ($this->is_table_exists()) {
 
             if ($this->tablename = 'element_outro') {
-                $record['outrocontent'] = '';
+                // Outro general settigns.
+                $content = get_config('element_outro', 'outro_content');
+                $primarybutton = get_config('element_outro', 'primarybutton');
+                $secondarybutton = get_config('element_outro', 'secondarybutton');
+                $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
+                    $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
+                $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
+
+                $record['outrocontent'] = $outrocontenthtml ?? '';
                 $record['outrocontentformat'] = FORMAT_HTML;
+                $record['primarybutton'] = $primarybutton ?? 0;
+                $record['secondarybutton'] = $secondarybutton ?? 0;
             }
 
-            return $DB->insert_record($this->tablename, $record);
+            $result = $DB->insert_record($this->tablename, $record);
+            if ($result) {
+                $data = [];
+                $fields = $this->get_options_fields();
+                foreach ($fields as $field) {
+                    $globalvalues = get_config('mod_contentdesigner', $field);
+                    $data[$field] = $globalvalues ?? '';
+                }
+
+                $data['element'] = $this->elementid;
+                $data['instance'] = $result;
+                $data['timecreated'] = time();
+
+                if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
+                    'element' => $this->elementid])) {
+                    $DB->insert_record('contentdesigner_options', $data);
+                }
+
+            }
+            return $result;
         } else {
             throw new \moodle_exception('tablenotfound', 'contentdesigner');
         }
@@ -436,7 +466,7 @@ abstract class elements {
      * Get the content id of the elemnet instance.
      *
      * @param int $instanceid Element instance id.
-     * @return int ID of content.
+     * @return int|bool ID of content.
      */
     public function get_instance_contentid(int $instanceid) {
         global $DB;
@@ -559,7 +589,7 @@ abstract class elements {
      * Delete the element settings.
      *
      * @param int $instanceid
-     * @return boolean status.
+     * @return bool status.
      */
     public function delete_element($instanceid) {
         global $DB;
@@ -699,5 +729,17 @@ abstract class elements {
         }
 
         return $completemandatory;
+    }
+
+    /**
+     * Get the options fields for the elements.
+     * @return array
+     */
+    public function get_options_fields() {
+        return [
+            'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'belowcolorbg',
+            'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
+            'hidemobile', 'timecreated', 'timemodified',
+        ];
     }
 }

@@ -1,3 +1,32 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Module for managing content designer elements and animations.
+ *
+ * This module defines various functions and constants to handle the loading,
+ * refreshing, and animating of content designer elements within a course.
+ * It utilizes organization-specific modules for fragment loading and template
+ * manipulation, and includes features such as entrance animations and scrolling
+ * effects for elements in the viewport.
+ *
+ * @module mod_contentdesigner/editor
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesigner/anime'],
     function ($, Fragment, Templates, LoadingIcon, anime) {
 
@@ -16,11 +45,27 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
 
         const detailElement = 'input[name=contentdesigner_cm_details]';
 
+        /**
+         * Get the content designer elements data.
+         *
+         * @param {int} cmID
+         * @param {int} contextID
+         * @param {int} contentdesignerID
+         * @returns {object}
+         */
+        function contentDesignerElementsData (cmID, contextID, contentdesignerID) {
+            var data = {
+                cmid: cmID,
+                contextid: contextID,
+                contentdesignerid: contentdesignerID
+            };
+            return data;
+        }
+
         const contentDesignerData = () => {
             var cmdetails = document.querySelector(detailElement) !== null ? document.querySelector(detailElement).value : '';
             var cmdata = (cmdetails) ? JSON.parse(cmdetails) : '';
-            /* global contentDesignerElementsData */
-            return cmdata || contentDesignerElementsData;
+            return cmdata || contentDesignerElementsData();
         };
 
         let animations = {};
@@ -337,6 +382,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
             courseContent: courseContent,
             removeWarning: removeWarning,
             loadNextElements: loadNextElements,
+            contentDesignerElementsData: contentDesignerElementsData,
             selectors: SELECTORS
         };
     });

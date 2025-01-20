@@ -26,8 +26,6 @@
 
 namespace mod_contentdesigner\privacy;
 
-use core_privacy\local\request\contextlist;
-
 /**
  * Content designer elements privacy provider.
  *

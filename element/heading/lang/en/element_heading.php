@@ -26,3 +26,4 @@
 
 $string['elementdescription'] = 'Add a heading';
 $string['pluginname'] = "Heading";
+$string['privacy:metadata'] = 'The heading only displays the heading element content and does not store any user data.';

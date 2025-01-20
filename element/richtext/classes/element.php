@@ -37,6 +37,11 @@ class element extends \mod_contentdesigner\elements {
     const SHORTNAME = 'richtext';
 
     /**
+     * Hard-coded value for the 'maxfiles' option.
+     */
+    const EDITOR_UNLIMITED_FILES = -1;
+
+    /**
      * Element name which is visbile for the users
      *
      * @return string
@@ -58,7 +63,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML fragment
      */
     public function icon($output) {
         return $output->pix_icon('e/source_code', get_string('pluginname', 'element_paragraph'));
@@ -92,7 +97,7 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
-     * @return void
+     * @return string
      */
     public function render($data) {
         $context = $this->get_context();
@@ -106,7 +111,7 @@ class element extends \mod_contentdesigner\elements {
      * Process the update of element instance and genreal options.
      *
      * @param stdclass $data Submitted element moodle form data
-     * @return void
+     * @return int
      */
     public function update_instance($data) {
         global $DB;
@@ -139,7 +144,6 @@ class element extends \mod_contentdesigner\elements {
         }
         $editoroptions = $this->editor_options($context);
         if (isset($data->instance)) {
-            $itemid = $data->content_editor['itemid'];
             $data->contentformat = $data->content_editor['format'];
             $data = file_postupdate_standard_editor(
                 $data,
@@ -196,7 +200,7 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
-            'maxfiles' => EDITOR_UNLIMITED_FILES,
+            'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
     }
 }

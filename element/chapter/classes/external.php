@@ -58,6 +58,13 @@ class external extends \external_api {
     public static function update_completion($cmid, $chapter) {
         global $DB, $USER;
 
+        $vaildparams = self::validate_parameters(self::update_completion_parameters(),
+        ['cmid' => $cmid, 'chapter' => $chapter]);
+
+        self::validate_context(\context_module::instance($cmid));
+
+        $chapter = $vaildparams['chapter'];
+
         $record = $DB->get_record('element_chapter_completion', ['instance' => $chapter, 'userid' => $USER->id]);
         $data = new \stdclass();
         $data->instance = $chapter;

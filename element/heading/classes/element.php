@@ -57,7 +57,7 @@ class element extends \mod_contentdesigner\elements {
      * Icon of the element.
      *
      * @param renderer $output
-     * @return void
+     * @return string HTML
      */
     public function icon($output) {
         return html_writer::tag('i', '', ['class' => 'fa fa-header icon pluginicon']);
@@ -90,31 +90,39 @@ class element extends \mod_contentdesigner\elements {
             'h2' => get_string('mainheading', 'mod_contentdesigner'),
             'h3' => get_string('subheading', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_heading', 'headingtype');
         $mform->addElement('select', 'headingtype', get_string('strheading', 'mod_contentdesigner'), $headings);
         $mform->addHelpButton('headingtype', 'strheading', 'mod_contentdesigner');
+        $mform->setDefault('headingtype', $default ?: 'h2');
 
         $targets = [
             '_blank' => get_string('strblank', 'mod_contentdesigner'),
             '_self' => get_string('strself', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_heading', 'target');
         $mform->addElement('select', 'target', get_string('target', 'mod_contentdesigner'), $targets);
         $mform->addHelpButton('target', 'target', 'mod_contentdesigner');
+        $mform->setDefault('target', $default ?: '_blank');
 
         $horizontalalign = [
             'left' => get_string('strleft', 'mod_contentdesigner'),
             'center' => get_string('strcenter', 'mod_contentdesigner'),
             'right' => get_string('strright', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_heading', 'horizontal');
         $mform->addElement('select', 'horizontal', get_string('horizontalalign', 'mod_contentdesigner'), $horizontalalign);
         $mform->addHelpButton('horizontal', 'horizontalalign', 'mod_contentdesigner');
+        $mform->setDefault('horizontal', $default ?: 'left');
 
         $verticalalign = [
             'top' => get_string('strtop', 'mod_contentdesigner'),
             'middle' => get_string('strmiddle', 'mod_contentdesigner'),
             'bottom' => get_string('strbottom', 'mod_contentdesigner'),
         ];
+        $default = get_config('element_heading', 'vertical');
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');
+        $mform->setDefault('vertical', $default ?: 'top');
 
     }
 
@@ -122,10 +130,9 @@ class element extends \mod_contentdesigner\elements {
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $instance
-     * @return void
+     * @return string
      */
     public function render($instance) {
-        global $DB;
         $content = '';
         if ($instance->visible && $instance->heading && $instance->headingtype) {
             $hozclass = "hl-". $instance->horizontal;
