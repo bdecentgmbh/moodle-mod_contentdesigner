@@ -50,7 +50,7 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
             '/activity/contentdesigner/elements/contentdesigner_elements');
         $paths[] = $elements;
 
-        $this->add_subplugin_structure('element', $element);
+        $this->add_subplugin_structure('cdelement', $element);
 
         $paths[] = new restore_path_element('contentdesigner_content',
             '/activity/contentdesigner/content/contentdesigner_content');
@@ -123,13 +123,13 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
         $data->timemodified = time();
         // Insert the content with new chapter and instance.
         $contentid = $DB->insert_record('contentdesigner_content', $data);
-        $contents = $DB->get_field('element_chapter', 'contents', ['id' => $data->chapter]);
+        $contents = $DB->get_field('cdelement_chapter', 'contents', ['id' => $data->chapter]);
         $contents = explode(',', $contents);
         array_push($contents, $contentid);
 
         // Add the latest cotnent id in chapter.
         $content = (object) ['id' => $data->chapter, 'contents' => implode(',', $contents)];
-        $DB->update_record('element_chapter', $content);
+        $DB->update_record('cdelement_chapter', $content);
     }
 
     /**

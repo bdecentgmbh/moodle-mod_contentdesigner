@@ -72,8 +72,13 @@ body#page-mod-contentdesigner-view {
 .contentdesigner-content {
     .contentdesigner-wrapper {
         .course-content-list,
-        .course-content-list li {
-            list-style: none;
+        .course-content-list > li {
+            &:not(.element-item) {
+                list-style: auto;
+            }
+            &:not([class]) {
+                list-style: none;
+            }
             padding: 0;
             margin: 0;
         }

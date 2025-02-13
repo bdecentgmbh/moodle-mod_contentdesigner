@@ -44,7 +44,7 @@ $context = \context_module::instance($cm->id);
 $elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
 
 if ($id) {
-    $elementrecord = $DB->get_record("element_".$element, ['id' => $id]);
+    $elementrecord = $DB->get_record("cdelement_".$element, ['id' => $id]);
     if (!$elementrecord) {
         throw new moodle_exception('invaildrecord', 'mod_contentdesigner');
     }

@@ -52,8 +52,8 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('contentdesigner', ['intro'], 'contentdesigner');
-        $contents[] = new \restore_decode_content('element_richtext', ['content'], 'richtext_instanceid');
-        $contents[] = new \restore_decode_content('element_outro', ['outrocontent'], 'outro_instanceid');
+        $contents[] = new \restore_decode_content('cdelement_richtext', ['content'], 'richtext_instanceid');
+        $contents[] = new \restore_decode_content('cdelement_outro', ['outrocontent'], 'outro_instanceid');
         return $contents;
     }
 

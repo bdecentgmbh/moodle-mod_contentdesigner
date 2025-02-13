@@ -55,7 +55,7 @@ class editor {
     /**
      * Chapter element instance.
      *
-     * @var element_chapter\element
+     * @var cdelement_chapter\element
      */
     public $chapter;
 
@@ -69,7 +69,7 @@ class editor {
         $this->cm = $cm;
         $this->course = $course;
         $this->cmcontext = \context_module::instance($cm->id);
-        $this->chapter = new \element_chapter\element($this->cm->id);
+        $this->chapter = new \cdelement_chapter\element($this->cm->id);
     }
 
     /**
@@ -95,7 +95,7 @@ class editor {
     /**
      * Render the module elements for student view.
      * @param int $chapterafter Load the chapters after the given chapter.
-     * @return string  HTML of the elements.
+     * @return string HTML of the elements.
      */
     public function render_elements($chapterafter=false) {
         global $OUTPUT;
@@ -142,7 +142,7 @@ class editor {
      * @return void
      */
     public function initiate_js() {
-        $plugins = \core_plugin_manager::instance()->get_installed_plugins('element');
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
         foreach ($plugins as $plugin => $version) {
             $elementobj = self::get_element($plugin, $this->cm->id);
             $elementobj->initiate_js();
@@ -168,7 +168,7 @@ class editor {
      */
     public static function get_elements_list(int $cmid) {
 
-        $plugins = \core_plugin_manager::instance()->get_installed_plugins('element');
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
 
         $li = [];
         foreach ($plugins as $plugin => $version) {
@@ -201,7 +201,7 @@ class editor {
         if (is_number($element)) {
             $element = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $element]);
         }
-        $class = 'element_'.$element.'\element';
+        $class = 'cdelement_'.$element.'\element';
         if (class_exists($class)) {
             return new $class($cmid);
         } else {
@@ -215,7 +215,7 @@ class editor {
      * @return array List of elements.
      */
     public static function get_elements() {
-        $plugins = \core_plugin_manager::instance()->get_installed_plugins('element');
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
         return $plugins;
     }
 
@@ -233,7 +233,7 @@ class editor {
             $elementobj = self::get_element($plugin, $cmid);
             $areafiles = (method_exists($elementobj, 'areafiles')) ? $elementobj->areafiles() : [];
             array_walk($areafiles, function(&$areafile) use ($plugin) {
-                $areafile = "element_".$plugin."_".$areafile;
+                $areafile = "cdelement_".$plugin."_".$areafile;
             });
             $files = array_merge($files, $areafiles);
         }
@@ -251,7 +251,7 @@ class editor {
         global $OUTPUT, $DB;
 
         $element = self::get_element('outro', $this->cm->id);
-        $instance = $DB->get_field('element_outro', 'id',
+        $instance = $DB->get_field('cdelement_outro', 'id',
             ['contentdesignerid' => $this->cm->instance]);
 
         if (!$instance) {
@@ -285,7 +285,7 @@ class editor {
         global $DB;
         $element = self::get_element('outro', $this->cm->id);
         $editor = self::get_editor($this->cm->id);
-        $instance = $DB->get_record('element_outro', ['contentdesignerid' => $this->cm->instance]);
+        $instance = $DB->get_record('cdelement_outro', ['contentdesignerid' => $this->cm->instance]);
         if ($instance) {
             $instance = $element->get_instance($instance->id, $instance->visible);
             $option = $editor->get_option($instance->id, $element->elementid);
@@ -311,7 +311,8 @@ class editor {
      */
     public function get_option($instanceid, $elementid) {
         global $DB;
-        $record = $DB->get_record('contentdesigner_options', ['instance' => $instanceid, 'element' => $elementid]);
+        $record = $DB->get_record('contentdesigner_options', ['instance' => $instanceid, 'element' => $elementid],
+            '*', IGNORE_MULTIPLE);
         if (!empty($record)) {
             $element = self::get_element($record->element, $this->cm->id);
             $record->backimage = $this->get_element_areafiles($element->shortname."elementbg", $instanceid);
@@ -460,21 +461,22 @@ class editor {
      * @return bool
      */
     public function set_elements_inchapter($chapterid, $contentid) {
-        $chapter = new \element_chapter\element($this->cm->id);
+        $chapter = new \cdelement_chapter\element($this->cm->id);
         return $chapter->set_elements($chapterid, $contentid);
     }
+
 
     /**
      * Duplicate an element instance within the editor.
      *
      * @param int $id The ID of the element instance to duplicate.
      * @param string $element Element shortname.
-     * @param int $newchapterid The ID of the new chapter to insert the duplicated instance into.
+     * @param int $newchapterid The ID of the chapter to duplicate the element instance into.
      * @return void
      */
     public function duplicate($id, $element, $newchapterid = 0) {
         global $DB;
-        $tablename = 'element_'.$element;
+        $tablename = 'cdelement_'.$element;
         $context = \context_module::instance($this->cm->id);
         $elementobj = self::get_element($element, $this->cm->id);
 
@@ -499,14 +501,6 @@ class editor {
                 $record->content_editor['text'] = $record->content;
             }
 
-            if ($element == "poll") {
-                if ($options = $DB->get_records("element_poll_options", ["pollid" => $id], "id")) {
-                    foreach ($options as $option) {
-                        $data[$option->id] = $option->text;
-                    }
-                    $record->option = $data;
-                }
-            }
 
             $elementobj->update_element($record);
         }
@@ -522,7 +516,7 @@ class editor {
         global $DB;
 
         // Retrieve the original chapter record.
-        $chapter = $DB->get_record('element_chapter', ['id' => $id], '*', MUST_EXIST);
+        $chapter = $DB->get_record('cdelement_chapter', ['id' => $id], '*', MUST_EXIST);
         if ($chapter) {
 
             // Get the element object for the chapter element.

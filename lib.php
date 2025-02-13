@@ -109,11 +109,11 @@ function contentdesigner_delete_instance($id) {
 
     $celements = $DB->get_records('contentdesigner_elements', ['visible' => 1]);
     foreach ($celements as $celement) {
-        if ($elementdata = $DB->get_records('element_'.$celement->shortname, ['contentdesignerid' => $record->id])) {
+        if ($elementdata = $DB->get_records('cdelement_'.$celement->shortname, ['contentdesignerid' => $record->id])) {
             foreach ($elementdata as $element) {
                 $elementobj = editor::get_element($celement->id, $cm->id);
                 $elementobj->delete_element($element->id);
-                $DB->delete_records('element_'.$celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
+                $DB->delete_records('cdelement_'.$celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
             }
         }
     }
@@ -268,7 +268,7 @@ function contentdesigner_get_post_actions() {
  * @return array elements
  */
 function contentdesigner_get_element_pluginnames() {
-    $plugins = core_plugin_manager::instance()->get_plugins_of_type('element');
+    $plugins = core_plugin_manager::instance()->get_plugins_of_type('cdelement');
     return array_keys($plugins);
 }
 
@@ -402,8 +402,8 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
         $element = str_replace(']', '', explode('[', $itemtype)[1]);
         $instanceid = str_replace(']', '', explode('[', $itemtype)[2]);
 
-        if ($DB->get_manager()->table_exists('element_'.$element)) {
-            $instance = $DB->get_record('element_'.$element, ['id' => $instanceid]);
+        if ($DB->get_manager()->table_exists('cdelement_'.$element)) {
+            $instance = $DB->get_record('cdelement_'.$element, ['id' => $instanceid]);
             $cm = get_coursemodule_from_instance('contentdesigner', $instance->contentdesignerid);
         }
         if (!isset($cm) || empty($cm)) {

@@ -162,8 +162,8 @@ $string['strself'] = "Open a same window";
 $string['strslow'] = "Slow";
 $string['strtop'] = "Top";
 $string['subheading'] = "Sub heading (h3)";
-$string['subplugintype_element'] = 'Element plugin';
-$string['subplugintype_element_plural'] = 'Element plugins';
+$string['subplugintype_cdelement'] = 'Element plugin';
+$string['subplugintype_cdelement_plural'] = 'Element plugins';
 $string['target'] = "Target";
 $string['target_help'] = 'Select how the link should open if a Heading URL is provided:<br>
 <b>Same Window:</b> Opens the link in the current browser tab, replacing the current page.<br>

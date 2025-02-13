@@ -97,7 +97,7 @@ abstract class elements {
     public function __construct($cmid) {
         $this->cmid = $cmid;
         $this->shortname = $this->element_shortname();
-        $this->tablename = 'element_'.$this->shortname;
+        $this->tablename = 'cdelement_'.$this->shortname;
         $this->elementid = $this->element_id();
         $this->context = $this->get_context();
         if ($cmid) {
@@ -184,8 +184,8 @@ abstract class elements {
      * @return string
      */
     public function element_description() {
-        return (get_string_manager()->string_exists('elementdescription',  'element_'.$this->element_shortname()))
-            ? get_string('elementdescription', 'element_'.$this->element_shortname()) : '';
+        return (get_string_manager()->string_exists('elementdescription',  'cdelement_'.$this->element_shortname()))
+            ? get_string('elementdescription', 'cdelement_'.$this->element_shortname()) : '';
     }
 
     /**
@@ -268,7 +268,7 @@ abstract class elements {
 
     /**
      * Vertify the element instance is prevents the loading of next element instance.
-     * For example please check the element_h5p
+     * For example please check the cdelement_h5p
      *
      * @param stdclass $instance Instance data of the element.
      * @return bool True if need to stop the next instance Otherwise false if render of next elements.
@@ -362,7 +362,7 @@ abstract class elements {
      * @return string Name of the table.
      */
     public function tablename() {
-        return 'element_'.$this->element_shortname();
+        return 'cdelement_'.$this->element_shortname();
     }
 
     /**
@@ -394,11 +394,12 @@ abstract class elements {
 
         if ($this->is_table_exists()) {
 
-            if ($this->tablename = 'element_outro') {
+            if ($this->tablename = 'cdelement_outro') {
+
                 // Outro general settigns.
-                $content = get_config('element_outro', 'outro_content');
-                $primarybutton = get_config('element_outro', 'primarybutton');
-                $secondarybutton = get_config('element_outro', 'secondarybutton');
+                $content = get_config('cdelement_outro', 'outro_content');
+                $primarybutton = get_config('cdelement_outro', 'primarybutton');
+                $secondarybutton = get_config('cdelement_outro', 'secondarybutton');
                 $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
                     $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
                 $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
@@ -439,7 +440,7 @@ abstract class elements {
      *
      * @param int $instanceid Instance id.
      * @param bool $visible Filter by visibility.
-     * @return stdclass Instance record
+     * @return stdclass|bool Instance record
      */
     public function get_instance(int $instanceid, $visible=false) {
         global $DB;
@@ -485,7 +486,7 @@ abstract class elements {
 
         return (array) ($DB->get_record('contentdesigner_options', [
             'instance' => $instanceid, 'element' => $this->elementid,
-        ]) ?: []);
+        ], '*', IGNORE_MULTIPLE) ?: []);
     }
 
     /**
@@ -552,6 +553,10 @@ abstract class elements {
     public function update_options($data) {
         global $DB;
 
+        if (empty($data->element)) {
+            return false;
+        }
+
         if ($options = $this->get_instance_options($data->instance)) {
             $optiondata = $data;
             $optiondata->id = $options['id'];
@@ -611,7 +616,7 @@ abstract class elements {
         } catch (\Exception $e) {
             // Extra cleanup steps.
             $transaction->rollback($e); // Rethrows exception.
-            throw new \moodle_exception('chapternotdeleted', 'element_chapter');
+            throw new \moodle_exception('chapternotdeleted', 'cdelement_chapter');
         }
     }
 

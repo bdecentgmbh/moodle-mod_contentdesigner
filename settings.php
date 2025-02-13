@@ -27,18 +27,11 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot.'/mod/contentdesigner/lib.php');
 
 $ADMIN->add('modsettings', new admin_category('modcontentdesigner', new lang_string('pluginname', 'mod_contentdesigner')));
-$settings = new admin_settingpage('contentdesignergeneralsettings', get_string('gerneralsettings', 'mod_contentdesigner'),
-     'moodle/site:config', false);
 
 $elementsettings = new admin_settingpage('elementgeneralsettings', get_string('elementstrgeneralsettings', 'mod_contentdesigner'),
 'moodle/site:config', false);
 
 if ($ADMIN->fulltree) {
-
-    // Chapter title status.
-    $settings->add(new admin_setting_configcheckbox('mod_contentdesigner/chaptertitlestatus',
-    get_string('titlestatus', 'mod_contentdesigner'), get_string('titlestatus_help', 'mod_contentdesigner'), 0
-    ));
 
     $visibilityoptions = [
         1 => get_string('visibility', 'mod_contentdesigner'),
@@ -115,12 +108,9 @@ if ($ADMIN->fulltree) {
 
 }
 
-$ADMIN->add('modcontentdesigner', $settings);
 $ADMIN->add('modcontentdesigner', $elementsettings);
 
-$settings = null; // Reset the settings.
-
-foreach (\core_plugin_manager::instance()->get_plugins_of_type('element') as $plugin) {
+foreach (\core_plugin_manager::instance()->get_plugins_of_type('cdelement') as $plugin) {
     // Load all the element plugins settings pages.
     $plugin->load_settings($ADMIN, 'modcontentdesigner', $hassiteconfig);
 }
