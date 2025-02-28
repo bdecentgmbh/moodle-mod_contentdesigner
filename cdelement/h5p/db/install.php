@@ -30,10 +30,5 @@
 function xmldb_cdelement_h5p_install() {
     $shortname = \cdelement_h5p\element::SHORTNAME;
     $result = \mod_contentdesigner\elements::insertelement($shortname);
-
-    // Drop the table if it exists, rename the existing table.
-    require_once(__DIR__ . '/upgrade.php');
-    xmldb_cdelement_h5p_upgrade(0);
-
     return $result ? true : false;
 }

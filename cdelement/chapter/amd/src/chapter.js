@@ -112,8 +112,8 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
             var params = { cmid: Elements.contentDesignerData().cmid };
             Fragment.loadFragment('cdelement_chapter', 'update_progressbar',
                 Elements.contentDesignerData().contextid, params).done((html, js) => {
-                Templates.replaceNode(progressBar, html, js);
-            }).catch(Notification.exception);
+                    Templates.replaceNode(progressBar, html, js);
+                }).catch(Notification.exception);
         };
 
         return {

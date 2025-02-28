@@ -38,7 +38,7 @@ Feature: Check content designer paragraph element settings
     Then ".chapter-elements-list li.element-item .hl-center.vl-middle" "css_element" should exist
     Then ".chapter-elements-list li.element-item p.element-paragraph" "css_element" should exist
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(2) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Content  | Various versions have evolved over the years.|
       | Horizontal Alignment | Left |

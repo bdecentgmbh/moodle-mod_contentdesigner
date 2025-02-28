@@ -465,7 +465,6 @@ class editor {
         return $chapter->set_elements($chapterid, $contentid);
     }
 
-
     /**
      * Duplicate an element instance within the editor.
      *

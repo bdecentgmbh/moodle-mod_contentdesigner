@@ -30,10 +30,5 @@
 function xmldb_cdelement_chapter_install() {
     $shortname = \cdelement_chapter\element::SHORTNAME;
     $result = \mod_contentdesigner\elements::insertelement($shortname);
-
-    // Drop the table if it exists, rename the existing table.
-    require_once(__DIR__ . '/upgrade.php');
-    xmldb_cdelement_chapter_upgrade(0);
-
     return $result ? true : false;
 }

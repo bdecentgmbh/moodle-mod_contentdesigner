@@ -41,7 +41,7 @@ Feature: Check content designer header element settings
     Then ".chapter-elements-list li.element-item h2.element-heading.hl-right.vl-middle" "css_element" should exist
     Then ".chapter-elements-list li.element-item a[target=_self]" "css_element" should exist
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(2) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
+    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Heading URL   | https://www.example.com |
       | Heading text  | Heading First           |
