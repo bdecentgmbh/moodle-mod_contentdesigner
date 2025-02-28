@@ -500,7 +500,6 @@ class editor {
                 $record->content_editor['text'] = $record->content;
             }
 
-
             $elementobj->update_element($record);
         }
     }
