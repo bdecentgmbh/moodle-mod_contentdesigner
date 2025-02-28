@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'cdelement_h5p';
-$plugin->version = 2025021300;
+$plugin->version = 2025021301;
 $plugin->requires = 2020061500;
 $plugin->supported = [401, 405];
 $plugin->maturity = MATURITY_STABLE;
