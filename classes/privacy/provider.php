@@ -177,13 +177,13 @@ class provider implements
         $instances = $DB->get_records_sql($sql, $params + $contextparams);
 
         $contentdesignerids = array_column((array) $instances, 'pid');
-        $components = \core_component::get_plugin_list('element');
+        $components = \core_component::get_plugin_list('cdelement');
         $exportparams = [
             $contentdesignerids,
             $user,
         ];
         foreach (array_keys($components) as $component) {
-            $classname = manager::get_provider_classname_for_component("element_$component");
+            $classname = manager::get_provider_classname_for_component("cdelement_$component");
             if (class_exists($classname) && is_subclass_of($classname, contentdesignerelements_provider::class)) {
                 $results = component_class_callback($classname, 'export_element_user_data', $exportparams);
                 $instances = self::group_by_property($results, 'contentdesignerid');
@@ -199,7 +199,7 @@ class provider implements
                     unset($element['contentdesignerid']);
                     $contextdata = (object)array_merge((array)$contextdata, $element);
                     writer::with_context($context)->export_data(
-                        [get_string('privacy:'.$component, 'element_'.$component)],
+                        [get_string('privacy:'.$component, 'cdelement_'.$component)],
                         $contextdata
                     );
                 }

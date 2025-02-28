@@ -93,7 +93,7 @@ final class lib_test extends \advanced_testcase {
         global $DB;
         // Create element.
         $this->create_heading_element();
-        $this->assertEquals($DB->count_records('element_heading'), 2);
+        $this->assertEquals($DB->count_records('cdelement_heading'), 2);
         $this->assertEquals($DB->count_records('contentdesigner_content'), 2);
     }
 
@@ -112,7 +112,7 @@ final class lib_test extends \advanced_testcase {
         $data->instanceid = 0;
         $data->contentdesignerid = $this->contentdesigner->id;
         $this->headingelement->update_element($data);
-        $this->assertEquals($DB->count_records('element_heading'), 1);
+        $this->assertEquals($DB->count_records('cdelement_heading'), 1);
         $data->heading = "Heading 02";
         $data->title = "Heading 02";
         $this->headingelement->update_element($data);
@@ -137,7 +137,7 @@ final class lib_test extends \advanced_testcase {
         $this->create_heading_element();
         $result = $this->headingelement->info();
         $this->assertEquals($this->headingelementinfo->id, $result->elementid);
-        $this->assertEquals(get_string('pluginname', 'element_heading'), $result->name);
+        $this->assertEquals(get_string('pluginname', 'cdelement_heading'), $result->name);
         $this->assertEquals($this->headingelementinfo->shortname, $result->shortname);
     }
 
@@ -166,11 +166,11 @@ final class lib_test extends \advanced_testcase {
     public function test_delete_element(): void {
         global $DB;
         $this->create_heading_element();
-        $this->assertEquals($DB->count_records('element_heading'), 2);
+        $this->assertEquals($DB->count_records('cdelement_heading'), 2);
         $element = $this->get_heading_element();
         $instance = $this->headingelement->get_instance($element->id);
         $this->headingelement->delete_element($instance->id);
-        $this->assertEquals($DB->count_records('element_heading'), 1);
+        $this->assertEquals($DB->count_records('cdelement_heading'), 1);
         $this->assertEquals($DB->count_records('contentdesigner_content'), 1);
     }
 
@@ -212,7 +212,7 @@ final class lib_test extends \advanced_testcase {
      */
     public function get_heading_element() {
         global $DB;
-        return $DB->get_record('element_heading', ['title' => 'Heading 01']);
+        return $DB->get_record('cdelement_heading', ['title' => 'Heading 01']);
     }
 
 }

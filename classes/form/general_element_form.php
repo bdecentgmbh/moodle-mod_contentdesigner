@@ -26,9 +26,6 @@ namespace mod_contentdesigner\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-use mod_contentdesigner\editor;
-use stdClass;
-
 require_once($CFG->dirroot.'/lib/formslib.php');
 
 /**
@@ -79,7 +76,8 @@ class general_element_form extends \moodleform {
         $mform->addElement('hidden', 'sesskey', sesskey());
         $mform->setType('sesskey', PARAM_ALPHANUMEXT);
 
-        if (($this->_customdata['element'] == "chapter") && ($record = $DB->get_record('element_chapter', ['id' => $instanceid]))) {
+        if (($this->_customdata['element'] == "chapter") && ($record = $DB->get_record('cdelement_chapter',
+            ['id' => $instanceid]))) {
             $mform->addElement('hidden', 'position', $record->position);
             $mform->setType('position', PARAM_INT);
         } else {

@@ -41,7 +41,7 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
             'course', 'name', 'intro', 'introformat', 'timecreated',
             'timemodified']);
 
-        $this->add_subplugin_structure('element', $contentdesigner, true);
+        $this->add_subplugin_structure('cdelement', $contentdesigner, true);
 
         $elements = new backup_nested_element('elements');
         $contentdesignerelements = new backup_nested_element('contentdesigner_elements', ['id'], [

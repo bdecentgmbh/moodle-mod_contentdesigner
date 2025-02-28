@@ -53,7 +53,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
          * @param {int} contentdesignerID
          * @returns {object}
          */
-        function contentDesignerElementsData (cmID, contextID, contentdesignerID) {
+        function contentDesignerElementsData(cmID, contextID, contentdesignerID) {
             var data = {
                 cmid: cmID,
                 contextid: contextID,

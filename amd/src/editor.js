@@ -218,7 +218,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @param {Function} onconfirm function to execute on confirm
          */
         var confirmDeleteElement = function (element, onconfirm) {
-            var elementTypename = 'element_'.element;
+            var elementTypename = 'cdelement_'.element;
             Str.get_string('pluginname', elementTypename).done(function () {
                 var plugindata = {
                     element: element
