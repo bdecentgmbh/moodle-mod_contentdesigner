@@ -39,3 +39,8 @@ function cdelement_chapter_output_fragment_update_progressbar($args) {
         return $element->build_progress();
     }
 }
+
+
+function cdelement_chapter_has_learningtools() {
+    return array_key_exists('learningtools', \core_component::get_plugin_list('local'));
+}

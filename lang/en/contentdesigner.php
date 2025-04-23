@@ -184,3 +184,11 @@ $string['viewport'] = "Viewport";
 $string['viewport_help'] = 'Define when the scrolling effect should start relative to the user\'s viewport. This helps control how soon the effect is triggered based on how much of the element is visible on the screen.';
 $string['visibility'] = "Visibility";
 $string['visibility_help'] = "Show / Hide the element";
+
+$string['learningtools'] = 'Learning Tools';
+$string['learningtools_help'] = 'If enabled, learning tools such as bookmarks and notes will be available for this chapter.';
+$string['enabled'] = 'Enabled';
+$string['disabled'] = 'Disabled';
+$string['strbookmark'] = "Bookmark";
+$string['strnotes'] = "Notes";
+$string['strbookmarked'] = "Bookmarked";

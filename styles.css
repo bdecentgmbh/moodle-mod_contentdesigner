@@ -125,7 +125,7 @@ body#page-mod-contentdesigner-view {
                     margin-left: auto;
                 }
 
-                &.completed button.btn {
+                &.completed button.btn.complete-chapter {
                     border-color: #28a745;
                     background-color: #28a745;
                 }

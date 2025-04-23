@@ -135,8 +135,8 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
         };
 
         const removeMarkBtn = (chapterSelector) => {
-            if (document.querySelector(chapterSelector).querySelector('button.complete-chapter') != undefined) {
-                document.querySelector(chapterSelector).querySelector('button.complete-chapter').remove();
+            if (document.querySelector(chapterSelector).querySelector('.toolbar-block') != undefined) {
+                document.querySelector(chapterSelector).querySelector('.toolbar-block').remove();
             }
         };
 
