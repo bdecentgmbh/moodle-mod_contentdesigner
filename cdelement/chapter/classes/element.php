@@ -617,6 +617,16 @@ class element extends \mod_contentdesigner\elements {
                 $DB->delete_records($this->tablename(), ['id' => $instanceid]);
                 $DB->delete_records('cdelement_chapter_completion', ['instance' => $instanceid]);
             }
+
+            $dbman = $DB->get_manager();
+            // Deleted the Learningtools bookmarks and notes data.
+            if ($dbman->table_exists('ltool_bookmarks_data')) {
+                $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+            } 
+
+            if ($dbman->table_exists('ltool_note_data')) {
+                $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+            } 
             if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
                 foreach ($contents as $key => $value) {
                     $element = editor::get_element($value->element, $this->cmid);
