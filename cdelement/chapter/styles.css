@@ -43,6 +43,9 @@
             &:active {
                 box-shadow: none;
             }
+            .badge {
+                padding: 0;
+            }
         }
         + .complete-chapter {
             width: auto;

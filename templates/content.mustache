@@ -241,16 +241,16 @@
                               {{/hasbookmarkcapability}}
 
                               {{#hasnotecapability}}
-                                <button class="btn content-designer-learningtool-note"
+                                <button class="btn {{#learningtools.notescount}}btn-link active{{/learningtools.notescount}} content-designer-learningtool-note"
                                       data-action="note"
                                       data-chapter-id="{{learningtools.chapterid}}"
                                       data-itemtype="chapter"
                                       data-itemid="{{learningtools.chapterid}}">
                                 <i class="fa fa-sticky-note"></i>
                                 {{#str}}strnotes, mod_contentdesigner{{/str}}
-                                {{#learningtools.notescount}}
-                                <span class="badge badge-light">{{learningtools.notescount}}</span>
-                                {{/learningtools.notescount}}
+                                  {{#learningtools.notescount}}
+                                    <span class="badge badge-light">({{learningtools.notescount}})</span>
+                                  {{/learningtools.notescount}}
                                 </button>
                               {{/hasnotecapability}}
                           </div>

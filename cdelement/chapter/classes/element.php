@@ -417,6 +417,12 @@ class element extends \mod_contentdesigner\elements {
                     'itemid' => $chapter->id,
                     'userid' => $USER->id,
                 ]);
+
+                $learningtools['notescount'] = $DB->count_records('ltool_note_data', [
+                    'itemtype' => 'chapter',
+                    'itemid' => $chapter->id,
+                    'userid' => $USER->id,
+                ]);
             }
         }
 
