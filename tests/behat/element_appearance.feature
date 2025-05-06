@@ -34,7 +34,8 @@ Feature: Check content designer element options
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     Then I should see "Chapter element settings"
     And I set the following fields to these values:
-      | Title  | First chapter |
+      | Title     | First chapter |
+      | Visibility| Visible       |
     And I press "Create element"
     Then ".course-content-list .chapters-list" "css_element" should exist
 

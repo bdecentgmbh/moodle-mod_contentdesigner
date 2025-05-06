@@ -28,7 +28,8 @@ Feature: Check content designer chapter element settings
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
-      | Title  | First chapter |
+      | Title     | First chapter |
+      | Visibility| Visible       |
     And I press "Create element"
     Then I should see "First chapter"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"

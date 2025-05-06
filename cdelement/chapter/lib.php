@@ -40,7 +40,11 @@ function cdelement_chapter_output_fragment_update_progressbar($args) {
     }
 }
 
-
+/**
+ * Check if the learning tools plugin is installed.
+ *
+ * @return bool True if the learning tools plugin is installed, false otherwise.
+ */
 function cdelement_chapter_has_learningtools() {
     return array_key_exists('learningtools', \core_component::get_plugin_list('local'));
 }

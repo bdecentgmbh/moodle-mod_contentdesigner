@@ -90,7 +90,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                 var filterChapter = [];
 
                 chapters.forEach((chapter) => {
-
                     var elementSelector = 'li.element-item[data-instanceid="' + chapter.dataset.instanceid + '"]';
                     elementSelector += '[data-elementshortname="' + chapter.dataset.elementshortname + '"]';
                     let chapterSelector = 'li.chapters-list[data-id="' + chapter.dataset.id + '"]';

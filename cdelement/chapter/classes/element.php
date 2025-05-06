@@ -24,6 +24,8 @@
 
 namespace cdelement_chapter;
 
+defined('MOODLE_INTERNAL') || die();
+
 use mod_contentdesigner\editor;
 use moodle_exception;
 
@@ -106,7 +108,8 @@ class element extends \mod_contentdesigner\elements {
                 1 => get_string('enabled', 'mod_contentdesigner'),
             ];
             $default = get_config('cdelement_chapter', 'learningtools');
-            $mform->addElement('select', 'learningtools', get_string('learningtools', 'mod_contentdesigner'), $learningtoolsoptions);
+            $mform->addElement('select', 'learningtools', get_string('learningtools', 'mod_contentdesigner'),
+                $learningtoolsoptions);
             $mform->addHelpButton('learningtools', 'learningtools', 'mod_contentdesigner');
             $mform->setDefault('learningtools', $default);
         }
@@ -387,6 +390,7 @@ class element extends \mod_contentdesigner\elements {
         $list = [];
         $prevent = false;
         $record = $DB->get_record('contentdesigner', ['id' => $this->cm->instance]);
+        $url = new \moodle_url('/mod/contentdesigner/view.php', ['id' => $this->cm->id]);
 
         // Learning tools data.
         $learningtools = [
@@ -400,16 +404,17 @@ class element extends \mod_contentdesigner\elements {
             'coursemodule' => $this->cm->id,
             'contextlevel' => CONTEXT_MODULE,
             'pagetype' => $PAGE->pagetype,
+            'pageurl' => $url ."#chapters-list-" . $chapter->id,
         ];
 
-        // Check if learning tools should be displayed
+        // Check if learning tools should be displayed.
         if (!empty($chapter->learningtools)) {
             $context = \context_module::instance($this->cmid);
-            $hasBookmarkCapability = has_capability('ltool/bookmarks:createbookmarks', $context);
-            $hasNotesCapability = has_capability('ltool/note:createnote', $context);
+            $hasbookmarkcapability = has_capability('ltool/bookmarks:createbookmarks', $context);
+            $hasnotescapability = has_capability('ltool/note:createnote', $context);
 
-            // Only show learning tools if user has at least one capability
-            if ($hasBookmarkCapability || $hasNotesCapability) {
+            // Only show learning tools if user has at least one capability.
+            if ($hasbookmarkcapability || $hasnotescapability) {
                 $learningtools['show'] = true;
                 // Check if the chapter is bookmarked by the user.
                 $learningtools['bookmarked'] = $DB->record_exists('ltool_bookmarks_data', [
@@ -622,11 +627,11 @@ class element extends \mod_contentdesigner\elements {
             // Deleted the Learningtools bookmarks and notes data.
             if ($dbman->table_exists('ltool_bookmarks_data')) {
                 $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
-            } 
+            }
 
             if ($dbman->table_exists('ltool_note_data')) {
                 $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
-            } 
+            }
             if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
                 foreach ($contents as $key => $value) {
                     $element = editor::get_element($value->element, $this->cmid);

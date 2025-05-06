@@ -1,12 +1,9 @@
 .contentdesigner-content .contentdesigner-wrapper .course-content-list li.chapters-list {
     &.completed {
-        &:has(.content-designer-learningtool-bookmark.active),
-        &:has(.content-designer-learningtool-note.active) {
-            border-color: #44ab58;
-        }
+        border-color: #44ab58;
     }
-    &:has(.content-designer-learningtool-bookmark.active),
-    &:has(.content-designer-learningtool-note.active) {
+    &:not(.completed):has(.content-designer-learningtool-bookmark.active),
+    &:not(.completed):has(.content-designer-learningtool-note.active) {
         border-color: #d3d3d3;
     }
 }

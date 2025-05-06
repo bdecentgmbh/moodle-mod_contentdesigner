@@ -41,7 +41,7 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
     // Automatically generated Moodle v4.4.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2025041500) {
+    if ($oldversion && $oldversion < 2025041500) {
         // Define field learningtools to be added to cdelement_chapter.
         $table = new xmldb_table('cdelement_chapter');
         $field = new xmldb_field('learningtools', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'visible');
