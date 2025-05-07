@@ -29,21 +29,74 @@
  * @return bool True on successful upgrade.
  */
 function xmldb_cdelement_chapter_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager();
     // Automatically generated Moodle v4.1.0 release upgrade line.
     // Put any upgrade step following this.
 
     // Automatically generated Moodle v4.2.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
+    if ($oldversion < 1) {
+        // Rename the table element_chapter to cdelement_chapter.
+        $table = new xmldb_table('element_chapter');
+        $cdchaptertable = new xmldb_table('cdelement_chapter');
 
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
+        if ($dbman->table_exists($table)) {
 
-    if ($oldversion && $oldversion < 2025041500) {
-        // Define field learningtools to be added to cdelement_chapter.
+            if (!$dbman->table_exists($cdchaptertable)) {
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_chapter');
+            } else {
+                // Drop the existing table.
+                $dbman->drop_table($cdchaptertable);
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_chapter');
+            }
+        }
+
+        // Rename the table element_chapter_completion to cdelement_chapter_completion.
+        $completiontable = new xmldb_table('element_chapter_completion');
+        $cdcompletiontable = new xmldb_table('cdelement_chapter_completion');
+
+        if ($dbman->table_exists($completiontable)) {
+
+            if (!$dbman->table_exists($cdcompletiontable)) {
+                // Rename the existing table.
+                $dbman->rename_table($completiontable, 'cdelement_chapter_completion');
+            } else {
+                // Drop the existing table.
+                $dbman->drop_table($cdcompletiontable);
+                // Rename the existing table.
+                $dbman->rename_table($completiontable, 'cdelement_chapter_completion');
+            }
+        }
+
+        // Rename admin configuration settings.
+        mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_chapter', 'cdelement_chapter');
+    }
+
+    if ($oldversion < 2024110801 && $oldversion) {
+
+        // Element chapter table.
         $table = new xmldb_table('cdelement_chapter');
+
+        // Title status.
+        $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'position');
+        if (!$dbman->field_exists($table, $titlestatus)) {
+            $dbman->add_field($table, $titlestatus);
+        }
+
+        upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'chapter');
+    }
+
+    if ($oldversion < 2025041500 && $oldversion) {
+
+        // Element chapter table.
+        $table = new xmldb_table('cdelement_chapter');
+
+        // Define field learningtools to be added to cdelement_chapter.
         $field = new xmldb_field('learningtools', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'visible');
 
         // Add field if it doesn't already exist.
