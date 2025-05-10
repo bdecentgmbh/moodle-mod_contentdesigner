@@ -106,8 +106,8 @@ body#page-mod-contentdesigner-view {
             padding: 0;
             margin: 0;
 
-            >li.chapters-list,
-            >li.element-item {
+            > li.chapters-list,
+            > li.element-item {
                 list-style: none;
             }
 
