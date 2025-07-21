@@ -334,8 +334,10 @@ class element extends \mod_contentdesigner\elements {
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
                     'copyurl' => $copyurl,
                     'learningtools' => $learningtools, // Add the learning tools flag.
-                    'hasbookmarkcapability' => has_capability('ltool/bookmarks:createbookmarks', $context),
-                    'hasnotecapability' => has_capability('ltool/note:createnote', $context),
+                    'hasbookmarkcapability' => (!empty($chapter->learningtools))
+                        ? has_capability('ltool/bookmarks:createbookmarks', $context) : false,
+                    'hasnotecapability' => (!empty($chapter->learningtools))
+                        ? has_capability('ltool/note:createnote', $context) : false,
                 ];
                 // Prevent the next chapters when user needs to complete any of activities.
                 if ($prevent || $chapterprevent) {
@@ -408,7 +410,7 @@ class element extends \mod_contentdesigner\elements {
         ];
 
         // Check if learning tools should be displayed.
-        if (!empty($chapter->learningtools)) {
+        if (!empty($chapter->learningtools) && cdelement_chapter_has_learningtools()) {
             $context = \context_module::instance($this->cmid);
             $hasbookmarkcapability = has_capability('ltool/bookmarks:createbookmarks', $context);
             $hasnotescapability = has_capability('ltool/note:createnote', $context);
@@ -625,11 +627,11 @@ class element extends \mod_contentdesigner\elements {
 
             $dbman = $DB->get_manager();
             // Deleted the Learningtools bookmarks and notes data.
-            if ($dbman->table_exists('ltool_bookmarks_data')) {
+            if ($dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid')) {
                 $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
             }
 
-            if ($dbman->table_exists('ltool_note_data')) {
+            if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
                 $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
             }
             if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
