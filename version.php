@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version   = 2025051000;    // The current module version (Date: YYYYMMDDXX).
 $plugin->requires  = 2020061500;    // Requires this Moodle version.
 $plugin->component = 'mod_contentdesigner'; // Full name of the plugin (used for diagnostics).
-$plugin->release = 'v1.1';
+$plugin->release = 'v1.5';
 $plugin->supported = [401, 405];
 $plugin->maturity = MATURITY_STABLE;
