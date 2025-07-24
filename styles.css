@@ -106,8 +106,8 @@ body#page-mod-contentdesigner-view {
             padding: 0;
             margin: 0;
 
-            >li.chapters-list,
-            >li.element-item {
+            > li.chapters-list,
+            > li.element-item {
                 list-style: none;
             }
 
@@ -125,7 +125,7 @@ body#page-mod-contentdesigner-view {
                     margin-left: auto;
                 }
 
-                &.completed button.btn {
+                &.completed button.btn.complete-chapter {
                     border-color: #28a745;
                     background-color: #28a745;
                 }

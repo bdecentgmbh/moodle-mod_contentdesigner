@@ -24,8 +24,12 @@
 
 namespace cdelement_chapter;
 
+defined('MOODLE_INTERNAL') || die();
+
 use mod_contentdesigner\editor;
 use moodle_exception;
+
+require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
 
 /**
  * Definitions of chapter element and it behaviours.
@@ -96,6 +100,19 @@ class element extends \mod_contentdesigner\elements {
         $mform->addElement('select', 'visible', get_string('visibility', 'mod_contentdesigner'), $visibleoptions);
         $mform->addHelpButton('visible', 'visibility', 'mod_contentdesigner');
         $mform->setDefault('visible', $default);
+
+        if (cdelement_chapter_has_learningtools()) {
+            // Learning Tools setting.
+            $learningtoolsoptions = [
+                0 => get_string('disabled', 'mod_contentdesigner'),
+                1 => get_string('enabled', 'mod_contentdesigner'),
+            ];
+            $default = get_config('cdelement_chapter', 'learningtools');
+            $mform->addElement('select', 'learningtools', get_string('learningtools', 'mod_contentdesigner'),
+                $learningtoolsoptions);
+            $mform->addHelpButton('learningtools', 'learningtools', 'mod_contentdesigner');
+            $mform->setDefault('learningtools', $default);
+        }
 
     }
 
@@ -266,6 +283,7 @@ class element extends \mod_contentdesigner\elements {
         if (empty($this->cm)) {
             throw new \moodle_exception('coursemoduleidmissing', 'format_levels');
         }
+        $context = \context_system::instance();
         $list = []; // List of chapters.
         $condition = ['contentdesignerid' => $this->cm->instance];
         $condition += $visible ? ['visible' => 1] : [];
@@ -280,7 +298,7 @@ class element extends \mod_contentdesigner\elements {
                 }
                 $chapter->chaptertitle = $chapter->title;
                 $chapter->title = $this->title_editable($chapter) ?: $this->info()->name;
-                list($prevent, $contents) = $this->generate_chapter_content($chapter, $visible, $render);
+                list($prevent, $contents, $learningtools) = $this->generate_chapter_content($chapter, $visible, $render);
                 if ($visible && empty($contents) && !$chapter->titlestatus) {
                     continue;
                 }
@@ -315,6 +333,11 @@ class element extends \mod_contentdesigner\elements {
                     'chaptercta' => ($render) ?: false,
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
                     'copyurl' => $copyurl,
+                    'learningtools' => $learningtools, // Add the learning tools flag.
+                    'hasbookmarkcapability' => (!empty($chapter->learningtools))
+                        ? has_capability('ltool/bookmarks:createbookmarks', $context) : false,
+                    'hasnotecapability' => (!empty($chapter->learningtools))
+                        ? has_capability('ltool/note:createnote', $context) : false,
                 ];
                 // Prevent the next chapters when user needs to complete any of activities.
                 if ($prevent || $chapterprevent) {
@@ -364,13 +387,54 @@ class element extends \mod_contentdesigner\elements {
      * @return array
      */
     public function generate_chapter_content($chapter, $visible=false, $render=false) {
-        global $DB;
+        global $DB, $USER, $PAGE;
 
         $list = [];
         $prevent = false;
         $record = $DB->get_record('contentdesigner', ['id' => $this->cm->instance]);
+        $url = new \moodle_url('/mod/contentdesigner/view.php', ['id' => $this->cm->id]);
+
+        // Learning tools data.
+        $learningtools = [
+            'show' => false,
+            'chapterid' => $chapter->id,
+            'bookmarked' => false,
+            'notescount' => 0,
+            'userid' => $USER->id,
+            'sesskey' => sesskey(),
+            'course' => $record->course,
+            'coursemodule' => $this->cm->id,
+            'contextlevel' => CONTEXT_MODULE,
+            'pagetype' => $PAGE->pagetype,
+            'pageurl' => $url ."#chapters-list-" . $chapter->id,
+        ];
+
+        // Check if learning tools should be displayed.
+        if (!empty($chapter->learningtools) && cdelement_chapter_has_learningtools()) {
+            $context = \context_module::instance($this->cmid);
+            $hasbookmarkcapability = has_capability('ltool/bookmarks:createbookmarks', $context);
+            $hasnotescapability = has_capability('ltool/note:createnote', $context);
+
+            // Only show learning tools if user has at least one capability.
+            if ($hasbookmarkcapability || $hasnotescapability) {
+                $learningtools['show'] = true;
+                // Check if the chapter is bookmarked by the user.
+                $learningtools['bookmarked'] = $DB->record_exists('ltool_bookmarks_data', [
+                    'itemtype' => 'chapter',
+                    'itemid' => $chapter->id,
+                    'userid' => $USER->id,
+                ]);
+
+                $learningtools['notescount'] = $DB->count_records('ltool_note_data', [
+                    'itemtype' => 'chapter',
+                    'itemid' => $chapter->id,
+                    'userid' => $USER->id,
+                ]);
+            }
+        }
+
         if (empty($chapter->contents)) {
-            return [$prevent, $list];
+            return [$prevent, $list, $learningtools];
         }
         $contents = explode(',', $chapter->contents);
         $sql  = 'SELECT cc.*, ce.id as elementid, ce.shortname as elementname FROM {contentdesigner_content} cc
@@ -427,7 +491,7 @@ class element extends \mod_contentdesigner\elements {
             }
         }
 
-        return [$prevent, $list];
+        return [$prevent, $list, $learningtools];
     }
 
     /**
@@ -559,6 +623,16 @@ class element extends \mod_contentdesigner\elements {
             if ($this->get_instance($instanceid)) {
                 $DB->delete_records($this->tablename(), ['id' => $instanceid]);
                 $DB->delete_records('cdelement_chapter_completion', ['instance' => $instanceid]);
+            }
+
+            $dbman = $DB->get_manager();
+            // Deleted the Learningtools bookmarks and notes data.
+            if ($dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid')) {
+                $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+            }
+
+            if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
+                $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
             }
             if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
                 foreach ($contents as $key => $value) {

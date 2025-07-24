@@ -180,7 +180,7 @@
             <div class="contentdesigner-progress">{{{progressbar}}}</div>
             <ul class="course-content-list">
                 {{#chapters}}
-                    <li class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
+                    <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
                       data-id="{{instancedata.id}}" data-elementshortname="chapter">
                         {{#instancedata.titlestatus}}
                             <div class="chapter-title" data-chapter={{instancedata.id}}>
@@ -212,6 +212,52 @@
                             </li>
                             {{/contents}}
                         </ul>
+
+                        <div class="toolbar-block">
+                          {{#learningtools.show}}
+                          <div class="content-designer-learningtools-toolbar" data-chapter-id="{{learningtools.chapterid}}">
+                              {{#hasbookmarkcapability}}
+                              <button class="btn {{#learningtools.bookmarked}}btn-link{{/learningtools.bookmarked}} content-designer-learningtool-bookmark {{#learningtools.bookmarked}}active{{/learningtools.bookmarked}}"
+                                      data-action="bookmark"
+                                      data-chapter-id="{{learningtools.chapterid}}"
+                                      data-itemtype="chapter"
+                                      data-itemid="{{learningtools.chapterid}}"
+                                      data-userid="{{learningtools.userid}}"
+                                      data-sesskey="{{learningtools.sesskey}}"
+                                      data-courseid="{{learningtools.course}}"
+                                      data-coursemodule="{{learningtools.coursemodule}}"
+                                      data-contextlevel="{{learningtools.contextlevel}}"
+                                      data-pagetype="{{learningtools.pagetype}}"
+                                      data-pageurl="{{learningtools.pageurl}}"
+
+                                    >
+                                  <i class="fa fa-bookmark"></i>
+                                  {{^learningtools.bookmarked}}
+                                    {{#str}}strbookmark, mod_contentdesigner{{/str}}
+                                  {{/learningtools.bookmarked}}
+                                  {{#learningtools.bookmarked}}
+                                    {{#str}}strbookmarked, mod_contentdesigner{{/str}}
+                                  {{/learningtools.bookmarked}}
+                              </button>
+                              {{/hasbookmarkcapability}}
+
+                              {{#hasnotecapability}}
+                                <button class="btn {{#learningtools.notescount}}btn-link active{{/learningtools.notescount}} content-designer-learningtool-note"
+                                      data-action="note"
+                                      data-chapter-id="{{learningtools.chapterid}}"
+                                      data-itemtype="chapter"
+                                      data-itemid="{{learningtools.chapterid}}"
+                                      data-pageurl="{{learningtools.pageurl}}">
+                                <i class="fa fa-pencil-square-o"></i>
+                                {{#str}}strnotes, mod_contentdesigner{{/str}}
+                                  {{#learningtools.notescount}}
+                                    <span class="badge badge-light">({{learningtools.notescount}})</span>
+                                  {{/learningtools.notescount}}
+                                </button>
+                              {{/hasnotecapability}}
+                          </div>
+                          {{/learningtools.show}}
+
                         {{^prevent}}
                         {{#chaptercta}}
                         {{#count}}
@@ -229,6 +275,7 @@
                         {{/count}}
                         {{/chaptercta}}
                         {{/prevent}}
+                        </div>
                     </li>
 
                     {{#prevent}}

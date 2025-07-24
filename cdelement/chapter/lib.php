@@ -39,3 +39,20 @@ function cdelement_chapter_output_fragment_update_progressbar($args) {
         return $element->build_progress();
     }
 }
+
+/**
+ * Check if the learning tools plugin is installed.
+ *
+ * @return bool True if the learning tools plugin is installed, false otherwise.
+ */
+function cdelement_chapter_has_learningtools() {
+    global $DB;
+    $exists = array_key_exists('learningtools', \core_component::get_plugin_list('local'));
+    if ($exists) {
+        $dbman = $DB->get_manager();
+        $fieldsexists = $dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid');
+        return $fieldsexists;
+    }
+
+    return false;
+}

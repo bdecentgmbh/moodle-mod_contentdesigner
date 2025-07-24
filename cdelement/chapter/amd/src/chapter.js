@@ -76,6 +76,11 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
                     completeCTA.innerHTML = completionIcon + ' ' + completionStr;
                     Elements.removeWarning();
                     Elements.refreshContent();
+                    let chapterlist = e.target.closest('.chapters-list');
+
+                    if (chapterlist && !chapterlist.classList.contains('completed')) {
+                        chapterlist.classList.add('completed');
+                    }
                     // TODO: Add a additional function to support loadnext chapter works like replaceonrefresh.
                     // Until hide this loadNextchapters().
                     // Elements.loadNextChapters(chapter);

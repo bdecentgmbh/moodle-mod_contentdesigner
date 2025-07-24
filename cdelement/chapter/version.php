@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'cdelement_chapter';
-$plugin->version = 2025021301;
+$plugin->version = 2025041500;
 $plugin->requires = 2020061500;
 $plugin->supported = [401, 405];
 $plugin->maturity = MATURITY_STABLE;

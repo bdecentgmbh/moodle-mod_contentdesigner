@@ -90,7 +90,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                 var filterChapter = [];
 
                 chapters.forEach((chapter) => {
-
                     var elementSelector = 'li.element-item[data-instanceid="' + chapter.dataset.instanceid + '"]';
                     elementSelector += '[data-elementshortname="' + chapter.dataset.elementshortname + '"]';
                     let chapterSelector = 'li.chapters-list[data-id="' + chapter.dataset.id + '"]';
@@ -135,8 +134,8 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
         };
 
         const removeMarkBtn = (chapterSelector) => {
-            if (document.querySelector(chapterSelector).querySelector('button.complete-chapter') != undefined) {
-                document.querySelector(chapterSelector).querySelector('button.complete-chapter').remove();
+            if (document.querySelector(chapterSelector).querySelector('.toolbar-block') != undefined) {
+                document.querySelector(chapterSelector).querySelector('.toolbar-block').remove();
             }
         };
 
