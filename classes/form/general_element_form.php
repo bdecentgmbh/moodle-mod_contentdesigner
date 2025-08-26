@@ -104,6 +104,19 @@ class general_element_form extends \moodleform {
         $mform->setType('title', PARAM_NOTAGS);
         $mform->addHelpButton('title', 'elementtitle', 'mod_contentdesigner');
 
+        // Description for General element.
+        $mform->addElement('editor', 'description_editor', get_string('elementdescription', 'mod_contentdesigner'), null, [
+            'maxfiles' => 0,
+            'maxbytes' => 0,
+            'context' => $element->context ?? null,
+        ]);
+        $mform->setType('description_editor', PARAM_RAW);
+        $mform->addHelpButton('description_editor', 'elementdescription', 'mod_contentdesigner');
+
+        // Show description for General element.
+        $mform->addElement('advcheckbox', 'showdescription', get_string('showdescription', 'mod_contentdesigner'));
+        $mform->addHelpButton('showdescription', 'showdescription', 'mod_contentdesigner');
+
         // Visibility for General element.
         $visibleoptions = [
             1 => get_string('visible'),

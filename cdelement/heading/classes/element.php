@@ -64,6 +64,15 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Search area definition.
+     *
+     * @return array Table and fields to search.
+     */
+    public function search_area_list(): array {
+        return ['cdelement_heading' => 'heading'];
+    }
+
+    /**
      * Element form element definition.
      *
      * @param moodle_form $mform

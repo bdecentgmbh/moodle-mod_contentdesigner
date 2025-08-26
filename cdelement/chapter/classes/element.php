@@ -449,6 +449,7 @@ class element extends \mod_contentdesigner\elements {
             $editor = \mod_contentdesigner\editor::get_editor($this->cmid);
             $instance = $element->get_instance($content->instance, $visible);
             if ($instance) {
+                $instance->titleplain = $instance->title;
                 $instance->title = $element->title_editable($instance) ?: $element->info()->name;
                 $option = $editor->get_option($instance->id, $element->elementid);
                 // Load the element options classes to instance.

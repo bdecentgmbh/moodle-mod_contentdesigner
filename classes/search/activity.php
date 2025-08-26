@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Content designer module version information
+ * Search area for mod_contentdesigner activity info.
  *
  * @package    mod_contentdesigner
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
+ * @copyright  2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-$plugin->version   = 2025051001;    // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2020061500;    // Requires this Moodle version.
-$plugin->component = 'mod_contentdesigner'; // Full name of the plugin (used for diagnostics).
-$plugin->release = 'v1.1';
-$plugin->supported = [401, 405];
-$plugin->maturity = MATURITY_STABLE;
+namespace mod_contentdesigner\search;
+
+/**
+ * Search area for mod_contentdesigner activities.
+ */
+class activity extends \core_search\base_activity {
+
+    /**
+     * Returns true if this area uses file indexing.
+     *
+     * @return bool
+     */
+    public function uses_file_indexing() {
+        return true;
+    }
+}

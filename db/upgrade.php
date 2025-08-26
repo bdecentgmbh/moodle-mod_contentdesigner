@@ -29,17 +29,43 @@
  * @return bool True on successful upgrade.
  */
 function xmldb_contentdesigner_upgrade($oldversion) {
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
+    global $DB;
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
+    if ($oldversion < 2024110807) {
+        $optionstable = new xmldb_table('contentdesigner_options');
+        $delay = new xmldb_field('delay', XMLDB_TYPE_CHAR, '10', null, null, null, '0', 'duration');
+        if ($dbman->field_exists($optionstable, $delay)) {
+            $dbman->change_field_type($optionstable, $delay);
+        }
 
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
+        upgrade_mod_savepoint(true, 2024110807, 'contentdesigner');
+    }
+
+    if ($oldversion < 2025051001) {
+        // Add description field.
+        $table = new xmldb_table('contentdesigner_options');
+        $field = new xmldb_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null, 'instance');
+        if (!$dbman->field_exists($table, 'description')) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add descriptionformat field.
+        $field = new xmldb_field('descriptionformat', XMLDB_TYPE_INTEGER, '4', null, null, null, '1', 'description');
+        if (!$dbman->field_exists($table, 'descriptionformat')) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add showdescription field.
+        $field = new xmldb_field('showdescription', XMLDB_TYPE_INTEGER, '4', null, null, null, '1', 'descriptionformat');
+        if (!$dbman->field_exists($table, 'showdescription')) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2025051001, 'contentdesigner');
+    }
 
     return true;
+
 }
