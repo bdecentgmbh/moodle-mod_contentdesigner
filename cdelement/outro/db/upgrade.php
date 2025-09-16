@@ -44,9 +44,7 @@ function xmldb_cdelement_outro_upgrade($oldversion) {
         // Rename the table element_outro to cdelement_outro.
         $table = new xmldb_table('element_outro');
         $cdelementtable = new xmldb_table('cdelement_outro');
-
         if ($dbman->table_exists($table)) {
-
             if (!$dbman->table_exists($cdelementtable)) {
                 // Rename the existing table.
                 $dbman->rename_table($table, 'cdelement_outro');
@@ -64,15 +62,13 @@ function xmldb_cdelement_outro_upgrade($oldversion) {
     }
 
     if ($oldversion < 2024110801 && $oldversion) {
-
         // Element outro table.
         $table = new xmldb_table('cdelement_outro');
-
         // Outrocontent.
         $outrocontent = new xmldb_field('outrocontent', XMLDB_TYPE_TEXT, null, null, null, null, null, 'secondaryurl');
         // Outrocontent format.
-        $outrocontentformat = new xmldb_field('outrocontentformat', XMLDB_TYPE_INTEGER, '2', null, null, null, null,
-            'outrocontent');
+        $outrocontentformat = new xmldb_field('outrocontentformat', XMLDB_TYPE_INTEGER, '2', null,
+        null, null, null, 'outrocontent');
         // Primary button.
         $primarybutton = new xmldb_field('primarybutton', XMLDB_TYPE_INTEGER, '9', null, null, null, '0', 'outrocontentformat');
         // Secondary button.

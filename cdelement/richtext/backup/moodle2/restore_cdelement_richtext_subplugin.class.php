@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore cdelement_richtext.
  */
 class restore_cdelement_richtext_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array

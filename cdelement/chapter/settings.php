@@ -27,7 +27,6 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
 
-
 // Chapter visibility.
 $name = 'cdelement_chapter/visibility';
 $title = get_string('visibility', 'mod_contentdesigner');
@@ -46,9 +45,7 @@ $description = get_string('titlestatus_help', 'mod_contentdesigner');
 $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
 $page->add($setting);
 
-
 if (cdelement_chapter_has_learningtools()) {
-
     // Learning Tools setting.
     $name = 'cdelement_chapter/learningtools';
     $title = get_string('learningtools', 'mod_contentdesigner');

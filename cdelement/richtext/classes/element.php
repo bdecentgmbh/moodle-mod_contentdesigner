@@ -30,7 +30,6 @@ use html_writer;
  * Richtext element instance extend the contentdesigner/elements base.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -111,7 +110,13 @@ class element extends \mod_contentdesigner\elements {
     public function render($data) {
         $context = $this->get_context();
         $content = file_rewrite_pluginfile_urls(
-            $data->content, 'pluginfile.php', $context->id, 'mod_contentdesigner', 'cdelement_richtext_content', $data->instance);
+            $data->content,
+            'pluginfile.php',
+            $context->id,
+            'mod_contentdesigner',
+            'cdelement_richtext_content',
+            $data->instance
+        );
         $content = format_text($content, $data->contentformat, ['context' => $context->id]);
         return html_writer::div(html_writer::div($content, 'richtext-content'), 'richtet-content-block');
     }

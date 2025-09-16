@@ -38,10 +38,9 @@ use core_privacy\local\request\approved_contextlist;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        \core_privacy\local\metadata\provider,
-        \core_privacy\local\request\core_userlist_provider,
-        \mod_contentdesigner\privacy\contentdesignerelements_provider {
-
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
      * List of used data fields summary meta key.
      *
@@ -59,8 +58,7 @@ class provider implements
             'score' => 'privacy:metadata:completion:score',
             'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
-        $collection->add_database_table('cdelement_h5p_completion', $completionmetadata,
-            'privacy:metadata:h5pcompletion');
+        $collection->add_database_table('cdelement_h5p_completion', $completionmetadata, 'privacy:metadata:h5pcompletion');
 
         return $collection;
     }
@@ -78,7 +76,7 @@ class provider implements
     public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
         global $DB;
 
-        list($insql, $inparams) = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
         $sql = "SELECT ec.*, ecc.userid AS userid, ecc.completion AS completion,
             ecc.timecreated AS timecompleted, ecc.success, ecc.score
             FROM {cdelement_h5p} ec
@@ -140,12 +138,11 @@ class provider implements
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
 
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
+        [$userinsql, $userparam] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
         $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $contentdesigner->id]);
         $ids = array_column($list, 'id');
-        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_h5p_completion', "userid {$userinsql} AND instance $insql ",
-            $userinparams + $inparams );
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+        $DB->delete_records_select('cdelement_h5p_completion', "userid {$userinsql} AND instance $insql ", $userparam + $inparams);
     }
 
     /**
@@ -165,9 +162,9 @@ class provider implements
             $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
             $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $instanceid]);
             $ids = array_column($list, 'id');
-            list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select('cdelement_h5p_completion', "userid=:userid AND instance $insql",
-                ['userid' => $userid] + $inparams );
+            [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+            $DB->delete_records_select('cdelement_h5p_completion', "userid=:userid AND instance $insql", [
+            'userid' => $userid] + $inparams);
         }
     }
 
@@ -189,8 +186,7 @@ class provider implements
         }
         $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $cm->instance]);
         $ids = array_column($list, 'id');
-        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
         $DB->delete_records_select('cdelement_h5p_completion', "instance $insql", $inparams);
-
     }
 }

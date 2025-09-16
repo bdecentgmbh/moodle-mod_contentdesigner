@@ -32,7 +32,7 @@ $PAGE->set_pagelayout('incourse');
 
 // Trigger instances list viewed event.
 $event = \mod_contentdesigner\event\course_module_instance_list_viewed::create(
-    ['context' => \context_course::instance($course->id)]);
+['context' => \context_course::instance($course->id)]);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
@@ -43,7 +43,7 @@ $strintro        = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/contentdesigner/index.php', ['id' => $id]);
-$PAGE->set_title($course->shortname.': '.$strcontentdesigners);
+$PAGE->set_title($course->shortname . ': ' . $strcontentdesigners);
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add($strcontentdesigners);
 echo $OUTPUT->header();
@@ -59,7 +59,7 @@ $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
-    $strsectionname = get_string('sectionname', 'format_'.$course->format);
+    $strsectionname = get_string('sectionname', 'format_' . $course->format);
     $table->head  = [$strsectionname, $strname, $strintro];
     $table->align = ['center', 'left', 'left'];
 } else {
@@ -83,14 +83,14 @@ foreach ($contentdesigners as $contentdesigner) {
             $currentsection = $contentdesigner->section;
         }
     } else {
-        $printsection = '<span class="smallinfo">'.userdate($contentdesigner->timemodified)."</span>";
+        $printsection = '<span class="smallinfo">' . userdate($contentdesigner->timemodified) . "</span>";
     }
 
     $class = $contentdesigner->visible ? '' : 'class="dimmed"'; // Hidden modules are dimmed.
 
     $table->data[] = [
         $printsection,
-        "<a $class href=\"view.php?id=$cm->id\">".format_string($contentdesigner->name)."</a>",
+        "<a $class href=\"view.php?id=$cm->id\">" . format_string($contentdesigner->name) . "</a>",
         format_module_intro('contentdesigner', $contentdesigner, $cm->id),
     ];
 }

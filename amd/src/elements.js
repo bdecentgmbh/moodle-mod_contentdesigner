@@ -27,8 +27,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesigner/anime'],
-    function ($, Fragment, Templates, LoadingIcon, anime) {
+define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/notification', 'mod_contentdesigner/anime'],
+    function($, Fragment, Templates, LoadingIcon, Notification, anime) {
 
         /**
          * Selectors.
@@ -128,7 +128,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                 animateElements();
                 contentWrapper().dispatchEvent(new CustomEvent('elementupdate')); // Dispatch the element update event.
             }
-            ).catch();
+            ).catch((error) => Notification.exception(error));
 
             LoadingIcon.addIconToContainerRemoveOnCompletion(button(), promise);
         };
@@ -148,7 +148,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
             }
         };
 
-        const loadNextChapters = function (currentChapter) {
+        const loadNextChapters = function(currentChapter) {
             var params = {
                 cmid: contentDesignerData().cmid,
                 chapter: currentChapter
@@ -171,7 +171,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                 });
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
                 animateElements();
-            }).catch();
+            }).catch((error) => Notification.exception(error));
 
             LoadingIcon.addIconToContainerRemoveOnCompletion(button(), promise);
         };
@@ -180,7 +180,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
 
             Fragment.loadFragment(
                 'mod_contentdesigner', SELECTORS.fragments.nextContents,
-                contentDesignerData().contextid, { contentid: currentElement.dataset.contentid }
+                contentDesignerData().contextid, {contentid: currentElement.dataset.contentid}
             ).done((html, js) => {
 
                 const selector = currentElement.parentNode.parentNode;
@@ -195,7 +195,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
          * @param {HTMLElement} el Element to verify
          * @returns {bool}
          */
-        const inView = function (el) {
+        const inView = function(el) {
             const rect = el.getBoundingClientRect();
             return (rect.top >= 0 && rect.left >= 0
                 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
@@ -206,7 +206,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
         /**
          * Animate the module elements when the elements in the viewport.
          */
-        const animateElements = function () {
+        const animateElements = function() {
             entranceAnimation(); // Init entrance animation.
             scrollingEffects();
         };
@@ -217,18 +217,18 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
         function entranceAnimation() {
 
             var leftFrame = [
-                { transform: 'translate3d(-100%, 0, 0)' },
-                { transform: 'translate3d(0, 0, 0)', opacity: 1 },
+                {transform: 'translate3d(-100%, 0, 0)'},
+                {transform: 'translate3d(0, 0, 0)', opacity: 1},
             ];
 
             var rightFrame = [
-                { transform: 'translate3d(100%, 0, 0)' },
-                { transform: 'translate3d(10%, 0, 0)', opacity: 1 },
+                {transform: 'translate3d(100%, 0, 0)'},
+                {transform: 'translate3d(10%, 0, 0)', opacity: 1},
             ];
 
             var fadeIn = [
-                { opacity: 0 },
-                { opacity: 1 }
+                {opacity: 0},
+                {opacity: 1}
             ];
 
             const items = document.querySelectorAll('.element-item .general-options.animation');
@@ -260,9 +260,9 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                                 frame = rightFrame;
                             }
 
-                            setTimeout(function () {
+                            setTimeout(function() {
                                 node.classList.add('animated');
-                                item.animate(frame, { duration: speed || 1000 });
+                                item.animate(frame, {duration: speed || 1000});
                             }, data.delay);
                             observer.unobserve(item);
                         }
@@ -278,7 +278,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
          */
         function scrollingEffects() {
 
-            document.querySelectorAll('.element-item').forEach(function (item) {
+            document.querySelectorAll('.element-item').forEach(function(item) {
                 animate(item);
             });
             /* Item = document.querySelectorAll('.element-item')[5];
@@ -308,25 +308,25 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
                 easing: 'easeInOutSine'
             });
 
-            document.getElementById('page').addEventListener('scroll', function () {
+            document.getElementById('page').addEventListener('scroll', function() {
                 document.getElementById('page').style.overflow = 'visible';
                 var scroll = animateOnScroll(item, animations[id].duration);
                 animations[id].seek(scroll);
             });
-            window.addEventListener('scroll', function () {
+            window.addEventListener('scroll', function() {
                 var scroll = animateOnScroll(item, animations[id].duration);
                 animations[id].seek(scroll);
             });
             var modalBody = document.querySelector('.path-course-view .modal-dialog-scrollable .modal-body');
             if (modalBody !== null) {
-                modalBody.addEventListener('scroll', function (e) {
+                modalBody.addEventListener('scroll', function(e) {
                     var scroll = animateOnScroll(item, animations[id].duration, e.target);
                     animations[id].seek(scroll);
                 });
             }
 
-            window.addEventListener('load', function () {
-                setTimeout(function () {
+            window.addEventListener('load', function() {
+                setTimeout(function() {
                     document.getElementById('page').style.overflow = 'visible';
                 }, 500);
                 var scroll = animateOnScroll(item, animations[id].duration);
@@ -344,7 +344,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon', 'mod_co
          * @param {HTMLElement} scrollElement
          * @returns {bool}
          */
-        const animateOnScroll = function (item, dataspeed, scrollElement = null) {
+        const animateOnScroll = function(item, dataspeed, scrollElement = null) {
 
             var node = item.childNodes[1];
             if (node.dataset.scrolleffect == undefined || node.dataset.scrolleffect == '') {

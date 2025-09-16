@@ -27,7 +27,7 @@
 
 define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
     'core/templates', 'core/loadingicon', 'core/notification', 'core/str'],
-    function ($, Elements, AJAX, Fragment, Templates, LoadingIcon, Notification, Str) {
+    function($, Elements, AJAX, Fragment, Templates, LoadingIcon, Notification, Str) {
 
         const chapterCTA = 'button.complete-chapter';
 
@@ -36,7 +36,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
         let completionIcon, completionStr;
 
         const initEventListeners = () => {
-            Templates.renderPix('e/tick', 'core').done(function (img) {
+            Templates.renderPix('e/tick', 'core').done(function(img) {
                 completionIcon = img;
             });
             Str.get_string('completion_manual:done', 'course').done((str) => {
@@ -114,7 +114,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
         };
 
         const updateProgress = () => {
-            var params = { cmid: Elements.contentDesignerData().cmid };
+            var params = {cmid: Elements.contentDesignerData().cmid};
             Fragment.loadFragment('cdelement_chapter', 'update_progressbar',
                 Elements.contentDesignerData().contextid, params).done((html, js) => {
                     Templates.replaceNode(progressBar, html, js);
@@ -122,7 +122,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/fragment',
         };
 
         return {
-            init: function () {
+            init: function() {
                 initEventListeners();
             },
         };

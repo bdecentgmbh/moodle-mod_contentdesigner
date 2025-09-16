@@ -30,7 +30,6 @@ use html_writer;
  * Mod contnet designer editor class.
  */
 class editor {
-
     /**
      * Coursemodule instance
      *
@@ -97,7 +96,7 @@ class editor {
      * @param int $chapterafter Load the chapters after the given chapter.
      * @return string HTML of the elements.
      */
-    public function render_elements($chapterafter=false) {
+    public function render_elements($chapterafter = false) {
         global $OUTPUT;
 
         $data = [
@@ -156,7 +155,7 @@ class editor {
      * @return editor Mod_contentdeisnger/editor class instance.
      */
     public static function get_editor($cmid) {
-        list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+        [$course, $cm] = get_course_and_cm_from_cmid($cmid);
         return new self($cm, $course);
     }
 
@@ -180,8 +179,7 @@ class editor {
             $description = html_writer::span($info->description, 'element-description');
             $name = html_writer::span($info->name, 'element-name');
 
-            $li[] = html_writer::tag('li',
-                $info->icon . $name . $description,
+            $li[] = html_writer::tag('li', $info->icon . $name . $description,
                 ['data-element' => $info->shortname, 'class' => 'element-item']
             );
         }
@@ -196,12 +194,12 @@ class editor {
      * @param int|null $cmid
      * @return \elements
      */
-    public static function get_element($element, $cmid=null) {
+    public static function get_element($element, $cmid = null) {
         global $DB;
         if (is_number($element)) {
             $element = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $element]);
         }
-        $class = 'cdelement_'.$element.'\element';
+        $class = 'cdelement_' . $element . '\element';
         if (class_exists($class)) {
             return new $class($cmid);
         } else {
@@ -232,8 +230,8 @@ class editor {
         foreach ($plugins as $plugin => $version) {
             $elementobj = self::get_element($plugin, $cmid);
             $areafiles = (method_exists($elementobj, 'areafiles')) ? $elementobj->areafiles() : [];
-            array_walk($areafiles, function(&$areafile) use ($plugin) {
-                $areafile = "cdelement_".$plugin."_".$areafile;
+            array_walk($areafiles, function (&$areafile) use ($plugin) {
+                $areafile = "cdelement_" . $plugin . "_" . $areafile;
             });
             $files = array_merge($files, $areafiles);
         }
@@ -251,8 +249,7 @@ class editor {
         global $OUTPUT, $DB;
 
         $element = self::get_element('outro', $this->cm->id);
-        $instance = $DB->get_field('cdelement_outro', 'id',
-            ['contentdesignerid' => $this->cm->instance]);
+        $instance = $DB->get_field('cdelement_outro', 'id', ['contentdesignerid' => $this->cm->instance]);
 
         if (!$instance) {
             $instance = $element->create_basic_instance($this->cm->instance);
@@ -311,11 +308,11 @@ class editor {
      */
     public function get_option($instanceid, $elementid) {
         global $DB;
-        $record = $DB->get_record('contentdesigner_options', ['instance' => $instanceid, 'element' => $elementid],
-            '*', IGNORE_MULTIPLE);
+        $record = $DB->get_record('contentdesigner_options', [
+        'instance' => $instanceid, 'element' => $elementid], '*', IGNORE_MULTIPLE);
         if (!empty($record)) {
             $element = self::get_element($record->element, $this->cm->id);
-            $record->backimage = $this->get_element_areafiles($element->shortname."elementbg", $instanceid);
+            $record->backimage = $this->get_element_areafiles($element->shortname . "elementbg", $instanceid);
         }
         return $record;
     }
@@ -329,21 +326,22 @@ class editor {
      * @param context_module $context Course module instance object.
      * @return string File Path of the given fileareas, If not false.
      */
-    public function get_element_areafiles($filearea, $itemid=0, $component='mod_contentdesigner', $context=null) {
+    public function get_element_areafiles($filearea, $itemid = 0, $component = 'mod_contentdesigner', $context = null) {
         $context = ($context === null) ? \context_module::instance($this->cm->id) : $context;
-        $files = get_file_storage()->get_area_files(
-            $context->id, $component, $filearea, $itemid, 'itemid, filepath, filename', false);
+        $files = get_file_storage()->get_area_files($context->id, $component, $filearea, $itemid,
+        'itemid, filepath, filename', false);
         if (empty($files) ) {
             return '';
         }
         $file = current($files);
         $fileurl = \moodle_url::make_pluginfile_url(
-            $file->get_contextid(),
-            $file->get_component(),
-            $file->get_filearea(),
-            $file->get_itemid(),
-            $file->get_filepath(),
-            $file->get_filename(), false);
+        $file->get_contextid(),
+        $file->get_component(),
+        $file->get_filearea(),
+        $file->get_itemid(),
+        $file->get_filepath(),
+        $file->get_filename(),
+        false);
         return $fileurl->out(false);
     }
 
@@ -355,7 +353,7 @@ class editor {
      * @param int|null $chapterid
      * @return string HTML of the element to insert to editor.
      */
-    public function insert_element($elementid, $chapterid=null) {
+    public function insert_element($elementid, $chapterid = null) {
         global $OUTPUT, $DB;
 
         $data = (object) ['cm' => $this->cm->id, 'course' => $this->course->id];
@@ -367,9 +365,7 @@ class editor {
             // Create basic instance for element EX:elemnet_h5p.
             $data->instance = $element->create_basic_instance($this->cm->instance);
             $data->instancedata = $element->get_instance($data->instance);
-
             if ($element->supports_content()) {
-
                 if ($chapterid == null) {
                     $chapterid = $this->chapter->get_default($this->cm->instance, true);
                 }
@@ -403,7 +399,6 @@ class editor {
                 $elementsbox = $OUTPUT->render_from_template('mod_contentdesigner/elementbox', $data);
                 return html_writer::tag('li', $elementsbox, ['class' => 'elements_list']);
             }
-
         } catch (\Exception $e) {
             // Extra cleanup steps.
             $transaction->rollback($e); // Rethrows exception.
@@ -419,7 +414,7 @@ class editor {
      * @param bool $position Insert the element in top( means 1) of the chapter or bootom
      * @return object content data to insert.
      */
-    public function add_module_element($element, $instanceid, $chapter, $position=0) {
+    public function add_module_element($element, $instanceid, $chapter, $position = 0) {
         global $DB;
 
         $content = (object) [
@@ -448,7 +443,6 @@ class editor {
             }
             $content->position = $lastelement ? $lastelement + 1 : 1;
             $content->id = $DB->insert_record('contentdesigner_content', $content);
-
         }
         return $content;
     }
@@ -475,7 +469,7 @@ class editor {
      */
     public function duplicate($id, $element, $newchapterid = 0) {
         global $DB;
-        $tablename = 'cdelement_'.$element;
+        $tablename = 'cdelement_' . $element;
         $context = \context_module::instance($this->cm->id);
         $elementobj = self::get_element($element, $this->cm->id);
 
@@ -516,7 +510,6 @@ class editor {
         // Retrieve the original chapter record.
         $chapter = $DB->get_record('cdelement_chapter', ['id' => $id], '*', MUST_EXIST);
         if ($chapter) {
-
             // Get the element object for the chapter element.
             $elementobj = self::get_element('chapter', $this->cm->id);
 

@@ -30,7 +30,6 @@ use admin_settingpage;
  * Element subplugin define classes.
  */
 class cdelement extends \core\plugininfo\base {
-
     /**
      * Returns the information about plugin availability
      *
@@ -62,7 +61,7 @@ class cdelement extends \core\plugininfo\base {
      * @return null|string node name or null if plugin does not create settings node (default)
      */
     public function get_settings_section_name() {
-        return 'cdelement'.$this->name.'settings';
+        return 'cdelement' . $this->name . 'settings';
     }
     /**
      * Loads plugin settings to the settings tree
@@ -106,7 +105,7 @@ class cdelement extends \core\plugininfo\base {
         global $DB, $CFG;
 
         $records = $DB->get_records('config_plugins', ['plugin' => $pluginname]);
-        $existingnewpluginrecords = $DB->get_records_menu('config_plugins',  ['plugin' => $newpluginname], 'id', 'id,name');
+        $existingnewpluginrecords = $DB->get_records_menu('config_plugins', ['plugin' => $newpluginname], 'id', 'id,name');
         if ($records) {
             foreach ($records as $record) {
                 if (!in_array($record->name, $existingnewpluginrecords)) {
@@ -167,9 +166,9 @@ class cdelement extends \core\plugininfo\base {
         if (class_exists('\core\output\progress_trace\progress_trace_buffer')) {
             // Uninstall the plugin addon_report, this will remove the missing from the disk issue.
             $progress = new \core\output\progress_trace\progress_trace_buffer(
-                new \core\output\progress_trace\text_progress_trace(), false);
+            new \core\output\progress_trace\text_progress_trace(), false);
         } else {
-            require_once($CFG->libdir.'/weblib.php');
+            require_once($CFG->libdir . '/weblib.php');
             $progress = new \progress_trace_buffer(new \text_progress_trace(), false);
         }
 

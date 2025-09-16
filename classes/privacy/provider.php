@@ -25,7 +25,6 @@ namespace mod_contentdesigner\privacy;
 
 use stdClass;
 use context;
-
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\userlist;
@@ -43,7 +42,6 @@ class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
-
     /**
      * Get metadata about this plugin's data usage.
      *
@@ -99,7 +97,6 @@ class provider implements
             'delete_data_for_users',
             [$userlist]
         );
-
     }
 
     /**
@@ -159,7 +156,7 @@ class provider implements
         }
         // Context user.
         $user = $contextlist->get_user();
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT cm.id AS cmid, c.id AS contextid,
             p.id AS pid, p.course AS pcourse
@@ -199,7 +196,7 @@ class provider implements
                     unset($element['contentdesignerid']);
                     $contextdata = (object)array_merge((array)$contextdata, $element);
                     writer::with_context($context)->export_data(
-                        [get_string('privacy:'.$component, 'cdelement_'.$component)],
+                        [get_string('privacy:' . $component, 'cdelement_' . $component)],
                         $contextdata
                     );
                 }
@@ -224,5 +221,4 @@ class provider implements
             []
         );
     }
-
 }

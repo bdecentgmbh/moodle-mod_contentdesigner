@@ -161,7 +161,6 @@ class elements extends \core_search\base_mod {
 
         $prefix = $DB->get_prefix();
         foreach ($plugins as $plugin => $version) {
-            print_r($plugin);
             $elementobj = editor::get_element($plugin, null);
             $areafiles = (method_exists($elementobj, 'search_area_list')) ? $elementobj->search_area_list() : [];
 

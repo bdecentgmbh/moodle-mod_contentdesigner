@@ -31,7 +31,6 @@ use moodle_url;
  * Contentdesigner render to create custom navigation of previous and next modules.
  */
 class renderer extends core_renderer {
-
     /**
      * Activity navigation to fetch the next and previous modules.
      *
@@ -43,16 +42,16 @@ class renderer extends core_renderer {
      *
      * @return string|\core_course\output\activity_navigation
      */
-    public function activity_navigation($contentdesigner=0, $context=null) {
+    public function activity_navigation($contentdesigner = 0, $context = null) {
         // First we should check if we want to add navigation.
         $context = $context ?: $this->page->context;
-        if (($this->page->pagelayout !== 'incourse' && $this->page->pagelayout !== 'frametop')
-            || $context->contextlevel != CONTEXT_MODULE) {
+        if (($this->page->pagelayout !== 'incourse' && $this->page->pagelayout !== 'frametop') ||
+        $context->contextlevel != CONTEXT_MODULE) {
             return '';
         }
 
         if ($contentdesigner) {
-            list($course, $cm) = get_course_and_cm_from_instance($contentdesigner, 'contentdesigner');
+            [$course, $cm] = get_course_and_cm_from_instance($contentdesigner, 'contentdesigner');
         } else {
             $course = $this->page->cm->get_course();
             $cm = $this->page->cm;

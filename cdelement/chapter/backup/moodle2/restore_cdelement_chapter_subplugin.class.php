@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore chapter element subplugin.
  */
 class restore_cdelement_chapter_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array
@@ -62,5 +61,4 @@ class restore_cdelement_chapter_subplugin extends restore_subplugin {
         $newchapterid = $DB->insert_record('cdelement_chapter', $data);
         $this->set_mapping('chapterid', $oldchapterid, $newchapterid);
     }
-
 }

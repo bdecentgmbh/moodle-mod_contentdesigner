@@ -41,13 +41,11 @@ class behat_cdelement_outro extends behat_base {
      * @Given /^I check outro image$/
      */
     public function i_check_outro_image() {
-        $this->execute('behat_general::the_image_at_should_be_identical_to',
-        [
-            "//div[contains(@class, 'element-outro')]//img[contains(@src, 'pluginfile.php')
-            and contains(@src, '/mod_contentdesigner/cdelement_outro_outroimage/')]",
-            "xpath_element",
-            "mod/contentdesigner/cdelement/outro/tests/behat/assets/c1.jpg",
+        $this->execute('behat_general::the_image_at_should_be_identical_to', [
+        "//div[contains(@class, 'element-outro')]//img[contains(@src, 'pluginfile.php')
+        and contains(@src, '/mod_contentdesigner/cdelement_outro_outroimage/')]",
+        "xpath_element",
+        "mod/contentdesigner/cdelement/outro/tests/behat/assets/c1.jpg",
         ]);
     }
-
 }

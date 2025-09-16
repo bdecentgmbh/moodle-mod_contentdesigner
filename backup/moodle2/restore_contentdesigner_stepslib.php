@@ -32,7 +32,6 @@ use mod_contentdesigner\editor;
  * Structure step to restore contentdesigner activity.
  */
 class restore_contentdesigner_activity_structure_step extends restore_activity_structure_step {
-
     /**
      * Restore steps structure definition.
      */
@@ -47,17 +46,17 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
 
         // Restore elements.
         $elements = new restore_path_element('contentdesigner_elements',
-            '/activity/contentdesigner/elements/contentdesigner_elements');
+        '/activity/contentdesigner/elements/contentdesigner_elements');
         $paths[] = $elements;
 
         $this->add_subplugin_structure('cdelement', $element);
 
         $paths[] = new restore_path_element('contentdesigner_content',
-            '/activity/contentdesigner/content/contentdesigner_content');
+        '/activity/contentdesigner/content/contentdesigner_content');
 
         // Restor general options of element instance.
         $paths[] = new restore_path_element('contentdesigner_options',
-            '/activity/contentdesigner/contentdesigneropitons/contentdesigner_options');
+        '/activity/contentdesigner/contentdesigneropitons/contentdesigner_options');
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -117,7 +116,7 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
         $elementname = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $data->element]);
 
         // Update the new content and chapter instance.
-        $data->instance = $this->get_mappingid($elementname."_instanceid", $data->instance);
+        $data->instance = $this->get_mappingid($elementname . "_instanceid", $data->instance);
         $data->chapter = $this->get_mappingid("chapterid", $data->chapter);
 
         $data->timemodified = time();
@@ -150,7 +149,7 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
         $data->element = $elementid;
 
         $elementname = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $data->element]);
-        $data->instance = $this->get_mappingid($elementname."_instanceid", $data->instance);
+        $data->instance = $this->get_mappingid($elementname . "_instanceid", $data->instance);
         $data->timemodified = time();
         // Insert the general options for the element instance.
         $DB->insert_record('contentdesigner_options', $data);

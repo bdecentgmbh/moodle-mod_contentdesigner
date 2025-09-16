@@ -1,4 +1,5 @@
-.contentdesigner-content.limitedwidth .contentdesigner-wrapper .content .contentdesigner-progress + .course-content-list li.chapters-list {
+.contentdesigner-content.limitedwidth .contentdesigner-wrapper .content
+.contentdesigner-progress + .course-content-list li.chapters-list {
     &.completed {
         border-color: #44ab58;
     }

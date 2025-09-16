@@ -23,8 +23,7 @@
 
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
     'core/fragment', 'core/templates', 'core/notification', 'core/loadingicon', 'core/modal'],
-    function ($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
-
+    function($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
         var contextID;
 
         var cmID;
@@ -54,7 +53,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                     var instanceId = moduleElement.getAttribute('data-instanceid');
                     if (action === 'delete') {
                         // Deleting requires confirmation.
-                        confirmDeleteElement(element, function () {
+                        confirmDeleteElement(element, function() {
                             editElement(moduleElement, elementId, instanceId, action);
                         });
                     }
@@ -198,7 +197,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @param {Number} instanceId
          * @param {String} action Action of the current clicked element.
          */
-        var editElement = function (moduleElement, elementId, instanceId, action) {
+        var editElement = function(moduleElement, elementId, instanceId, action) {
             var args = {
                 cmid: cmID,
                 action: action,
@@ -217,17 +216,17 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @param {String} element
          * @param {Function} onconfirm function to execute on confirm
          */
-        var confirmDeleteElement = function (element, onconfirm) {
+        var confirmDeleteElement = function(element, onconfirm) {
             var elementTypename = 'cdelement_'.element;
-            Str.get_string('pluginname', elementTypename).done(function () {
+            Str.get_string('pluginname', elementTypename).done(function() {
                 var plugindata = {
                     element: element
                 };
                 Str.get_strings([
-                    { key: 'confirm', component: 'core' },
-                    { key: 'deletechecktype', component: 'mod_contentdesigner', param: plugindata },
-                    { key: 'yes' },
-                    { key: 'no' }
+                    {key: 'confirm', component: 'core'},
+                    {key: 'deletechecktype', component: 'mod_contentdesigner', param: plugindata},
+                    {key: 'yes'},
+                    {key: 'no'}
                 ]).done(function (s) {
                     Notification.confirm(s[0], s[1], s[2], s[3], onconfirm);
                 }
@@ -243,17 +242,17 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @returns {Object}
          */
         const buildAddElementModal = (position = "bottom", chapter = 0) => {
-            var params = { cmid: cmID };
-
+            var params = {cmid: cmID};
+            var promise;
             if ((typeof Modal.registerModalType !== 'undefined')) {
-                var promise = Modal.create({
+                promise = Modal.create({
                     type: ModalFactory.TYPE,
                     title: Str.get_string('addelement', 'contentdesigner'),
                     body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),
                     large: false,
                 });
             } else {
-                var promise = ModalFactory.create({
+                promise = ModalFactory.create({
                     type: ModalFactory.TYPE,
                     title: Str.get_string('addelement', 'contentdesigner'),
                     body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),
@@ -262,9 +261,9 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
             }
 
             promise.then(modal => {
-                modal.getRoot().on(ModalEvents.bodyRendered, function () {
+                modal.getRoot().on(ModalEvents.bodyRendered, function() {
                     modal.getRoot().get(0).querySelectorAll('.element-item').forEach((e) => {
-                        e.addEventListener('click', function (e) {
+                        e.addEventListener('click', function(e) {
                             if (e.target.closest('.element-item')) {
                                 var element = e.currentTarget.dataset.element;
                                 var params = {
@@ -286,7 +285,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
         };
 
         return {
-            init: function (contextid, cmid) {
+            init: function(contextid, cmid) {
                 return editor(contextid, cmid);
             }
         };

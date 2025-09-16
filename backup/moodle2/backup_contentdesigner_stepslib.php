@@ -28,7 +28,6 @@ use mod_contentdesigner\editor;
  * Define the complete contentdesigner structure for backup, with file and id annotations.
  */
 class backup_contentdesigner_activity_structure_step extends backup_activity_structure_step {
-
     /**
      * Define backup steps structure.
      */
@@ -86,7 +85,7 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
 
         $plugins = editor::get_elements();
         foreach ($plugins as $plugin => $version) {
-            $filearea = $plugin.'elementbg';
+            $filearea = $plugin . 'elementbg';
             $contentdesigneroptions->annotate_files('mod_contentdesigner', $filearea, null);
         }
 

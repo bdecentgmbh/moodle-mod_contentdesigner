@@ -43,8 +43,7 @@ function contentdesigner_add_instance($data, $mform = null) {
     contentdesigner_process_pre_save($data);
     $moduleid = $DB->insert_record('contentdesigner', $data);
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule,
-    'contentdesigner', $moduleid, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $moduleid, $completiontimeexpected);
     return $moduleid;
 }
 
@@ -74,8 +73,7 @@ function contentdesigner_update_instance($data, $mform) {
     $data->id = $data->instance;
     contentdesigner_process_pre_save($data);
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule,
-    'contentdesigner', $data->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $data->id, $completiontimeexpected);
     $DB->update_record('contentdesigner', $data);
     return true;
 }
@@ -109,11 +107,11 @@ function contentdesigner_delete_instance($id) {
 
     $celements = $DB->get_records('contentdesigner_elements', ['visible' => 1]);
     foreach ($celements as $celement) {
-        if ($elementdata = $DB->get_records('cdelement_'.$celement->shortname, ['contentdesignerid' => $record->id])) {
+        if ($elementdata = $DB->get_records('cdelement_' . $celement->shortname, ['contentdesignerid' => $record->id])) {
             foreach ($elementdata as $element) {
                 $elementobj = editor::get_element($celement->id, $cm->id);
                 $elementobj->delete_element($element->id);
-                $DB->delete_records('cdelement_'.$celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
+                $DB->delete_records('cdelement_' . $celement->shortname, ['contentdesignerid' => $element->contentdesignerid]);
             }
         }
     }
@@ -135,7 +133,7 @@ function contentdesigner_supports($feature) {
         return MOD_PURPOSE_CONTENT;
     }
 
-    switch($feature) {
+    switch ($feature) {
         case FEATURE_GROUPS:
             return false;
         case FEATURE_GROUPINGS:
@@ -292,7 +290,7 @@ function contentdesigner_output_fragment_get_elements_list($args) {
  * @return string
  */
 function contentdesigner_output_fragment_insert_element($args) {
-    list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $editor = new mod_contentdesigner\editor($cm, $course);
     $chapter = $args['chapter'] ?? 0;
     return $editor->insert_element($args['elementID'], $chapter);
@@ -305,7 +303,7 @@ function contentdesigner_output_fragment_insert_element($args) {
  * @return string
  */
 function contentdesigner_output_fragment_load_elements($args) {
-    list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $editor = new mod_contentdesigner\editor($cm, $course);
     return $editor->render_elements();
 }
@@ -317,7 +315,7 @@ function contentdesigner_output_fragment_load_elements($args) {
  * @return bool|string
  */
 function contentdesigner_output_fragment_load_next_chapters($args) {
-    list ($course, $cm) = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $completedchapter = $args['chapter'];
     $editor = new mod_contentdesigner\editor($cm, $course);
     if ($editor->chapter->is_chaptercompleted($completedchapter)) {
@@ -402,8 +400,8 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
         $element = str_replace(']', '', explode('[', $itemtype)[1]);
         $instanceid = str_replace(']', '', explode('[', $itemtype)[2]);
 
-        if ($DB->get_manager()->table_exists('cdelement_'.$element)) {
-            $instance = $DB->get_record('cdelement_'.$element, ['id' => $instanceid]);
+        if ($DB->get_manager()->table_exists('cdelement_' . $element)) {
+            $instance = $DB->get_record('cdelement_' . $element, ['id' => $instanceid]);
             $cm = get_coursemodule_from_instance('contentdesigner', $instance->contentdesignerid);
         }
         if (!isset($cm) || empty($cm)) {
@@ -422,8 +420,13 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
         $DB->update_record($element->tablename, $record);
 
         return new \core\output\inplace_editable(
-            'mod_contentdesigner', $itemtype, $element->elementid.$record->id, true,
-            format_string($record->title), $record->title, get_string('titleeditable', 'mod_contentdesigner'),
+            'mod_contentdesigner',
+            $itemtype,
+            $element->elementid . $record->id,
+            true,
+            format_string($record->title),
+            $record->title,
+            get_string('titleeditable', 'mod_contentdesigner'),
             get_string('newvalue', 'mod_contentdesigner') . format_string($record->title)
         );
     }

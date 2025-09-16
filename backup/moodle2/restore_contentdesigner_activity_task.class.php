@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/contentdesigner/backup/moodle2/restore_conten
  * Pulse restore task that provides all the settings and steps to perform one. complete restore of the activity
  */
 class restore_contentdesigner_activity_task extends restore_activity_task {
-
     /**
      * Define particular settings for this activity.
      */

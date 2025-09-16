@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore outro element subplugin.
  */
 class restore_cdelement_outro_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array

@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore cdelement_h5p subplugin.
  */
 class restore_cdelement_h5p_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array
