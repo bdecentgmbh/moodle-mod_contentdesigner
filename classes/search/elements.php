@@ -142,7 +142,6 @@ class elements extends \core_search\base_mod {
             'select' => $select,
             'joins' => implode(' ', $joinsql),
         ];
-
     }
 
     /**
@@ -188,6 +187,7 @@ class elements extends \core_search\base_mod {
                 $joinsql[] = " LEFT JOIN {$tablename} AS {$alias} ON {$alias}.id = co.instance AND ce.shortname='{$plugin}' ";
             }
         }
+
         return [
             $titlesql ?? [],
             $contentsql ?? [],
@@ -242,7 +242,11 @@ class elements extends \core_search\base_mod {
         $params = ['id' => $contextmodule->instanceid];
         $url = new \moodle_url('/mod/contentdesigner/view.php', $params);
 
-        $chapter = $DB->get_record('contentdesigner_content', ['id' => $doc->get('itemid')], 'chapter', IGNORE_MISSING);
+        $chapter = $DB->get_record_sql('
+            SELECT cc.chapter FROM {contentdesigner_options} co
+            JOIN {contentdesigner_content} cc ON co.element = cc.element AND co.instance = cc.instance
+            WHERE co.id=:id', ['id' => $doc->get('itemid')], IGNORE_MISSING);
+
         if ($chapter) {
             $url->param('chapterid', $chapter->chapter);
             $url->set_anchor('chapters-list-' . $chapter->chapter);
@@ -258,6 +262,11 @@ class elements extends \core_search\base_mod {
      * @return \moodle_url
      */
     public function get_context_url(\core_search\document $doc) {
+
+        if ($url = $this->get_doc_url($doc)) {
+            return $url;
+        }
+
         $contextmodule = \context::instance_by_id($doc->get('contextid'));
         return new \moodle_url('/mod/contentdesigner/view.php', ['id' => $contextmodule->instanceid]);
     }
