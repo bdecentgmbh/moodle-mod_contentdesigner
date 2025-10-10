@@ -207,6 +207,11 @@ class elements extends \core_search\base_mod {
 
         try {
 
+            // Remove the deleted elements from the index.
+            if (!$DB->record_exists('contentdesigner_options', ['id' => $id])) {
+                return \core_search\manager::ACCESS_DELETED;
+            }
+
             $content = $DB->get_record('search_simpledb_index', ['itemid' => $id, 'areaid' => $this->areaid], '*', MUST_EXIST);
             $context = \context::instance_by_id($content->contextid);
             $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
