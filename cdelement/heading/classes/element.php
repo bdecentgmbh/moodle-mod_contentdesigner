@@ -29,7 +29,6 @@ use html_writer;
  * Heading element instance class.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -64,6 +63,15 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Search area definition.
+     *
+     * @return array Table and fields to search.
+     */
+    public function search_area_list(): array {
+        return ['cdelement_heading' => 'heading'];
+    }
+
+    /**
      * Element form element definition.
      *
      * @param moodle_form $mform
@@ -72,17 +80,13 @@ class element extends \mod_contentdesigner\elements {
      */
     public function element_form(&$mform, $formobj) {
 
-        $mform->addElement(
-            'text', 'heading', get_string('headingtext', 'mod_contentdesigner'), 'maxlength="100" size="30"'
-        );
+        $mform->addElement('text', 'heading', get_string('headingtext', 'mod_contentdesigner'), 'maxlength="100" size="30"');
         $mform->setType('heading', PARAM_NOTAGS);
         $mform->addRule('heading', null, 'required');
         $mform->addHelpButton('heading', 'headingtext', 'mod_contentdesigner');
 
-        $mform->addElement(
-            'url', 'headingurl', get_string('headingurl', 'mod_contentdesigner'),
-            ['size' => '60'], ['usefilepicker' => true]
-        );
+        $mform->addElement('url', 'headingurl', get_string('headingurl', 'mod_contentdesigner'), ['size' => '60'], [
+        'usefilepicker' => true]);
         $mform->setType('headingurl', PARAM_RAW_TRIMMED);
         $mform->addHelpButton('headingurl', 'headingurl', 'mod_contentdesigner');
 
@@ -123,7 +127,6 @@ class element extends \mod_contentdesigner\elements {
         $mform->addElement('select', 'vertical', get_string('verticalalign', 'mod_contentdesigner'), $verticalalign);
         $mform->addHelpButton('vertical', 'verticalalign', 'mod_contentdesigner');
         $mform->setDefault('vertical', $default ?: 'top');
-
     }
 
     /**
@@ -135,12 +138,12 @@ class element extends \mod_contentdesigner\elements {
     public function render($instance) {
         $content = '';
         if ($instance->visible && $instance->heading && $instance->headingtype) {
-            $hozclass = "hl-". $instance->horizontal;
-            $vertclass = "vl-". $instance->vertical;
-            $heading = html_writer::tag($instance->headingtype, format_string($instance->heading),
-                ['class' => "element-heading $hozclass $vertclass"]);
-            $content .= ($instance->headingurl)
-                ? html_writer::link($instance->headingurl, $heading, ['target' => $instance->target]) : $heading;
+            $hozclass = "hl-" . $instance->horizontal;
+            $vertclass = "vl-" . $instance->vertical;
+            $heading = html_writer::tag($instance->headingtype, format_string($instance->heading), [
+            'class' => "element-heading $hozclass $vertclass"]);
+            $content .= ($instance->headingurl) ?
+            html_writer::link($instance->headingurl, $heading, ['target' => $instance->target]) : $heading;
         }
         return $content;
     }

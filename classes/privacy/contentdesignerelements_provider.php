@@ -34,7 +34,6 @@ namespace mod_contentdesigner\privacy;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface contentdesignerelements_provider extends \core_privacy\local\request\plugin\subplugin_provider {
-
     /**
      * Export all relevant user elements information which match the combination of userid.
      *

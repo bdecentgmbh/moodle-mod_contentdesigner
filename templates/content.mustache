@@ -183,10 +183,15 @@
                     <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
                       data-id="{{instancedata.id}}" data-elementshortname="chapter">
                         {{#instancedata.titlestatus}}
-                            <div class="chapter-title" data-chapter={{instancedata.id}}>
+                            <div class="chapter-title" data-chapter="{{instancedata.id}}">
                                 <h4>{{instancedata.chaptertitle}}</h4>
                             </div>
                         {{/instancedata.titlestatus}}
+                        {{#instancedata.showdescription}}
+                          <div class="chapter-description">
+                              <p> {{{instancedata.description}}} </p>
+                          </div>
+                        {{/instancedata.showdescription}}
                         <ul class="chapter-elements-list">
                             {{#contents}}
                             <li class="element-item">
@@ -205,6 +210,12 @@
                                         <div class="bg-image" style="{{{instancedata.backimage}}}"></div>
                                         <div class="bg-overlay" style="{{{instancedata.abovecolorbg}}}"></div>
                                     </div>
+
+                                    {{#content.general.showdescription}}
+                                    <div class="element-description">
+                                        <p>{{{content.general.description}}}</p>
+                                    </div>
+                                    {{/content.general.showdescription}}
 
                                     <!-- Contents of chapter -->
                                     {{{content.elementcontent}}}

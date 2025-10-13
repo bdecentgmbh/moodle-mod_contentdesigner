@@ -38,10 +38,9 @@ use core_privacy\local\request\approved_contextlist;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        \core_privacy\local\metadata\provider,
-        \core_privacy\local\request\core_userlist_provider,
-        \mod_contentdesigner\privacy\contentdesignerelements_provider {
-
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
      * List of used data fields summary meta key.
      *
@@ -57,9 +56,7 @@ class provider implements
             'completion' => 'privacy:metadata:completion:completion',
             'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
-        $collection->add_database_table('cdelement_chapter_completion', $completionmetadata,
-            'privacy:metadata:chaptercompletion');
-
+        $collection->add_database_table('cdelement_chapter_completion', $completionmetadata, 'privacy:metadata:chaptercompletion');
         return $collection;
     }
 
@@ -75,7 +72,7 @@ class provider implements
     public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
         global $DB;
 
-        list($insql, $inparams) = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
         $sql = "SELECT ec.*, ecc.userid AS userid, ecc.completion AS completion, ecc.timecreated AS timecompleted
             FROM {cdelement_chapter} ec
             INNER JOIN {cdelement_chapter_completion} ecc ON ecc.instance = ec.id AND ecc.userid = :userid
@@ -133,12 +130,12 @@ class provider implements
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
 
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
         $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $contentdesigner->id]);
         $ids = array_column($list, 'id');
-        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_chapter_completion', "userid {$userinsql} AND instance $insql",
-            $userinparams + $inparams);
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+        $DB->delete_records_select('cdelement_chapter_completion',
+        "userid {$userinsql} AND instance $insql", $userinparams + $inparams);
     }
 
     /**
@@ -158,9 +155,9 @@ class provider implements
             $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
             $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $instanceid]);
             $ids = array_column($list, 'id');
-            list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select('cdelement_chapter_completion', "userid=:userid AND instance $insql",
-                ['userid' => $userid] + $inparams);
+            [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+            $DB->delete_records_select('cdelement_chapter_completion', "userid=:userid AND instance $insql", [
+            'userid' => $userid] + $inparams);
         }
     }
 
@@ -182,8 +179,7 @@ class provider implements
         }
         $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $cm->instance]);
         $ids = array_column($list, 'id');
-        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
         $DB->delete_records_select('cdelement_chapter_completion', "instance $insql", $inparams);
-
     }
 }

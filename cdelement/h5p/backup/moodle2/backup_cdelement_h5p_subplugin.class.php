@@ -28,7 +28,6 @@
  * This just adds its filearea to the annotations and records the number of files.
  */
 class backup_cdelement_h5p_subplugin extends backup_subplugin {
-
     /**
      * Returns the subplugin information to attach to h5p element
      * @return backup_subplugin_element
@@ -72,5 +71,4 @@ class backup_cdelement_h5p_subplugin extends backup_subplugin {
 
         return $subplugin;
     }
-
 }

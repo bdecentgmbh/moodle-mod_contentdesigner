@@ -26,7 +26,6 @@
  * Provides the information to backup feedback files.
  */
 class backup_cdelement_heading_subplugin extends backup_subplugin {
-
     /**
      * Returns the subplugin information to attach to heading element
      * @return backup_subplugin_element
@@ -51,5 +50,4 @@ class backup_cdelement_heading_subplugin extends backup_subplugin {
 
         return $subplugin;
     }
-
 }

@@ -27,7 +27,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notification'], function ($, Elements, AJAX, Notification) {
+define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notification'], function($, Elements, AJAX, Notification) {
 
     var interactedInstances = [];
 
@@ -59,8 +59,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
             return;
         }
 
-
-        h5p.externalDispatcher.on('xAPI', function (event) {
+        h5p.externalDispatcher.on('xAPI', function(event) {
 
             // Skip malformed events.
             var hasStatement = event && event.data && event.data.statement;
@@ -185,7 +184,7 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
     };
 
     return {
-        init: function (instance) {
+        init: function(instance) {
             elementH5P(instance);
         }
     };

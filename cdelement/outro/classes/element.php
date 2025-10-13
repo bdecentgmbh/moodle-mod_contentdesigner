@@ -32,7 +32,6 @@ use moodle_url;
  * Outro element instance, inherit the methods from elmenets base class.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -100,6 +99,15 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Search area definition.
+     *
+     * @return array Table and fields to search.
+     */
+    public function search_area_list(): array {
+        return ['cdelement_outro' => 'outrocontent, outrocontentformat'];
+    }
+
+    /**
      * Element form element definition.
      *
      * @param moodle_form $mform
@@ -129,8 +137,8 @@ class element extends \mod_contentdesigner\elements {
         $mform->setDefault('primarybutton', self::OUTRO_BUTTON_DISABLED);
         $mform->addHelpButton('primarybutton', 'primarybutton', 'mod_contentdesigner');
 
-        $mform->addElement('text', 'primarytext',
-            get_string('primarybuttontext', 'mod_contentdesigner'), 'maxlength="100" size="30"');
+        $mform->addElement('text', 'primarytext', get_string('primarybuttontext', 'mod_contentdesigner'),
+        'maxlength="100" size="30"');
         $mform->setType('primarytext', PARAM_NOTAGS);
         $mform->addHelpButton('primarytext', 'primarybuttontext', 'mod_contentdesigner');
         $mform->hideIf('primarytext', 'primarybutton', 'neq', self::OUTRO_BUTTON_CUSTOM);
@@ -145,8 +153,8 @@ class element extends \mod_contentdesigner\elements {
         $mform->setDefault('secondarybutton', self::OUTRO_BUTTON_DISABLED);
         $mform->addHelpButton('secondarybutton', 'secondarybutton', 'mod_contentdesigner');
 
-        $mform->addElement('text', 'secondarytext',
-            get_string('secondarybuttontext', 'mod_contentdesigner'), 'maxlength="100" size="30"');
+        $mform->addElement('text', 'secondarytext', get_string('secondarybuttontext', 'mod_contentdesigner'),
+        'maxlength="100" size="30"');
         $mform->setType('secondarytext', PARAM_NOTAGS);
         $mform->addHelpButton('secondarytext', 'secondarybuttontext', 'mod_contentdesigner');
         $mform->hideIf('secondarytext', 'secondarybutton', 'neq', self::OUTRO_BUTTON_CUSTOM);
@@ -213,8 +221,13 @@ class element extends \mod_contentdesigner\elements {
         // Outro Content.
         $context = $this->get_context();
         $outrocontent = file_rewrite_pluginfile_urls(
-            $data->outrocontent, 'pluginfile.php', $context->id, 'mod_contentdesigner', 'cdelement_outro_outrocontent',
-            $data->instance);
+            $data->outrocontent,
+            'pluginfile.php',
+            $context->id,
+            'mod_contentdesigner',
+            'cdelement_outro_outrocontent',
+            $data->instance
+        );
         $outrocontent = format_text($outrocontent, $data->outrocontentformat, ['context' => $context->id]);
 
         $html = html_writer::start_div('element-outro');
@@ -225,13 +238,13 @@ class element extends \mod_contentdesigner\elements {
 
         $html .= html_writer::start_div('element-button'); // Outro buttons.
         if (!empty($data->primarybutton)) {
-            list($primarybtntext, $primarybtnurl) = $this->get_button_data($data->primarybutton, 'primary', $data);
+            [$primarybtntext, $primarybtnurl] = $this->get_button_data($data->primarybutton, 'primary', $data);
             if (!empty($primarybtntext)) {
                 $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
             }
         }
         if (!empty($data->secondarybutton)) {
-            list($secondarybtntext, $secondarybtnurl) = $this->get_button_data($data->secondarybutton, 'secondary', $data);
+            [$secondarybtntext, $secondarybtnurl] = $this->get_button_data($data->secondarybutton, 'secondary', $data);
             if (!empty($secondarybtntext)) {
                 // Secondary button.
                 $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']);
@@ -251,7 +264,11 @@ class element extends \mod_contentdesigner\elements {
         global $DB;
         parent::save_areafiles($data);
         file_save_draft_area_files(
-            $data->image, $data->contextid, 'mod_contentdesigner', 'cdelement_outro_outroimage', $data->instance
+            $data->image,
+            $data->contextid,
+            'mod_contentdesigner',
+            'cdelement_outro_outroimage',
+            $data->instance
         );
 
         if (isset($data->contextid)) {
@@ -288,7 +305,7 @@ class element extends \mod_contentdesigner\elements {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('image');
             file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner', 'cdelement_outro_outroimage',
-                $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
+            $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
             $formdata->image = $draftitemid;
         }
 
@@ -404,7 +421,7 @@ class element extends \mod_contentdesigner\elements {
                             if (empty($CFG->linkcoursesections)) {
                                 return null;
                             }
-                            $buttonurl->set_anchor('section-'.$sectionno);
+                            $buttonurl->set_anchor('section-' . $sectionno);
                         }
                     }
                 }

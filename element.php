@@ -23,7 +23,7 @@
  */
 
 require_once('../../config.php');
-require_once($CFG->dirroot."/mod/contentdesigner/lib.php");
+require_once($CFG->dirroot . "/mod/contentdesigner/lib.php");
 
 $id = optional_param('id', 0, PARAM_INT); // Element instance id.
 $cmid = required_param('cmid', PARAM_INT); // Course module id.
@@ -38,13 +38,13 @@ if (!in_array($element, $elements)) {
     throw new moodle_exception('invaildelement', 'mod_contentdesigner');
 }
 
-list ($course, $cm) = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
+[$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
 $context = \context_module::instance($cm->id);
 
 $elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
 
 if ($id) {
-    $elementrecord = $DB->get_record("cdelement_".$element, ['id' => $id]);
+    $elementrecord = $DB->get_record("cdelement_" . $element, ['id' => $id]);
     if (!$elementrecord) {
         throw new moodle_exception('invaildrecord', 'mod_contentdesigner');
     }
@@ -74,7 +74,7 @@ $urlparams = [
 $url = new moodle_url('/mod/contentdesigner/element.php', $urlparams);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
-$PAGE->set_title($course->shortname.': '.get_string('createnewelement', 'contentdesigner'));
+$PAGE->set_title($course->shortname . ': ' . get_string('createnewelement', 'contentdesigner'));
 
 $mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(false), [
     'element' => $element,
@@ -88,7 +88,6 @@ $mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(fals
 if ($mform->is_cancelled()) {
     redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]));
 } else if ($formdata = $mform->get_data()) {
-
     $formdata->course = $course->id;
     $formdata->cmid = $cm->id;
     $formdata->element = $elementobj->elementid; // ID of the element in elements table.

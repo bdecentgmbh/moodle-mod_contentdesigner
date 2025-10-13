@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/mod/contentdesigner/backup/moodle2/backup_content
  * Step to perform instance database backup.
  */
 class backup_contentdesigner_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */

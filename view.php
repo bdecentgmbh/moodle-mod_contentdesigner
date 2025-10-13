@@ -24,7 +24,7 @@
 
 require_once('../../config.php');
 require_once('lib.php');
-require_once(__DIR__.'/lib.php');
+require_once(__DIR__ . '/lib.php');
 
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
@@ -47,7 +47,7 @@ if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
 $context = \context_module::instance($cm->id);
 
 require_capability('mod/contentdesigner:view', $context);
-$PAGE->set_title($course->shortname.': '.$data->name);
+$PAGE->set_title($course->shortname . ': ' . $data->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($data);
 $PAGE->add_body_class('limitedwidth');

@@ -33,7 +33,6 @@ require_once($CFG->libdir . '/externallib.php');
  * Chapter external service methods.
  */
 class external extends \external_api {
-
     /**
      * Paramters definition for the methos update chapter progress of user.
      *
@@ -75,8 +74,11 @@ class external extends \external_api {
     public static function store_result_data($cmid, $instanceid, $result) {
         global $DB, $USER;
 
-        $vaildparams = self::validate_parameters(self::store_result_data_parameters(),
-        ['cmid' => $cmid, 'instanceid' => $instanceid, 'result' => $result]);
+        $vaildparams = self::validate_parameters(self::store_result_data_parameters(), [
+            'cmid' => $cmid,
+            'instanceid' => $instanceid,
+            'result' => $result,
+        ]);
 
         self::validate_context(\context_module::instance($cmid));
 

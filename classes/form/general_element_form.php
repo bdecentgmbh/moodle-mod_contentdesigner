@@ -26,7 +26,7 @@ namespace mod_contentdesigner\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot . '/lib/formslib.php');
 
 /**
  * General option form to create elements.
@@ -35,7 +35,6 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class general_element_form extends \moodleform {
-
     /**
      * Make the custom data as public varaible to access on the elements forms.
      *
@@ -55,7 +54,7 @@ class general_element_form extends \moodleform {
         $element = \mod_contentdesigner\editor::get_element($element, $cmid);
 
         $mform->addElement('header', 'elementsettings',
-            get_string('elementsettings', 'mod_contentdesigner', ucfirst($element->element_name())));
+        get_string('elementsettings', 'mod_contentdesigner', ucfirst($element->element_name())));
         $element->element_form($mform, $this);
 
         if ($element->supports_standard_elements()) {
@@ -77,7 +76,7 @@ class general_element_form extends \moodleform {
         $mform->setType('sesskey', PARAM_ALPHANUMEXT);
 
         if (($this->_customdata['element'] == "chapter") && ($record = $DB->get_record('cdelement_chapter',
-            ['id' => $instanceid]))) {
+        ['id' => $instanceid]))) {
             $mform->addElement('hidden', 'position', $record->position);
             $mform->setType('position', PARAM_INT);
         } else {
@@ -99,10 +98,22 @@ class general_element_form extends \moodleform {
         // Print the required moodle fields first.
         // Title for General element.
         $mform->addElement('header', 'generalsettings', get_string('generaltitle', 'mod_contentdesigner'));
-
-        $mform->addElement('text', 'title',  get_string('elementtitle', 'mod_contentdesigner'),  'maxlength="100" size="30"');
+        $mform->addElement('text', 'title', get_string('elementtitle', 'mod_contentdesigner'), 'maxlength="100" size="30"');
         $mform->setType('title', PARAM_NOTAGS);
         $mform->addHelpButton('title', 'elementtitle', 'mod_contentdesigner');
+
+        // Description for General element.
+        $mform->addElement('editor', 'description_editor', get_string('elementdescription', 'mod_contentdesigner'), null, [
+            'maxfiles' => 0,
+            'maxbytes' => 0,
+            'context' => $element->context ?? null,
+        ]);
+        $mform->setType('description_editor', PARAM_RAW);
+        $mform->addHelpButton('description_editor', 'elementdescription', 'mod_contentdesigner');
+
+        // Show description for General element.
+        $mform->addElement('advcheckbox', 'showdescription', get_string('showdescription', 'mod_contentdesigner'));
+        $mform->addHelpButton('showdescription', 'showdescription', 'mod_contentdesigner');
 
         // Visibility for General element.
         $visibleoptions = [
@@ -132,7 +143,7 @@ class general_element_form extends \moodleform {
 
         // Background for general element.
         $mform->addElement('text', 'abovecolorbg', get_string('abovecolorbg', 'mod_contentdesigner'),
-            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
+        ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('abovecolorbg', PARAM_RAW);
         $mform->addHelpButton('abovecolorbg', 'abovecolorbg', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'abovecolorbg');
@@ -148,7 +159,7 @@ class general_element_form extends \moodleform {
         $mform->addHelpButton('bgimage', 'elementbgimage', 'mod_contentdesigner');
 
         $mform->addElement('text', 'belowcolorbg', get_string('belowcolorbg', 'mod_contentdesigner'),
-            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
+        ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
         $mform->setType('belowcolorbg', PARAM_RAW);
         $mform->addHelpButton('belowcolorbg', 'belowcolorbg', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'belowcolorbg');

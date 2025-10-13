@@ -38,7 +38,6 @@ global $CFG;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class lib_test extends \advanced_testcase {
-
     /**
      * Course.
      * @var stdclass
@@ -187,7 +186,6 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->get_field($this->headingelement->tablename(), 'visible', ['id' => $instance->id]));
         $this->headingelement->update_visibility($instance->id, 1);
         $this->assertEquals(1, $DB->get_field($this->headingelement->tablename(), 'visible', ['id' => $instance->id]));
-
     }
 
     /**
@@ -214,5 +212,4 @@ final class lib_test extends \advanced_testcase {
         global $DB;
         return $DB->get_record('cdelement_heading', ['title' => 'Heading 01']);
     }
-
 }

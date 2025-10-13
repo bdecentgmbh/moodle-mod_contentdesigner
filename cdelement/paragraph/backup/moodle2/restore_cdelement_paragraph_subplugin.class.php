@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore cdelement_paragraph subplugin.
  */
 class restore_cdelement_paragraph_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array
@@ -61,7 +60,5 @@ class restore_cdelement_paragraph_subplugin extends restore_subplugin {
         $this->set_mapping('paragraph_instanceid', $oldinstance, $newinstance, true);
 
         $this->add_related_files('mod_contentdesigner', 'paragraphelementbg', 'paragraph_instanceid', null, $oldinstance);
-
     }
-
 }

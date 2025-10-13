@@ -28,7 +28,6 @@
  * This just adds its filearea to the annotations and records the number of files.
  */
 class backup_cdelement_paragraph_subplugin extends backup_subplugin {
-
     /**
      * Returns the subplugin information to attach to paragraph element
      * @return backup_subplugin_element
@@ -52,5 +51,4 @@ class backup_cdelement_paragraph_subplugin extends backup_subplugin {
 
         return $subplugin;
     }
-
 }

@@ -24,7 +24,6 @@ namespace mod_contentdesigner;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class generator_test extends \advanced_testcase {
-
     /**
      * Test test_content_designer_create_instance
      * @covers ::create_instance
@@ -45,8 +44,11 @@ final class generator_test extends \advanced_testcase {
         $params = ['course' => $course->id, 'name' => 'One more contentdesigner'];
         $contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', $params);
         $this->assertEquals(2, $DB->count_records('contentdesigner', ['course' => $course->id]));
-        $this->assertEquals('One more contentdesigner', $DB->get_field_select('contentdesigner',
-            'name', 'id = :id', ['id' => $contentdesigner->id]));
+        $this->assertEquals(
+            'One more contentdesigner',
+            $DB->get_field_select('contentdesigner',
+            'name', 'id = :id',
+            ['id' => $contentdesigner->id]
+        ));
     }
-
 }

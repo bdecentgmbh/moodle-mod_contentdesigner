@@ -28,7 +28,6 @@
  * Provides the necessary information needed to restore heading element instance.
  */
 class restore_cdelement_heading_subplugin extends restore_subplugin {
-
     /**
      * Returns the paths to be handled by the subplugin.
      * @return array
@@ -60,5 +59,4 @@ class restore_cdelement_heading_subplugin extends restore_subplugin {
         $this->set_mapping('heading_instanceid', $oldinstance, $newinstance, true);
         $this->add_related_files('mod_contentdesigner', 'headingelementbg', 'heading_instanceid', null, $oldinstance);
     }
-
 }

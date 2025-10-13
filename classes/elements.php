@@ -29,6 +29,10 @@ namespace mod_contentdesigner;
  * Base class for Content designer elements.
  */
 abstract class elements {
+    /**
+     * Hard-coded value for the 'maxfiles' option.
+     */
+    const EDITOR_UNLIMITED_FILES = -1;
 
     /**
      * Context data for the current module.
@@ -97,13 +101,13 @@ abstract class elements {
     public function __construct($cmid) {
         $this->cmid = $cmid;
         $this->shortname = $this->element_shortname();
-        $this->tablename = 'cdelement_'.$this->shortname;
+        $this->tablename = 'cdelement_' . $this->shortname;
         $this->elementid = $this->element_id();
-        $this->context = $this->get_context();
         if ($cmid) {
-            list($course, $cm) = get_course_and_cm_from_cmid($cmid);
+            [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             $this->cm = $cm;
             $this->course = $course;
+            $this->context = $this->get_context();
         }
     }
 
@@ -137,6 +141,18 @@ abstract class elements {
      * @return void
      */
     abstract public function render($instance);
+
+    /**
+     * Specify the searchable fields for the element, if search is supported.
+     *
+     * Return format:
+     * ['tablename' => 'field1, contentformatfield']
+     *
+     * @return array
+     */
+    public function search_area_list(): array {
+        return [];
+    }
 
     /**
      * Verify the elements the standard general options list.
@@ -184,8 +200,8 @@ abstract class elements {
      * @return string
      */
     public function element_description() {
-        return (get_string_manager()->string_exists('elementdescription',  'cdelement_'.$this->element_shortname()))
-            ? get_string('elementdescription', 'cdelement_'.$this->element_shortname()) : '';
+        return (get_string_manager()->string_exists('elementdescription',  'cdelement_' . $this->element_shortname()))
+            ? get_string('elementdescription', 'cdelement_' . $this->element_shortname()) : '';
     }
 
     /**
@@ -196,8 +212,16 @@ abstract class elements {
      */
     public function save_areafiles($data) {
         if (isset($data->bgimage)) {
-            file_save_draft_area_files($data->bgimage, $data->contextid, 'mod_contentdesigner',
-                $data->elementshortname.'elementbg', $data->instance
+            file_save_draft_area_files($data->bgimage, $data->contextid,
+            'mod_contentdesigner', $data->elementshortname . 'elementbg', $data->instance
+            );
+        }
+
+        if (isset($data->description_editor)) {
+            $editoroptions = $this->editor_options(\context_module::instance($data->cmid));
+            $data = file_postupdate_standard_editor(
+                $data, 'description', $editoroptions, \context_module::instance($data->cmid),
+                'mod_contentdesigner', $this->element_shortname().'description', $data->instance
             );
         }
     }
@@ -211,11 +235,36 @@ abstract class elements {
     public function prepare_standard_file_editor(&$formdata) {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('bgimage');
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner', $this->element_shortname().'elementbg',
-                $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
+            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner',
+            $this->element_shortname() . 'elementbg', $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
             $formdata->bgimage = $draftitemid;
+
+            // Description editor.
+            $editoroptions = $this->editor_options($this->context);
+            file_prepare_standard_editor(
+                $formdata, 'description', $editoroptions, $this->context, 'mod_contentdesigner',
+                $this->element_shortname().'description', $formdata->instance
+            );
         }
         return $formdata;
+    }
+
+    /**
+     * Options used in the editor defined.
+     *
+     * @param context_module $context
+     * @return array Filemanager options.
+     */
+    public function editor_options($context) {
+        global $CFG;
+
+        return [
+            'subdirs' => 1,
+            'maxbytes' => $CFG->maxbytes,
+            'accepted_types' => '*',
+            'context' => $context,
+            'maxfiles' => self::EDITOR_UNLIMITED_FILES,
+        ];
     }
 
     /**
@@ -306,10 +355,9 @@ abstract class elements {
      * @return array
      */
     public function render_element($instance) {
-        $options = [];
         $data = $this->prepare_formdata($instance->id);
         $html = $this->render($data);
-        return ['elementcontent' => $html, 'general' => $options];
+        return ['elementcontent' => $html, 'general' => $data];
     }
 
     /**
@@ -321,11 +369,11 @@ abstract class elements {
     public function title_editable($instance) {
         global $OUTPUT;
         $title = $instance->title ?: $this->info()->name;
-        $name = 'instance_title['.$this->shortname.']['.$instance->id.']';
+        $name = 'instance_title[' . $this->shortname . '][' . $instance->id . ']';
         // Todo: Need to implement capability in place of true 4th param.
-        $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid.$instance->id,
-            true, format_string($title), $title, get_string('titleeditable', 'mod_contentdesigner'),
-            get_string('newvalue', 'mod_contentdesigner') . format_string($title));
+        $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid . $instance->id,
+        true, format_string($title), $title, get_string('titleeditable', 'mod_contentdesigner'),
+        get_string('newvalue', 'mod_contentdesigner') . format_string($title));
 
         return $OUTPUT->render($tmpl);
     }
@@ -362,7 +410,7 @@ abstract class elements {
      * @return string Name of the table.
      */
     public function tablename() {
-        return 'cdelement_'.$this->element_shortname();
+        return 'cdelement_' . $this->element_shortname();
     }
 
     /**
@@ -393,15 +441,13 @@ abstract class elements {
         ];
 
         if ($this->is_table_exists()) {
-
             if ($this->tablename = 'cdelement_outro') {
-
                 // Outro general settigns.
                 $content = get_config('cdelement_outro', 'outro_content');
                 $primarybutton = get_config('cdelement_outro', 'primarybutton');
                 $secondarybutton = get_config('cdelement_outro', 'secondarybutton');
                 $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
-                    $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
+                $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
                 $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
 
                 $record['outrocontent'] = $outrocontenthtml ?? '';
@@ -422,12 +468,10 @@ abstract class elements {
                 $data['element'] = $this->elementid;
                 $data['instance'] = $result;
                 $data['timecreated'] = time();
-
-                if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
-                    'element' => $this->elementid])) {
+                $data['timemodified'] = time();
+                if (!$DB->record_exists('contentdesigner_options', ['instance' => $result, 'element' => $this->elementid])) {
                     $DB->insert_record('contentdesigner_options', $data);
                 }
-
             }
             return $result;
         } else {
@@ -442,21 +486,27 @@ abstract class elements {
      * @param bool $visible Filter by visibility.
      * @return stdclass|bool Instance record
      */
-    public function get_instance(int $instanceid, $visible=false) {
+    public function get_instance(int $instanceid, $visible = false) {
         global $DB;
 
         if ($this->is_table_exists()) {
-
             $params = ['id' => $instanceid, 'elementid' => $this->elementid];
-            $sql = 'SELECT co.*, ee.*, co.id as optionid FROM {'.$this->tablename.'} ee
+            $sql = 'SELECT ee.id, co.id as optionid, co.*, ee.* FROM {'.$this->tablename.'} ee
             LEFT JOIN {contentdesigner_options} co ON ee.id = co.instance AND co.element=:elementid
             WHERE ee.id = :id';
             if ($visible) {
-                $sql .= ' AND ee.visible=:visible ';
+                $sql .= ' AND ee.visible = :visible ';
                 $params += ['visible' => 1];
             }
-
-            if ($record = $DB->get_record_sql($sql, $params)) {
+            $sql .= ' GROUP BY ee.id, ee.visible, co.id';
+            if ($record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
+                if ($record->description) {
+                    $record->description = file_rewrite_pluginfile_urls(
+                        $record->description, 'pluginfile.php', $this->context->id,
+                        'mod_contentdesigner', $this->element_shortname().'description', $instanceid
+                    );
+                    $record->description = format_text($record->description, FORMAT_HTML, ['context' => $this->context]);
+                }
                 return $record;
             }
         }
@@ -537,7 +587,6 @@ abstract class elements {
             $this->update_options($data);
 
             $transaction->allow_commit();
-
         } catch (\Exception $e) {
             // Extra cleanup steps.
             $transaction->rollback($e); // Rethrows exception.
@@ -557,10 +606,10 @@ abstract class elements {
             return false;
         }
 
+        $data->timemodified = time();
         if ($options = $this->get_instance_options($data->instance)) {
             $optiondata = $data;
             $optiondata->id = $options['id'];
-            // Update exist settings.
             $DB->update_record('contentdesigner_options', $optiondata);
         } else {
             // Insert new record.
@@ -577,12 +626,11 @@ abstract class elements {
     public function update_instance($data) {
         global $DB;
 
+        $data->timemodified = time();
         if ($data->instanceid == false) {
-            $data->timemodified = time();
             $data->timecreated = time();
             return $DB->insert_record($this->tablename, $data);
         } else {
-            $data->timecreated = time();
             $data->id = $data->instanceid;
             if ($DB->update_record($this->tablename, $data)) {
                 return $data->id;
@@ -744,7 +792,7 @@ abstract class elements {
         return [
             'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'belowcolorbg',
             'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
-            'hidemobile', 'timecreated', 'timemodified',
+            'hidemobile', 'timecreated', 'timemodified', 'description', 'showdescription',
         ];
     }
 }

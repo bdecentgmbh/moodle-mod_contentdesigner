@@ -24,14 +24,13 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/contentdesigner/lib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 
 /**
  * Content designer module form.
  */
 class mod_contentdesigner_mod_form extends moodleform_mod {
-
     /**
      * Define the mform elements.
      * @return void
@@ -58,5 +57,4 @@ class mod_contentdesigner_mod_form extends moodleform_mod {
 
         $this->add_action_buttons();
     }
-
 }

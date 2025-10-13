@@ -30,7 +30,6 @@ use html_writer;
  * Richtext element instance extend the contentdesigner/elements base.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -79,6 +78,15 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Search area definition.
+     *
+     * @return array Table and fields to search.
+     */
+    public function search_area_list(): array {
+        return ['cdelement_richtext' => 'content, contentformat'];
+    }
+
+    /**
      * Element form element definition.
      *
      * @param moodle_form $mform
@@ -102,7 +110,13 @@ class element extends \mod_contentdesigner\elements {
     public function render($data) {
         $context = $this->get_context();
         $content = file_rewrite_pluginfile_urls(
-            $data->content, 'pluginfile.php', $context->id, 'mod_contentdesigner', 'cdelement_richtext_content', $data->instance);
+            $data->content,
+            'pluginfile.php',
+            $context->id,
+            'mod_contentdesigner',
+            'cdelement_richtext_content',
+            $data->instance
+        );
         $content = format_text($content, $data->contentformat, ['context' => $context->id]);
         return html_writer::div(html_writer::div($content, 'richtext-content'), 'richtet-content-block');
     }
@@ -118,8 +132,8 @@ class element extends \mod_contentdesigner\elements {
         $formdata = clone $data;
         $formdata->contentformat = $formdata->content_editor['format'];
         $formdata->content = $formdata->content_editor['text'];
+        $formdata->timemodified = time();
         if ($formdata->instanceid == false) {
-            $formdata->timemodified = time();
             $formdata->timecreated = time();
             return $DB->insert_record($this->tablename, $formdata);
         } else {
@@ -202,5 +216,17 @@ class element extends \mod_contentdesigner\elements {
             'context' => $context,
             'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
+    }
+
+    /**
+     * Prepare data for the duplicate element.
+     *
+     * @param stdClass $record
+     * @return stdClass
+     */
+    public function prepare_duplicatedata($record) {
+        $record->content_editor['format'] = $record->contentformat;
+        $record->content_editor['text'] = $record->content;
+        return $record;
     }
 }

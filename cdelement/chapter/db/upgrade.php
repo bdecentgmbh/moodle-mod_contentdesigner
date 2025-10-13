@@ -44,7 +44,6 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
         $cdchaptertable = new xmldb_table('cdelement_chapter');
 
         if ($dbman->table_exists($table)) {
-
             if (!$dbman->table_exists($cdchaptertable)) {
                 // Rename the existing table.
                 $dbman->rename_table($table, 'cdelement_chapter');
@@ -61,7 +60,6 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
         $cdcompletiontable = new xmldb_table('cdelement_chapter_completion');
 
         if ($dbman->table_exists($completiontable)) {
-
             if (!$dbman->table_exists($cdcompletiontable)) {
                 // Rename the existing table.
                 $dbman->rename_table($completiontable, 'cdelement_chapter_completion');
@@ -78,32 +76,25 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
     }
 
     if ($oldversion < 2024110801 && $oldversion) {
-
         // Element chapter table.
         $table = new xmldb_table('cdelement_chapter');
-
         // Title status.
         $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'position');
         if (!$dbman->field_exists($table, $titlestatus)) {
             $dbman->add_field($table, $titlestatus);
         }
-
         upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'chapter');
     }
 
     if ($oldversion < 2025041500 && $oldversion) {
-
         // Element chapter table.
         $table = new xmldb_table('cdelement_chapter');
-
         // Define field learningtools to be added to cdelement_chapter.
         $field = new xmldb_field('learningtools', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'visible');
-
         // Add field if it doesn't already exist.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-
         // Set the default value for existing records.
         $DB->set_field('cdelement_chapter', 'learningtools', 0);
 

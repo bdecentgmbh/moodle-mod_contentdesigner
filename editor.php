@@ -52,7 +52,7 @@ require_sesskey();
 
 require_capability('mod/contentdesigner:viewcontenteditor', $context);
 
-$PAGE->set_title($course->shortname.': '.$data->name);
+$PAGE->set_title($course->shortname . ': ' . $data->name);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($data);
 $PAGE->add_body_class('limitedwidth');
@@ -73,5 +73,5 @@ echo $OUTPUT->header();
 echo $editor->display();
 
 $PAGE->requires->js_call_amd('mod_contentdesigner/editor', 'init',
-    ['contextid' => $context->id, 'cmid' => $cm->id, 'contentdesignerid' => $cm->instance]);
+['contextid' => $context->id, 'cmid' => $cm->id, 'contentdesignerid' => $cm->instance]);
 echo $OUTPUT->footer();

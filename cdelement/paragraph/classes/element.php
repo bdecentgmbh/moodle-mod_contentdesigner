@@ -29,7 +29,6 @@ use html_writer;
  * Paragraph element instance extended the base elements.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -61,6 +60,15 @@ class element extends \mod_contentdesigner\elements {
      */
     public function icon($output) {
         return $output->pix_icon('e/styleparagraph', get_string('pluginname', 'cdelement_paragraph'));
+    }
+
+    /**
+     * Search area definition.
+     *
+     * @return array Table and fields to search.
+     */
+    public function search_area_list(): array {
+        return ['cdelement_paragraph' => 'content'];
     }
 
     /**
@@ -105,9 +113,9 @@ class element extends \mod_contentdesigner\elements {
      */
     public function generate_element_classes(&$instance, $option) {
         $instance = $this->load_option_classes($instance, $option);
-        $hozclass = "hl-". $instance->horizontal;
-        $vertclass = "vl-". $instance->vertical;
-        $instance->classes .= ' '.$hozclass. ' '. $vertclass;
+        $hozclass = "hl-" . $instance->horizontal;
+        $vertclass = "vl-" . $instance->vertical;
+        $instance->classes .= ' ' . $hozclass . ' ' . $vertclass;
     }
 
     /**
@@ -119,5 +127,4 @@ class element extends \mod_contentdesigner\elements {
     public function render($instance) {
         return html_writer::tag('p', format_string($instance->content), ['class' => "element-paragraph"]);
     }
-
 }

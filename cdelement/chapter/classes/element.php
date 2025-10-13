@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
  * Definitions of chapter element and it behaviours.
  */
 class element extends \mod_contentdesigner\elements {
-
     /**
      * Shortname of the element.
      */
@@ -80,7 +79,7 @@ class element extends \mod_contentdesigner\elements {
 
         // General settigns.
         $strrequired = get_string('required');
-        $mform->addElement('text', 'title',  get_string('elementtitle', 'mod_contentdesigner'),  'maxlength="100" size="30"');
+        $mform->addElement('text', 'title', get_string('elementtitle', 'mod_contentdesigner'), 'maxlength="100" size="30"');
         $mform->addRule('title', $strrequired, 'required', null, 'client');
         $mform->setType('title', PARAM_NOTAGS);
 
@@ -103,17 +102,15 @@ class element extends \mod_contentdesigner\elements {
 
         if (cdelement_chapter_has_learningtools()) {
             // Learning Tools setting.
-            $learningtoolsoptions = [
+            $ltoolsoptions = [
                 0 => get_string('disabled', 'mod_contentdesigner'),
                 1 => get_string('enabled', 'mod_contentdesigner'),
             ];
             $default = get_config('cdelement_chapter', 'learningtools');
-            $mform->addElement('select', 'learningtools', get_string('learningtools', 'mod_contentdesigner'),
-                $learningtoolsoptions);
+            $mform->addElement('select', 'learningtools', get_string('learningtools', 'mod_contentdesigner'), $ltoolsoptions);
             $mform->addHelpButton('learningtools', 'learningtools', 'mod_contentdesigner');
             $mform->setDefault('learningtools', $default);
         }
-
     }
 
     /**
@@ -152,7 +149,7 @@ class element extends \mod_contentdesigner\elements {
      * @param bool $create
      * @return bool
      */
-    public function get_default($contentdesignerid, $create=false) {
+    public function get_default($contentdesignerid, $create = false) {
         global $DB;
         if ($record = $DB->get_record('cdelement_chapter', ['contentdesignerid' => $contentdesignerid], '*', IGNORE_MULTIPLE)) {
             return $record->id;
@@ -185,7 +182,6 @@ class element extends \mod_contentdesigner\elements {
                 WHERE contentdesignerid = ?', [$this->cm->instance]
             );
             $record['position'] = $lastelement ? $lastelement + 1 : 1;
-
             $result = $DB->insert_record($this->tablename, $record);
             $data = [];
             $fields = $this->get_options_fields();
@@ -196,11 +192,9 @@ class element extends \mod_contentdesigner\elements {
             $data['element'] = $this->elementid;
             $data['instance'] = $result;
             $data['timecreated'] = time();
-            if (!$DB->record_exists('contentdesigner_options', ['instance' => $result,
-                'element' => $this->elementid])) {
+            if (!$DB->record_exists('contentdesigner_options', ['instance' => $result, 'element' => $this->elementid])) {
                 $DB->insert_record('contentdesigner_options', $data);
             }
-
             return $result;
         } else {
             throw new \moodle_exception('tablenotfound', 'contentdesigner');
@@ -225,8 +219,7 @@ class element extends \mod_contentdesigner\elements {
                 WHERE position > ? AND contentdesignerid = ?', [$lastelement, $this->cm->instance]);
             } else {
                 $lastelement = (int) $DB->get_field_sql('SELECT max(position) from {cdelement_chapter}
-                    WHERE contentdesignerid = ?', [$this->cm->instance]
-                );
+                    WHERE contentdesignerid = ?', [$this->cm->instance]);
             }
             $data->position = $lastelement ? $lastelement + 1 : 1;
             return $DB->insert_record($this->tablename, $data);
@@ -240,8 +233,7 @@ class element extends \mod_contentdesigner\elements {
                 WHERE position > ? AND contentdesignerid = ?', [$lastelement, $this->cm->instance]);
             } else {
                 $lastelement = (int) $DB->get_field_sql('SELECT max(position) from {cdelement_chapter}
-                    WHERE contentdesignerid = ?', [$this->cm->instance]
-                );
+                    WHERE contentdesignerid = ?', [$this->cm->instance]);
             }
 
             $data->position = $data->position ?: $lastelement + 1;
@@ -278,7 +270,7 @@ class element extends \mod_contentdesigner\elements {
      * @param bool $chapterafter It is need to load the chapters after the given chapter.
      * @return array
      */
-    public function get_chapters_data($visible=false, $render=false, $chapterafter=false) {
+    public function get_chapters_data($visible = false, $render = false, $chapterafter = false) {
         global $DB, $USER;
         if (empty($this->cm)) {
             throw new \moodle_exception('coursemoduleidmissing', 'format_levels');
@@ -291,7 +283,7 @@ class element extends \mod_contentdesigner\elements {
             $chapterreached = false;
             foreach ($chapters as $chapterid => $chapter) {
                 // Find the chapter is reached, checks only chapterafter enabled.
-                if ($chapterafter && !$chapterreached) {
+                if ($chapterafter && !             $chapterreached) {
                     // Set the chapter reached to load the chapters from next chapter.
                     $chapterreached = ($chapterafter == $chapterid);
                     continue;
@@ -361,7 +353,7 @@ class element extends \mod_contentdesigner\elements {
             return false;
         }
 
-        return !$this->is_chaptercompleted($chapter->id);
+        return !             $this->is_chaptercompleted($chapter->id);
     }
 
     /**
@@ -386,7 +378,7 @@ class element extends \mod_contentdesigner\elements {
      * @param bool $render Render the element instance to student view.
      * @return array
      */
-    public function generate_chapter_content($chapter, $visible=false, $render=false) {
+    public function generate_chapter_content($chapter, $visible = false, $render = false) {
         global $DB, $USER, $PAGE;
 
         $list = [];
@@ -449,6 +441,7 @@ class element extends \mod_contentdesigner\elements {
             $editor = \mod_contentdesigner\editor::get_editor($this->cmid);
             $instance = $element->get_instance($content->instance, $visible);
             if ($instance) {
+                $instance->titleplain = $instance->title;
                 $instance->title = $element->title_editable($instance) ?: $element->info()->name;
                 $option = $editor->get_option($instance->id, $element->elementid);
                 // Load the element options classes to instance.
@@ -531,7 +524,7 @@ class element extends \mod_contentdesigner\elements {
         $instance->contents = $contents;
         try {
             $transaction = $DB->start_delegated_transaction();
-            if (!empty($contents)) {
+            if (!             empty($contents)) {
                 $list = explode(',', $contents);
                 $position = 1;
                 foreach ($list as $item) {
@@ -579,7 +572,6 @@ class element extends \mod_contentdesigner\elements {
             $transaction->allow_commit();
             return true;
         } catch (moodle_exception $ex) {
-
             $transaction->rollback($ex);
         }
     }

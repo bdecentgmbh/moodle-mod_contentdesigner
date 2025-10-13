@@ -26,7 +26,6 @@
  * Provides the information to backup chapter elements.
  */
 class backup_cdelement_chapter_subplugin extends backup_subplugin {
-
     /**
      * Returns the subplugin information to attach to chapter element
      * @return backup_subplugin_element
@@ -67,5 +66,4 @@ class backup_cdelement_chapter_subplugin extends backup_subplugin {
 
         return $subplugin;
     }
-
 }
