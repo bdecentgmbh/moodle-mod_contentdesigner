@@ -99,6 +99,14 @@ $string['margin'] = "Margin";
 $string['margin_help'] = 'Margin controls the space outside the element, creating distance between it and other elements. Set a single value to apply the same margin on all sides of the element.<br> <b>Example:</b> 10px (This will apply a 10px margin on all four sides: top, right, bottom, and left).';
 $string['modulename'] = 'Content Designer';
 $string['modulenameplural'] = "Content Designers";
+$string['modulename_help'] = '<p>The Content Designer activity enables teachers to create structured, interactive course content directly in Moodle without needing external authoring tools.</p>
+<p>Key features include:</p>
+<ul>
+    <li>Chapter &amp; element structure: Organize content into chapters with rich text, media, interactive H5Ps, polls, ratings, and embedded questions.</li>
+    <li>Consistent corporate design: Apply global styling rules for elements to maintain a cohesive look and feel across your entire course.</li>
+    <li>Micro-learning &amp; tracking: Enforce mandatory completion requirements on specific elements, display progress bars, and view detailed activity reports.</li>
+</ul>
+<p>For detailed setup instructions and feature guides, please visit the <a href="https://intercom.help/bdecent/en/collections/14008404-content-designer" target="_blank" rel="noopener">Content Designer documentation</a>. We are constantly improving the plugin, so please let us know if you have any <a href="mailto:support@bdecent.de">feedback for us</a>!</p>';
 $string['newvalue'] = 'New value for';
 $string['outro:btnbacktocourse'] = 'Back to course';
 $string['outro:btnbacktosection'] = 'Back to section';
