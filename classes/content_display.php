@@ -16,231 +16,142 @@
 
 namespace mod_contentdesigner;
 
+use mod_contentdesigner\hook\view_page;
+use mod_contentdesigner\local\attempts;
+use mod_contentdesigner\local\extensions;
+
 /**
- * Class for handling different action views for contentdesigner
+ * The page of a Content Designer activity for learners.
+ *
+ * Without addons, the page shows the content in the learner's attempt. Addons can take the page over through the
+ * {@see view_page} hook, for example to show the attempts of a graded activity. The public methods are also used
+ * by course formats that show the activity in a popup (format_popups), with $noheader set.
  *
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content_display {
-    /** @var object The contentdesigner record */
-    protected $contentdesigner;
+    /** @var \stdClass The contentdesigner record */
+    public readonly \stdClass $contentdesigner;
 
-    /** @var object The course module record */
-    protected $cm;
+    /** @var \cm_info The course module */
+    public readonly \cm_info $cm;
 
-    /** @var object The course record */
-    protected $course;
+    /** @var \stdClass The course record */
+    public readonly \stdClass $course;
 
-    /** @var object The context */
-    protected $context;
+    /** @var \context_module The context */
+    public readonly \context_module $context;
 
     /**
      * Constructor
      *
-     * @param object $contentdesigner The contentdesigner record
-     * @param object $cm The course module record
-     * @param object $course The course record
-     * @param object $context The context
+     * @param \stdClass $contentdesigner The contentdesigner record
+     * @param \stdClass|\cm_info $cm The course module
+     * @param \stdClass $course The course record
+     * @param \context_module $context The context
      */
     public function __construct($contentdesigner, $cm, $course, $context) {
         $this->contentdesigner = $contentdesigner;
-        $this->cm = $cm;
+        $this->cm = \cm_info::create($cm);
         $this->course = $course;
         $this->context = $context;
     }
 
     /**
-     * View function that handles different actions
+     * Prints the page for an action.
      *
      * @param string $action The action to perform
      * @param bool $noheader Whether to display the header or not
      * @return void
      */
     public function view($action, $noheader = false) {
-        global $OUTPUT, $USER, $DB;
-
-        // Default if no action is provided.
-        if (empty($action)) {
-            if ($this->contentdesigner->enablegrading) {
-                echo $this->view_summary($noheader);
-            } else {
-                echo $this->view_content($noheader);
-            }
-            return;
-        }
-
-        // Handle different actions.
-        switch ($action) {
-            case 'makeattempt':
-                echo $this->make_attempt();
-                break;
-
-            case 'continueattempt':
-                $attemptid = required_param('attemptid', PARAM_INT);
-                echo $this->continue_attempt($attemptid);
-                break;
-            case 'finishattempt':
-                $attemptid = required_param('attemptid', PARAM_INT);
-                $this->finish_attempt($attemptid);
-                // No break, display the content after finish attempt.
-            default:
-                if ($this->contentdesigner->enablegrading) {
-                    echo $this->view_summary();
-                } else {
-                    echo $this->view_content();
-                }
-                break;
-        }
-
-        echo $OUTPUT->footer();
+        $attemptid = in_array($action, ['continueattempt', 'finishattempt']) ? required_param('attemptid', PARAM_INT) : 0;
+        echo $this->dispatch((string) $action, $attemptid, $noheader) ?? $this->view_content($noheader);
     }
 
     /**
-     * Finish an attempt
+     * Lets the addons handle an action of the page.
+     *
+     * @param string $action The action.
+     * @param int $attemptid The attempt of the action.
+     * @param bool $noheader Whether to display the header or not
+     * @return string|null The HTML of the page, null when no addon handled the action.
+     */
+    protected function dispatch(string $action, int $attemptid, bool $noheader): ?string {
+        return extensions::dispatch(new view_page($this, $action, $attemptid, $noheader))->get_output();
+    }
+
+    /**
+     * The overview of the learner's attempts, when an addon provides one; otherwise the content.
+     *
+     * @param bool $noheader Whether to display the header or not
+     * @return string The HTML of the page
+     */
+    public function view_summary($noheader = false) {
+        return $this->dispatch('summary', 0, $noheader) ?? $this->view_content($noheader);
+    }
+
+    /**
+     * Starts a new attempt, when an addon allows more than one; otherwise the content.
+     *
+     * @param bool $noheader Whether to display the header or not
+     * @return string The HTML of the page
+     */
+    public function make_attempt($noheader = false) {
+        return $this->dispatch('makeattempt', 0, $noheader) ?? $this->view_content($noheader);
+    }
+
+    /**
+     * Continues an attempt of the learner.
      *
      * @param int $attemptid The attempt ID
      * @param bool $noheader Whether to display the header or not
-     * @return \moodle_url Redirect URL after finishing the attempt
+     * @return string The HTML of the page
+     */
+    public function continue_attempt($attemptid, $noheader = false) {
+        global $USER;
+        return $this->dispatch('continueattempt', (int) $attemptid, $noheader)
+            ?? $this->render_attempt(attempts::get_for_render($this->cm->instance, $USER->id, (int) $attemptid), $noheader);
+    }
+
+    /**
+     * Finishes an attempt of the learner, when an addon grades attempts.
+     *
+     * @param int $attemptid The attempt ID
+     * @param bool $noheader Whether to display the header or not
+     * @return string|null The HTML of the page, if the addon returned one.
      */
     public function finish_attempt($attemptid, $noheader = false) {
-        global $DB, $USER;
-        $attempt = $DB->get_record('contentdesigner_attempts', [
-            'id' => $attemptid, 'contentdesignerid' => $this->contentdesigner->id,
-            'userid' => $USER->id], '*', MUST_EXIST);
-        contentdesigner_finish_attempt($attempt);
-        if (!$noheader) {
-            return redirect(
-                new \moodle_url('/mod/contentdesigner/view.php', ['id' => $this->cm->id]),
-                get_string('attemptfinished', 'contentdesigner')
-            );
-        }
+        return $this->dispatch('finishattempt', (int) $attemptid, $noheader);
     }
 
     /**
-     * Display the attempt summary page
-     *
-     * @param bool $noheader Whether to display the header or not
-     * @return string The HTML content for the summary page
-     */
-    public function view_summary($noheader = false) {
-        global $OUTPUT, $USER;
-
-        $content  = '';
-        // Get current user's attempts.
-        $attempts = contentdesigner_get_user_attempts($this->contentdesigner->id, $USER->id);
-        // Add auto start attempt functionality.
-        if ($this->contentdesigner->autostartattempts && (empty($attempts) || !current($attempts)->timefinish)) {
-            if (empty($attempts)) {
-                // For popup compatibility, render attempt directly instead of redirecting.
-                return $this->make_attempt($noheader);
-            } else {
-                $lastattempt = end($attempts);
-                // For popup compatibility, render attempt directly instead of redirecting.
-                return $this->continue_attempt($lastattempt->id, $noheader);
-            }
-        }
-
-        if (!$noheader) {
-            $content .= $OUTPUT->header();
-        }
-        $gradeitem = \grade_item::fetch([
-            'itemtype' => 'mod',
-            'itemmodule' => 'contentdesigner',
-            'iteminstance' => $this->contentdesigner->id,
-            'itemnumber' => 0,
-            'courseid' => $this->course->id,
-        ]);
-
-        // Display content designer introduction.
-        if (!empty($this->contentdesigner->intro)) {
-            $content .= $OUTPUT->box(
-                format_module_intro('contentdesigner', $this->contentdesigner, $this->cm->id),
-                'generalbox mod_introbox',
-                'contentdesignerintro'
-            );
-        }
-
-        $content .= $OUTPUT->box(contentdesigner_get_infomessages($this->contentdesigner, $gradeitem));
-
-        if (empty($attempts)) {
-            // If no attempts, show start attempt button.
-            $url = new \moodle_url('/mod/contentdesigner/view.php', [
-                'id' => $this->cm->id,
-                'action' => 'makeattempt',
-            ]);
-            $content .= $OUTPUT->single_button($url, get_string('startattempt', 'contentdesigner'), 'get');
-        } else {
-            $lastattempt = end($attempts);
-            if (!$lastattempt->timefinish) {
-                $url = new \moodle_url('/mod/contentdesigner/view.php', [
-                    'id' => $this->cm->id,
-                    'action' => 'continueattempt',
-                    'attemptid' => $lastattempt->id,
-                ]);
-                $content .= $OUTPUT->single_button(
-                    $url,
-                    get_string('continueattempt', 'contentdesigner'),
-                    'get'
-                );
-            } else if (contentdesigner_can_start_new_attempt($this->contentdesigner, count($attempts))) {
-                $url = new \moodle_url('/mod/contentdesigner/view.php', [
-                    'id' => $this->cm->id,
-                    'action' => 'makeattempt',
-                ]);
-                $content .= $OUTPUT->single_button($url, get_string('startnewattempt', 'contentdesigner'), 'get');
-            }
-
-            // Display summary of previous attempts.
-            $content .= $OUTPUT->box(contentdesigner_display_attempts_summary($attempts, $this->contentdesigner));
-        }
-
-        if (!$noheader) {
-            $content .= $OUTPUT->footer();
-        }
-
-        return $content;
-    }
-
-    /**
-     * Display the content
+     * Displays the content in the current attempt of the learner.
      *
      * @param bool $noheader Whether to display the header or not
      * @return string The HTML content for the content designer
      */
     public function view_content($noheader = false) {
-        global $OUTPUT, $USER, $DB, $PAGE;
+        global $USER;
+        return $this->render_attempt(attempts::get_current($this->cm->instance, $USER->id), $noheader);
+    }
 
-        $content = '';
-        if (!$noheader) {
-            $content .= $OUTPUT->header();
-        }
+    /**
+     * Renders the content in an attempt of the learner.
+     *
+     * @param \stdClass $attempt The attempt, which must belong to the current user and the activity.
+     * @param bool $noheader Whether to display the header or not
+     * @return string The HTML of the page.
+     */
+    public function render_attempt(\stdClass $attempt, bool $noheader = false): string {
+        global $OUTPUT;
 
-        // Display content designer introduction.
-        if (!empty($this->contentdesigner->intro)) {
-            $content .= $OUTPUT->box(
-                format_module_intro('contentdesigner', $this->contentdesigner, $this->cm->id),
-                'generalbox mod_introbox',
-                'contentdesignerintro'
-            );
-        }
+        $content = $noheader ? '' : $OUTPUT->header();
 
-        $cdattempt = $DB->get_record(
-            'contentdesigner_attempts',
-            ['userid' => $USER->id, 'contentdesignerid' => $this->cm->instance],
-            '*',
-            IGNORE_MULTIPLE
-        );
-
-        if (!$cdattempt) {
-            $cdattempt = contentdesigner_create_attempt($this->cm->instance, $USER->id);
-        }
-
-        // Render the page view of the elements.
-        $editor = new \mod_contentdesigner\editor($this->cm, $this->course, $cdattempt);
+        $editor = new editor($this->cm, $this->course, $attempt);
         $editor->initiate_js();
-
         $content .= $editor->render_elements();
 
         if (!$noheader) {
@@ -250,109 +161,13 @@ class content_display {
     }
 
     /**
-     * Make a new attempt
+     * Renders the content in an attempt, kept for addons written for Content Designer pro 1.x.
      *
+     * @param \stdClass $cdattempt The attempt.
      * @param bool $noheader Whether to display the header or not
-     * @return string The HTML content for the attempt form
-     */
-    public function make_attempt($noheader = false) {
-        global $USER;
-
-        // Create a new attempt.
-        $cdattempt = contentdesigner_create_attempt($this->contentdesigner->id, $USER->id);
-
-        // Include the attempt form.
-        $content = $this->get_attempt_form($cdattempt, $noheader);
-
-        return $content;
-    }
-
-    /**
-     * Continue an existing attempt
-     *
-     * @param int $attemptid The attempt ID
-     * @param bool $noheader Whether to display the header or not
-     * @return string The HTML content for the attempt form
-     */
-    public function continue_attempt($attemptid, $noheader = false) {
-        global $DB, $USER;
-
-        $cdattempt = $DB->get_record('contentdesigner_attempts', ['id' => $attemptid], '*', MUST_EXIST);
-
-        // Security check - ensure the attempt belongs to this user.
-        if ($cdattempt->userid != $USER->id) {
-            throw new \moodle_exception('nopermissions', 'error', '', 'continue this attempt');
-        }
-
-        // Include the attempt form.
-        $content = $this->get_attempt_form($cdattempt, $noheader);
-
-        return $content;
-    }
-
-    /**
-     * Get the form fields for the attempt form
-     *
-     * @param object $cdattempt The content designer attempt object
-     * @param bool $noheader Whether to display the header or not
-     * @return string The HTML content for the form fields
+     * @return string The HTML of the page.
      */
     public function get_attempt_form($cdattempt, $noheader = false) {
-        global $OUTPUT;
-
-        $content = '';
-
-        if (!$noheader) {
-            $content .= $OUTPUT->header();
-        }
-
-        // Display content designer introduction.
-        if (!empty($this->contentdesigner->intro)) {
-            $content .= $OUTPUT->box(
-                format_module_intro('contentdesigner', $this->contentdesigner, $this->cm->id),
-                'generalbox mod_introbox',
-                'contentdesignerintro'
-            );
-        }
-
-        // Show attempt form.
-        $content .= \html_writer::start_tag('form', [
-            'id' => 'attempt-form',
-            'method' => 'post',
-            'action' => new \moodle_url('/mod/contentdesigner/view.php'),
-            'class' => 'contentdesigner-form',
-        ]);
-
-        $content .= \html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'id',
-            'value' => $this->cm->id,
-        ]);
-
-        $content .= \html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'action',
-            'value' => 'submit',
-        ]);
-
-        $content .= \html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'attemptid',
-            'value' => $cdattempt->id,
-        ]);
-
-        $content .= \html_writer::empty_tag('input', [
-            'type' => 'hidden',
-            'name' => 'sesskey',
-            'value' => sesskey(),
-        ]);
-        // Render the page view of the elements.
-        $editor = new \mod_contentdesigner\editor($this->cm, $this->course, $cdattempt);
-        $editor->initiate_js();
-
-        $content .= $editor->render_elements();
-        $content .= \html_writer::end_tag('form');
-
-        return $content;
+        return $this->render_attempt($cdattempt, $noheader);
     }
 }

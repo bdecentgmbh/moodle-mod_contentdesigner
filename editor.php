@@ -31,36 +31,24 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $instanceid = optional_param('instanceid', 0, PARAM_INT);
 $element = optional_param('element', '', PARAM_ALPHANUM);
 
-if (!$cm = get_coursemodule_from_id('contentdesigner', $id)) {
-    // NOTE this is invalid use of print_error, must be a lang string id.
-    throw new moodle_exception('invalidcoursemodule');
-}
+[$course, $cm] = get_course_and_cm_from_cmid($id, 'contentdesigner');
+$data = $DB->get_record('contentdesigner', ['id' => $cm->instance], '*', MUST_EXIST);
 
-$PAGE->set_url('/mod/contentdesigner/editor.php', ['id' => $cm->id, 'sesskey' => sesskey()]);
-
-if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
-    throw new moodle_exception('invalidcourse');  // NOTE As above.
-}
+$PAGE->set_url('/mod/contentdesigner/editor.php', ['id' => $cm->id]);
 require_course_login($course, false, $cm);
-
-if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
-    throw new moodle_exception('course module is incorrect'); // NOTE As above.
-}
 $context = \context_module::instance($cm->id);
-
-require_sesskey();
-
 require_capability('mod/contentdesigner:viewcontenteditor', $context);
 
-$PAGE->set_title($course->shortname . ': ' . $data->name);
-$PAGE->set_heading($course->fullname);
+$PAGE->set_title($course->shortname . ': ' . format_string($data->name));
+$PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_activity_record($data);
 $PAGE->add_body_class('limitedwidth');
 
 $editor = new mod_contentdesigner\editor($cm, $course);
 
 if ($action == 'copy') {
-    if ($element == "chapter") {
+    require_sesskey();
+    if ($element == 'chapter') {
         $editor->chapter_duplicate($instanceid);
     } else {
         $editor->duplicate($instanceid, $element);

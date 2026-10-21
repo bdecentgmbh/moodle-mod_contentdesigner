@@ -38,7 +38,7 @@ $functions = [
         'methodname'    => 'store_max_score',
         'description'   => 'Store the max score of H5P',
         'type'          => 'write',
-        'capabilities'  => 'mod/contentdesigner:view',
+        'capabilities'  => 'mod/contentdesigner:viewcontenteditor',
         'ajax'          => true,
     ],
 ];

@@ -17,13 +17,17 @@
 /**
  * Base class for Content designer elements. Commonly used elements methods are defined here.
  *
- *
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_contentdesigner;
+
+use mod_contentdesigner\hook\progress_updated;
+use mod_contentdesigner\local\access;
+use mod_contentdesigner\local\css;
+use mod_contentdesigner\local\extensions;
 
 /**
  * Base class for Content designer elements.
@@ -37,7 +41,7 @@ abstract class elements {
     /**
      * Context data for the current module.
      *
-     * @var context_module
+     * @var \context_module
      */
     public $context;
 
@@ -72,7 +76,7 @@ abstract class elements {
     /**
      * Course module
      *
-     * @var cm_info $cm course module data
+     * @var \cm_info $cm course module data
      */
     public $cm;
 
@@ -84,9 +88,9 @@ abstract class elements {
     public $course;
 
     /**
-     * Content designer attempt data.
+     * The attempt of the learner the element is rendered for, null in the editor.
      *
-     * @var stdclass $cdattempt
+     * @var \stdClass|null $cdattempt
      */
     public $cdattempt;
 
@@ -106,15 +110,15 @@ abstract class elements {
     public const STATUS_VISIBLE = 1;
 
     /**
-     * Status visibility: disable.
+     * Status visibility: hidden.
      */
-    public const STATUS_DISABLE = 1;
+    public const STATUS_DISABLE = 0;
 
     /**
      * Constructor method, Setup the element basic information and context.
      *
      * @param int $cmid
-     * @param stdclass|null $cdattempt
+     * @param \stdClass|null $cdattempt
      */
     public function __construct($cmid, $cdattempt = null) {
         $this->cmid = $cmid;
@@ -147,17 +151,17 @@ abstract class elements {
     /**
      * Element form element definition.
      *
-     * @param moodle_form $mfrom
-     * @param genreal_element_form $formobj
+     * @param \MoodleQuickForm $mform
+     * @param \mod_contentdesigner\form\general_element_form $formobj
      * @return void
      */
-    abstract public function element_form(&$mfrom, $formobj);
+    abstract public function element_form(&$mform, $formobj);
 
     /**
      * Render the view of the element instance which is displayed to the users.
      *
-     * @param stdclass $instance
-     * @return void
+     * @param \stdClass $instance
+     * @return string
      */
     abstract public function render($instance);
 
@@ -193,7 +197,7 @@ abstract class elements {
     }
 
     /**
-     * Verify the element is supports the grade.
+     * Whether the element can be graded, see {@see get_mark()} and {@see get_max_mark()}.
      *
      * @return bool
      */
@@ -203,6 +207,8 @@ abstract class elements {
 
     /**
      * Verify the element is supports top of the contents. ie(cdelement_tableofcontents)
+     *
+     * Such elements implement {@see get_editor_data()} and {@see render_module_topcontents()}.
      *
      * @return bool
      */
@@ -242,13 +248,11 @@ abstract class elements {
     /**
      * Icon of the element.
      *
-     * @param renderer $output
+     * @param \renderer_base $output
      * @return string HTML fragment
      */
     public function icon($output) {
-        global $CFG;
-        $icon = ($CFG->branch >= 405) ? 't/index_drawer' : 't/viewdetails';
-        return $output->pix_icon($icon, get_string('plugin'));
+        return $output->pix_icon('t/index_drawer', get_string('plugin'));
     }
 
     /**
@@ -265,7 +269,7 @@ abstract class elements {
      * Save the area files data after the element instance moodle_form submittted.
      * If the element override the method then should call the parent to save the baackgroung image files.
      *
-     * @param stdclas $data Submitted moodle_form data.
+     * @param \stdClass $data Submitted moodle_form data.
      */
     public function save_areafiles($data) {
 
@@ -296,8 +300,8 @@ abstract class elements {
     /**
      * Prepare the form editor elements file data before render the elemnent form.
      *
-     * @param stdclass $formdata
-     * @return stdclass
+     * @param \stdClass $formdata
+     * @return \stdClass
      */
     public function prepare_standard_file_editor(&$formdata) {
         if (isset($formdata->instance)) {
@@ -330,7 +334,7 @@ abstract class elements {
     /**
      * Options used in the editor defined.
      *
-     * @param context_module $context
+     * @param \context_module $context
      * @return array Filemanager options.
      */
     public function editor_options($context) {
@@ -350,8 +354,7 @@ abstract class elements {
      * @return \context_module
      */
     public function get_context() {
-        $context = \context_module::instance($this->cmid);
-        return $context;
+        return \context_module::instance($this->cmid);
     }
 
     /**
@@ -373,30 +376,28 @@ abstract class elements {
     /**
      * Fetch the record of the cotnent designer module instance.
      *
-     * @return stdclass
+     * @return \stdClass
      */
     public function get_contentdesigner() {
         global $DB;
-        $cm = get_coursemodule_from_id('contentdesigner', $this->cmid);
-        return $DB->get_record('contentdesigner', ['id' => $cm->instance]);
+        return $DB->get_record('contentdesigner', ['id' => $this->cm->instance]);
     }
 
     /**
      * Get the course module data from the module instance.
      *
      * @param int $contentdesignerid
-     * @return cminfo Course module record.
+     * @return \stdClass Course module record.
      */
     public function get_cm_from_modinstance($contentdesignerid) {
-        $cm = get_coursemodule_from_instance('contentdesigner', $contentdesignerid);
-        return $cm;
+        return get_coursemodule_from_instance('contentdesigner', $contentdesignerid);
     }
 
     /**
      * Vertify the element instance is prevents the loading of next element instance.
      * For example please check the cdelement_h5p
      *
-     * @param stdclass $instance Instance data of the element.
+     * @param \stdClass $instance Instance data of the element.
      * @return bool True if need to stop the next instance Otherwise false if render of next elements.
      */
     public function prevent_nextelements($instance): bool {
@@ -419,30 +420,17 @@ abstract class elements {
         global $PAGE;
         $data = [
             'cmid' => $this->cmid,
-            'contextid' => \context_module::instance($this->cmid)->id,
+            'contextid' => $this->context->id,
             'contentdesignerid' => $this->cm->instance,
-            'attemptid' => $this->cdattempt->id,
+            'attemptid' => $this->cdattempt->id ?? 0,
         ];
-
-        $cmdata = $this->cm->get_custom_data();
-        $completionmandatory = (isset($cmdata['customcompletionrules']['completionmandatory'])
-            && $cmdata['customcompletionrules']['completionmandatory'] == 1) ? true : false;
-
-        if ($completionmandatory && $this->get_mandatory_completion()) {
-            $PAGE->requires->js_amd_inline("
-                require(['mod_contentdesigner/elements'], function(Elements) {
-                    Elements.updateCompletion('completionmandatory');
-                })
-            ");
-        }
-
         $PAGE->requires->js_call_amd('mod_contentdesigner/elements', 'contentDesignerElementsData', $data);
     }
 
     /**
      * Render the view of element instance, Which is displayed in the student view.
      *
-     * @param stdclass $instance
+     * @param \stdClass $instance
      * @return array
      */
     public function render_element($instance) {
@@ -452,28 +440,36 @@ abstract class elements {
     }
 
     /**
+     * The in place editable title of an element instance, editable for users who may edit the content.
+     *
+     * @param \stdClass $instance Element Instance data.
+     * @return \core\output\inplace_editable
+     */
+    public function get_title_editable($instance): \core\output\inplace_editable {
+        $title = !empty($instance->title) ? $instance->title : $this->info()->name;
+        $name = 'instance_title[' . $this->shortname . '][' . $instance->id . ']';
+        $editable = $this->context && has_capability(access::EDIT, $this->context);
+        return new \core\output\inplace_editable(
+            'mod_contentdesigner',
+            $name,
+            $this->elementid . $instance->id,
+            $editable,
+            format_string($title, true, ['context' => $this->context]),
+            $title,
+            get_string('titleeditable', 'mod_contentdesigner'),
+            get_string('newvalue', 'mod_contentdesigner') . format_string($title, true, ['context' => $this->context])
+        );
+    }
+
+    /**
      * Load the element title into inline editable method.
      *
-     * @param stdclass $instance Element Instance data.
+     * @param \stdClass $instance Element Instance data.
      * @return string
      */
     public function title_editable($instance) {
         global $OUTPUT;
-
-        $title = $instance->title ?: $this->info()->name;
-        $name = 'instance_title[' . $this->shortname . '][' . $instance->id . ']';
-        // Todo: Need to implement capability in place of true 4th param.
-        $tmpl = new \core\output\inplace_editable(
-            'mod_contentdesigner',
-            $name,
-            $this->elementid . $instance->id,
-            true,
-            format_string($title),
-            $title,
-            get_string('titleeditable', 'mod_contentdesigner'),
-            get_string('newvalue', 'mod_contentdesigner') . format_string($title)
-        );
-        return $OUTPUT->render($tmpl);
+        return $OUTPUT->render($this->get_title_editable($instance));
     }
 
     /**
@@ -521,111 +517,84 @@ abstract class elements {
     public function is_table_exists() {
         global $DB;
         $dbman = $DB->get_manager();
-        $table = new \xmldb_table($this->tablename);
-        return ($dbman->table_exists($table)) ? true : false;
+        $table = new \xmldb_table($this->tablename());
+        return $dbman->table_exists($table);
     }
 
     /**
-     * Create the basic instance for the element. Override this function if need to add custom changes.
+     * Create the basic instance for the element, with the default general options of the site.
+     * Override this function if need to add custom changes.
      *
-     * @param int $contentdesignerid Contnet deisnger instance id.
+     * @param int $contentdesignerid Content designer instance id.
+     * @param array $record Values of the element table to set.
      * @return int Element instance id.
      */
-    public function create_basic_instance($contentdesignerid) {
+    public function create_basic_instance($contentdesignerid, array $record = []) {
         global $DB;
 
-        $record = [
+        if (!$this->is_table_exists()) {
+            throw new \moodle_exception('tablenotfound', 'mod_contentdesigner');
+        }
+
+        $record += [
             'contentdesignerid' => $contentdesignerid,
             'timecreated' => time(),
             'timemodified' => time(),
         ];
+        $instanceid = $DB->insert_record($this->tablename(), $record);
 
-        if ($this->is_table_exists()) {
-            if ($this->tablename = 'cdelement_outro') {
-                // Outro general settigns.
-                $content = get_config('cdelement_outro', 'outro_content');
-                $primarybutton = get_config('cdelement_outro', 'primarybutton');
-                $secondarybutton = get_config('cdelement_outro', 'secondarybutton');
-                $outrocontenthtml = file_rewrite_pluginfile_urls(
-                    $content,
-                    'pluginfile.php',
-                    $this->context->id,
-                    'mod_contentdesigner',
-                    'outrocontent',
-                    0
-                );
-                $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
-
-                $record['outrocontent'] = $outrocontenthtml ?? '';
-                $record['outrocontentformat'] = FORMAT_HTML;
-                $record['primarybutton'] = $primarybutton ?? 0;
-                $record['secondarybutton'] = $secondarybutton ?? 0;
+        if (!$DB->record_exists('contentdesigner_options', ['instance' => $instanceid, 'element' => $this->elementid])) {
+            $options = [];
+            foreach ($this->get_options_fields() as $field) {
+                $default = get_config('mod_contentdesigner', $field);
+                $options[$field] = ($default === false) ? null : $default;
             }
-
-            $result = $DB->insert_record($this->tablename, $record);
-            if ($result) {
-                $data = [];
-                $fields = $this->get_options_fields();
-                foreach ($fields as $field) {
-                    $globalvalues = get_config('mod_contentdesigner', $field);
-                    $data[$field] = $globalvalues ?? '';
-                }
-
-                $data['element'] = $this->elementid;
-                $data['instance'] = $result;
-                $data['timecreated'] = time();
-                $data['timemodified'] = time();
-
-                if (
-                    !$DB->record_exists('contentdesigner_options', ['instance' => $result,
-                    'element' => $this->elementid])
-                ) {
-                    $DB->insert_record('contentdesigner_options', $data);
-                }
-            }
-            return $result;
-        } else {
-            throw new \moodle_exception('tablenotfound', 'contentdesigner');
+            $options['element'] = $this->elementid;
+            $options['instance'] = $instanceid;
+            $options['timecreated'] = time();
+            $options['timemodified'] = time();
+            $DB->insert_record('contentdesigner_options', $options);
         }
+        return $instanceid;
     }
 
     /**
-     * Get the element instance data from the give isntanceid. Filter by the visible status.
+     * Get the element instance data, merged with its general options. Filter by the visible status.
      *
      * @param int $instanceid Instance id.
      * @param bool $visible Filter by visibility.
-     * @return stdclass|bool Instance record
+     * @return \stdClass|bool Instance record
      */
     public function get_instance(int $instanceid, $visible = false) {
         global $DB;
 
-        if ($this->is_table_exists()) {
-            $params = ['id' => $instanceid, 'elementid' => $this->elementid];
-            $sql = 'SELECT ee.id, co.id as optionid, co.*, ee.* FROM {' . $this->tablename . '} ee
-            LEFT JOIN {contentdesigner_options} co ON ee.id = co.instance AND co.element=:elementid
-            WHERE ee.id = :id';
-            if ($visible) {
-                $sql .= ' AND ee.visible=:visible ';
-                $params += ['visible' => 1];
-            }
-
-            $sql .= ' GROUP BY ee.id, ee.visible, co.id';
-            if ($record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
-                if ($record->description) {
-                    $record->description = file_rewrite_pluginfile_urls(
-                        $record->description,
-                        'pluginfile.php',
-                        $this->context->id,
-                        'mod_contentdesigner',
-                        $this->element_shortname() . 'description',
-                        $instanceid
-                    );
-                    $record->description = format_text($record->description, FORMAT_HTML, ['context' => $this->context]);
-                }
-                return $record;
-            }
+        if (!$this->is_table_exists()) {
+            return false;
         }
-        return false;
+        $conditions = ['id' => $instanceid];
+        if ($visible) {
+            $conditions['visible'] = 1;
+        }
+        if (!$instance = $DB->get_record($this->tablename(), $conditions)) {
+            return false;
+        }
+        $options = $this->get_instance_options($instanceid);
+        $record = (object) array_merge($options, (array) $instance);
+        $record->optionid = $options['id'] ?? null;
+
+        if (!empty($record->description)) {
+            $record->description = file_rewrite_pluginfile_urls(
+                $record->description,
+                'pluginfile.php',
+                $this->context->id,
+                'mod_contentdesigner',
+                $this->element_shortname() . 'description',
+                $instanceid
+            );
+            $record->description = format_text($record->description, $record->descriptionformat ?? FORMAT_HTML,
+                ['context' => $this->context]);
+        }
+        return $record;
     }
 
     /**
@@ -644,7 +613,7 @@ abstract class elements {
      * Get the element instance general options.
      *
      * @param int $instanceid Element instance id.
-     * @return stdclass Record of the general options for the elemnent isntnace.
+     * @return array Record of the general options for the elemnent isntnace.
      */
     public function get_instance_options($instanceid): array {
         global $DB;
@@ -670,20 +639,33 @@ abstract class elements {
      * Process the update of element instance and genreal options.
      * If element doesn't have any chapters then create new default chpater and inserted into the chapter.
      *
-     * @param stdclass $data Submitted element moodle form data
+     * The instance and the chapter must belong to the activity of the element; the caller has checked that the user
+     * may edit its content.
+     *
+     * @param \stdClass $data Submitted element moodle form data
      * @return void
      */
     public function update_element($data) {
         global $DB;
 
+        // Never write to an instance or a chapter of another activity.
+        $data->contentdesignerid = $this->cm->instance;
+        if (!empty($data->instanceid)) {
+            access::get_element_instance($this, (int) $data->instanceid, $this->cm->instance);
+        }
+        if (!empty($data->chapterid)) {
+            access::get_chapter((int) $data->chapterid, $this->cm->instance);
+        }
+        $this->clean_general_options($data);
+
+        $transaction = $DB->start_delegated_transaction();
         try {
-            $transaction = $DB->start_delegated_transaction();
             $instanceid = $this->update_instance($data);
             // Setup instanceid if the elment is not inserted before.
             $data->instance = ($data->instanceid) ?: $instanceid;
             if ($this->supports_content() && $this->supports_multiple_instance()) {
                 $editor = editor::get_editor($this->cmid);
-                if (!isset($data->chapterid) || $data->chapterid == null) {
+                if (empty($data->chapterid)) {
                     $data->chapterid = $editor->chapter->get_default($this->cm->instance, true);
                 }
                 $position = (isset($data->position) && $data->position == 'top') ? 1 : 0;
@@ -700,16 +682,33 @@ abstract class elements {
             $this->update_options($data);
 
             $transaction->allow_commit();
-        } catch (\Exception $e) {
-            // Extra cleanup steps.
-            $transaction->rollback($e); // Rethrows exception.
+        } catch (\Throwable $e) {
+            $transaction->rollback($e);
+        }
+    }
+
+    /**
+     * Drops general options that are not valid CSS values, as they end up in style attributes.
+     *
+     * @param \stdClass $data Submitted element form data.
+     */
+    protected function clean_general_options(\stdClass $data): void {
+        foreach (['margin', 'padding'] as $field) {
+            if (isset($data->$field)) {
+                $data->$field = css::clean_spacing($data->$field);
+            }
+        }
+        foreach (['abovecolorbg', 'belowcolorbg'] as $field) {
+            if (isset($data->$field)) {
+                $data->$field = css::clean_background($data->$field);
+            }
         }
     }
 
     /**
      * Update the general options of the element instance.
      *
-     * @param stdclass $data
+     * @param \stdClass $data
      * @return void
      */
     public function update_options($data) {
@@ -719,22 +718,25 @@ abstract class elements {
             return false;
         }
 
-        $data->timemodified = time();
+        $optiondata = clone $data;
+        $optiondata->element = $this->elementid;
+        $optiondata->instance = $data->instance;
+        $optiondata->timemodified = time();
         if ($options = $this->get_instance_options($data->instance)) {
-            $optiondata = $data;
             $optiondata->id = $options['id'];
             $DB->update_record('contentdesigner_options', $optiondata);
         } else {
-            // Insert new record.
-            $DB->insert_record('contentdesigner_options', $data);
+            unset($optiondata->id);
+            $optiondata->timecreated = time();
+            $DB->insert_record('contentdesigner_options', $optiondata);
         }
     }
 
     /**
      * Update the element instance. Override the function in elements element class to add custom rules.
      *
-     * @param stdclass $data
-     * @return void
+     * @param \stdClass $data
+     * @return int The instance id.
      */
     public function update_instance($data) {
         global $DB;
@@ -745,41 +747,66 @@ abstract class elements {
             return $DB->insert_record($this->tablename, $data);
         } else {
             $data->id = $data->instanceid;
-            if ($DB->update_record($this->tablename, $data)) {
-                return $data->id;
-            }
+            $DB->update_record($this->tablename, $data);
+            return $data->id;
         }
     }
 
     /**
-     * Delete the element settings.
+     * Delete an element instance with its general options, files and the data of its users.
+     *
+     * Elements with own data override {@see delete_instance_data()}.
      *
      * @param int $instanceid
      * @return bool status.
      */
     public function delete_element($instanceid) {
         global $DB;
+
+        $transaction = $DB->start_delegated_transaction();
         try {
-            $transaction = $DB->start_delegated_transaction();
-            // Delete the element settings.
-            if ($this->get_instance($instanceid)) {
+            if ($this->is_table_exists() && $DB->record_exists($this->tablename(), ['id' => $instanceid])) {
+                $this->delete_instance_data($instanceid);
                 $DB->delete_records($this->tablename(), ['id' => $instanceid]);
             }
-            $DB->delete_records('contentdesigner_content', ['element' => $this->element_id(),
-            'instance' => $instanceid]);
-
-            if ($this->get_instance_options($instanceid)) {
-                // Delete the element general settings.
-                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
-                    'instance' => $instanceid]);
+            $DB->delete_records('contentdesigner_content', ['element' => $this->elementid, 'instance' => $instanceid]);
+            $DB->delete_records('contentdesigner_options', ['element' => $this->elementid, 'instance' => $instanceid]);
+            if ($this->context) {
+                $fs = get_file_storage();
+                foreach (['elementbg', 'description'] as $area) {
+                    $fs->delete_area_files($this->context->id, 'mod_contentdesigner', $this->shortname . $area, $instanceid);
+                }
             }
             $transaction->allow_commit();
-            return true;
-        } catch (\Exception $e) {
-            // Extra cleanup steps.
-            $transaction->rollback($e); // Rethrows exception.
-            throw new \moodle_exception('chapternotdeleted', 'cdelement_chapter');
+        } catch (\Throwable $e) {
+            $transaction->rollback($e);
         }
+        return true;
+    }
+
+    /**
+     * Deletes the data of an element instance before the instance itself is deleted: user data, files, records of
+     * other tables. The instance record still exists.
+     *
+     * @param int $instanceid The instance id.
+     */
+    protected function delete_instance_data(int $instanceid): void {
+    }
+
+    /**
+     * Deletes the data of the learner in this element that belongs to an attempt, when the attempt is deleted.
+     *
+     * @param \stdClass $attempt The attempt (record of contentdesigner_attempts).
+     */
+    public function delete_attempt_data(\stdClass $attempt): void {
+    }
+
+    /**
+     * Deletes the data of all learners in this element in an activity (course reset, activity deletion).
+     *
+     * @param int $contentdesignerid The activity instance id.
+     */
+    public function reset_userdata(int $contentdesignerid): void {
     }
 
     /**
@@ -791,50 +818,58 @@ abstract class elements {
      */
     public function update_visibility($instanceid, $visibility) {
         global $DB;
-        $instance = $this->get_instance($instanceid);
-        if ($instance) {
-            $instance->visible = $visibility;
-            $instance->timemodified = time();
-            return $DB->update_record($this->tablename, $instance);
-        }
+        return $DB->update_record($this->tablename(), (object) [
+            'id' => $instanceid,
+            'visible' => $visibility ? 1 : 0,
+            'timemodified' => time(),
+        ]);
     }
 
     /**
      * Generate the classes based on the genenral options.
      *
-     * @param stdclass $instance Element instance data
-     * @param stdclass $option element general options data.
-     * @return stdclass $instance Instance data.
+     * The style values are validated again here, as older versions stored them unchecked.
+     *
+     * @param \stdClass $instance Element instance data
+     * @param \stdClass|false $option element general options data.
+     * @return \stdClass $instance Instance data.
      */
     public function load_option_classes($instance, $option) {
-        $class[] = ($instance->animation) ? 'animation' : '';
+        $class[] = !empty($instance->animation) ? 'animation' : '';
         $instance->entranceanimation = json_encode([
-            'animation' => $instance->animation,
-            'duration' => $instance->duration,
-            'delay' => $instance->delay ? $instance->delay : '',
+            'animation' => $instance->animation ?? '',
+            'duration' => $instance->duration ?? '',
+            'delay' => !empty($instance->delay) ? (int) $instance->delay : '',
         ]);
 
-        $class[] = $instance->hidedesktop ? 'd-lg-none' : 'd-lg-block';
-        $class[] = $instance->hidetablet ? 'd-md-none' : 'd-md-block';
-        $class[] = $instance->hidemobile ? 'd-none' : 'd-block';
+        $class[] = !empty($instance->hidedesktop) ? 'd-lg-none' : 'd-lg-block';
+        $class[] = !empty($instance->hidetablet) ? 'd-md-none' : 'd-md-block';
+        $class[] = !empty($instance->hidemobile) ? 'd-none' : 'd-block';
 
-        $style[] = sprintf('margin: %s;', $instance->margin);
-        $style[] = sprintf('padding: %s;', $instance->padding);
+        $style = [];
+        if ($margin = css::clean_spacing($instance->margin ?? '')) {
+            $style[] = 'margin: ' . $margin . ';';
+        }
+        if ($padding = css::clean_spacing($instance->padding ?? '')) {
+            $style[] = 'padding: ' . $padding . ';';
+        }
+        $abovecolorbg = css::clean_background($option->abovecolorbg ?? '');
+        $belowcolorbg = css::clean_background($option->belowcolorbg ?? '');
         $class[] = !empty($option->backimage) ? 'backimage' : '';
-        $class[] = (!empty($option->abovecolorbg) || !empty($option->belowcolorbg)) ? 'backcolor' : '';
-        $instance->classes = implode(' ', $class);
+        $class[] = ($abovecolorbg || $belowcolorbg) ? 'backcolor' : '';
+        $instance->classes = trim(implode(' ', array_filter($class)));
         $instance->style = implode('', $style);
 
-        $instance->abovecolorbg = !empty($option->abovecolorbg) ? sprintf('background: %s;', $option->abovecolorbg) : '';
-        $instance->backimage = !empty($option->backimage) ? sprintf('background-image: url(%s);', $option->backimage) : '';
-        $instance->belowcolorbg = !empty($option->belowcolorbg) ? sprintf('background: %s;', $option->belowcolorbg) : '';
-        $scrolldata = [
-            "start" => $instance->viewport,
-            "direction" => $instance->direction,
-            "speed" => $instance->speed ? $instance->speed : 0,
-        ];
-        if ($instance->direction) {
-            $instance->scrolleffect = json_encode($scrolldata);
+        $instance->abovecolorbg = $abovecolorbg ? 'background: ' . $abovecolorbg . ';' : '';
+        $instance->backimage = !empty($option->backimage)
+            ? 'background-image: url(' . (new \moodle_url($option->backimage))->out(false) . ');' : '';
+        $instance->belowcolorbg = $belowcolorbg ? 'background: ' . $belowcolorbg . ';' : '';
+        if (!empty($instance->direction)) {
+            $instance->scrolleffect = json_encode([
+                'start' => (int) ($instance->viewport ?? 0),
+                'direction' => $instance->direction,
+                'speed' => (int) ($instance->speed ?? 0),
+            ]);
         }
         return $instance;
     }
@@ -843,8 +878,8 @@ abstract class elements {
      * Load the classes from elements, If need to add classes in parent div then use this method
      * Otherwise use the render function to add classes.
      *
-     * @param stdclass $instance
-     * @param stdclass $option
+     * @param \stdClass $instance
+     * @param \stdClass|false $option
      * @return void
      */
     public function generate_element_classes(&$instance, $option) {
@@ -852,49 +887,38 @@ abstract class elements {
     }
 
     /**
-     * Get the completion for all mandatory elements in the content designer.
+     * Whether the learner of the attempt has completed all mandatory elements of the activity.
      *
-     * @return bool
+     * @return bool False if the activity has no mandatory elements or one is not completed.
      */
     public function get_mandatory_completion() {
         global $DB;
 
-        $sql  = 'SELECT cc.*, ce.id as elementid, ce.shortname as elementname
-        FROM {contentdesigner_content} cc
-        JOIN {contentdesigner_elements} ce ON ce.id = cc.element
-        WHERE cc.contentdesignerid = ?';
+        $sql = 'SELECT cc.*, ce.shortname AS elementname
+                  FROM {contentdesigner_content} cc
+                  JOIN {contentdesigner_elements} ce ON ce.id = cc.element
+                 WHERE cc.contentdesignerid = ?';
+        $contents = $DB->get_records_sql($sql, [$this->cm->instance]);
 
-        $params = [$this->cm->instance];
-        $contents = $DB->get_records_sql($sql, $params);
-        $completemandatory = false;
-
-        // Assume all mandatory elements are complete until proven otherwise.
-        $completemandatory = true;
+        $elements = [];
         $hasmandatory = false;
-
+        $installed = editor::get_element_names();
         foreach ($contents as $content) {
-            $cm = $this->get_cm_from_modinstance($content->contentdesignerid);
-            $element = \mod_contentdesigner\editor::get_element($content->elementname, $cm->id, $this->cdattempt);
-            $instance = $element->get_instance($content->instance);
-
-            // Check if this element is mandatory.
-            if (isset($instance->mandatory) && !empty($instance->mandatory)) {
-                $hasmandatory = true; // At least one mandatory element exists.
-
-                // If any mandatory element is incomplete, set completion to false and break.
-                if ($element->prevent_nextelements($instance)) {
-                    $completemandatory = false;
-                    break;
-                }
+            if (!in_array($content->elementname, $installed, true)) {
+                continue;
+            }
+            $elements[$content->elementname] ??= editor::get_element($content->elementname, $this->cmid, $this->cdattempt);
+            $element = $elements[$content->elementname];
+            $instance = $element->get_instance($content->instance, true);
+            if (!$instance || empty($instance->mandatory)) {
+                continue;
+            }
+            $hasmandatory = true;
+            if ($element->prevent_nextelements($instance)) {
+                return false;
             }
         }
-
-        // If no mandatory elements were found, set completemandatory to false.
-        if (!$hasmandatory) {
-            $completemandatory = false;
-        }
-
-        return $completemandatory;
+        return $hasmandatory;
     }
 
     /**
@@ -910,36 +934,109 @@ abstract class elements {
     }
 
     /**
-     * Calculate the grade for this question element.
+     * Prepares the grading of the element before {@see get_mark()} is called, for elements that support grades.
+     */
+    public function pre_process_grade() {
+    }
+
+    /**
+     * The mark of the learner of the attempt in an instance, for elements that support grades.
      *
-     * @param int $qmark The mark obtained by the user.
-     * @param int $qmaxmark The maximum mark for the question.
+     * @param \stdClass $instance The element instance.
+     * @return float
+     */
+    public function get_mark($instance) {
+        return 0;
+    }
+
+    /**
+     * The maximum mark of an instance, for elements that support grades.
+     *
+     * @param \stdClass $instance The element instance.
+     * @param int|null $userid The learner.
+     * @return float
+     */
+    public function get_max_mark($instance, $userid = null) {
+        return 0;
+    }
+
+    /**
+     * Calculate the share of a mark in the grade of the activity.
+     *
+     * @param float $qmark The mark obtained by the user.
+     * @param float $qmaxmark The maximum mark for the question.
      * @param int $userid The ID of the user.
-     *
      * @return int The calculated grade.
      */
     public function calculate_grade($qmark, $qmaxmark, $userid) {
-        global $DB, $CFG;
+        global $DB;
 
-        require_once($CFG->dirroot . '/mod/contentdesigner/locallib.php');
         $contentdesigner = $DB->get_record('contentdesigner', ['id' => $this->cm->instance]);
-        $contentdesignerelementmark = \mod_contentdesigner\editor::get_contentdesigner_overallelement_maxmark(
-            $this->cm->instance,
-            $this->cdattempt,
-            $userid
-        );
-        if ($contentdesignerelementmark) {
-            $qpercent = (int) round(($qmark / $contentdesignerelementmark) * $contentdesigner->grade);
-            return $qpercent;
+        if (!$contentdesigner || $contentdesigner->grade <= 0) {
+            return 0;
+        }
+        $maxmark = editor::get_contentdesigner_overallelement_maxmark($this->cm->instance, $this->cdattempt, $userid);
+        if ($maxmark) {
+            return (int) round(($qmark / $maxmark) * $contentdesigner->grade);
         }
         return 0;
     }
 
     /**
+     * Adds the columns of the element to the report of the activity (cdaddon_report).
+     *
+     * @param array $columns The columns.
+     * @param array $headers The headers.
+     * @param \table_sql $table The report table.
+     */
+    public function define_report_columns(array &$columns, array &$headers, $table) {
+    }
+
+    /**
+     * The value of a report column added in {@see define_report_columns()}.
+     *
+     * @param string $colname The column.
+     * @param \stdClass $data The row.
+     * @return string|null
+     */
+    public function col_report_field($colname, $data) {
+        return null;
+    }
+
+    /**
+     * The data of an element shown above the content (supports_top_instance()) in the editor.
+     *
+     * @return string|array
+     */
+    public function get_editor_data() {
+        return '';
+    }
+
+    /**
+     * The rendered element shown above the content (supports_top_instance()) for learners.
+     *
+     * @return array
+     */
+    public function render_module_topcontents() {
+        return [];
+    }
+
+    /**
+     * Reports that the progress of a learner in this element changed, for example after the learner answered it.
+     *
+     * Addons use this, for example, to update the activity completion.
+     *
+     * @param int $userid The learner.
+     */
+    public function progress_updated(int $userid): void {
+        extensions::dispatch(new progress_updated($this->cm, $userid, $this->shortname));
+    }
+
+    /**
      * Prepare data for the duplicate element.
      *
-     * @param stdClass $record
-     * @return stdClass
+     * @param \stdClass $record
+     * @return \stdClass
      */
     public function prepare_duplicatedata($record) {
         return $record;

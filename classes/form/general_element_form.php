@@ -28,6 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 
+use mod_contentdesigner\hook\extend_element_form;
+use mod_contentdesigner\local\css;
+use mod_contentdesigner\local\extensions;
+
 /**
  * General option form to create elements.
  *
@@ -66,6 +70,10 @@ class general_element_form extends \moodleform {
             $this->standard_element_settings($mform, $element);
         }
 
+        // Addons add their settings, for example the completion mode of chapters.
+        $instance = $DB->get_record('contentdesigner', ['id' => $element->cm->instance], '*', MUST_EXIST);
+        extensions::dispatch(new extend_element_form($element, $mform, $instance, (int) $instanceid));
+
         $buttonstr = '';
         if ($instanceid) {
             $buttonstr = get_string('elementupdate', 'mod_contentdesigner');
@@ -103,7 +111,6 @@ class general_element_form extends \moodleform {
      * @return void
      */
     public function standard_element_settings($mform, $element) {
-        global $DB;
         // Print the required moodle fields first.
         // Title for General element.
         $mform->addElement('header', 'generalsettings', get_string('generaltitle', 'mod_contentdesigner'));
@@ -254,14 +261,27 @@ class general_element_form extends \moodleform {
         $mform->addHelpButton('hidemobile', 'hideonmobile', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'hidemobile');
         $mform->setDefault('hidemobile', $default ?: 0);
+    }
 
-         [$course, $cm] = get_course_and_cm_from_cmid($this->_customdata['cmid'], 'contentdesigner');
-        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
-
-        if ($contentdesigner && $element->supports_grade() && $contentdesigner->enablegrading) {
-            $mform->addElement('header', 'gradesettings', get_string('gradesettings', 'mod_contentdesigner'));
-            $mform->addElement('advcheckbox', 'excludeungraded', get_string('excludegrade', 'mod_contentdesigner'));
-            $mform->setDefault('excludeungraded', 0);
+    /**
+     * Validates the style values of the general settings, which end up in style attributes.
+     *
+     * @param array $data The submitted data.
+     * @param array $files The submitted files.
+     * @return array Errors by element name.
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        foreach (['margin', 'padding'] as $field) {
+            if (isset($data[$field]) && !css::is_spacing($data[$field])) {
+                $errors[$field] = get_string('error:invalidspacing', 'mod_contentdesigner');
+            }
         }
+        foreach (['abovecolorbg', 'belowcolorbg'] as $field) {
+            if (isset($data[$field]) && !css::is_background($data[$field])) {
+                $errors[$field] = get_string('error:invalidbackground', 'mod_contentdesigner');
+            }
+        }
+        return $errors;
     }
 }

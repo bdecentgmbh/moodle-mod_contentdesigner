@@ -14,24 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_contentdesigner\hook;
+
 /**
- * Definition of webservices methods used on the content designer.
+ * Dispatched before a Content Designer activity and its data are deleted.
  *
  * @package    mod_contentdesigner
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die;
-
-$functions = [
-
-    'mod_contentdesigner_update_completion' => [
-        'classname'     => 'mod_contentdesigner\external',
-        'methodname'    => 'update_completion',
-        'description'   => 'Store the user attempt result of H5P',
-        'type'          => 'write',
-        'capabilities'  => 'mod/contentdesigner:view',
-        'ajax'          => true,
-    ],
-];
+#[\core\attribute\label('Dispatched before a Content Designer activity and its data are deleted.')]
+#[\core\attribute\tags('mod_contentdesigner')]
+final class before_instance_deleted {
+    /**
+     * Creates the hook.
+     *
+     * @param \stdClass $instance The activity record.
+     */
+    public function __construct(
+        /** @var \stdClass The activity record */
+        public readonly \stdClass $instance,
+    ) {
+    }
+}

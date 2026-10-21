@@ -25,7 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'cdelement_richtext';
-$plugin->version = 2025021302;
-$plugin->requires = 2020061500;
-$plugin->supported = [401, 405];
+$plugin->version = 2026102100;
+$plugin->release = '2.0';
+$plugin->requires = 2024100700; // Moodle 4.5.
+$plugin->supported = [405, 503];
 $plugin->maturity = MATURITY_STABLE;
+$plugin->dependencies = ['mod_contentdesigner' => 2026102100];

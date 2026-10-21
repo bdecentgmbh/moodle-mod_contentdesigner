@@ -137,12 +137,11 @@ function xmldb_cdelement_chapter_upgrade($oldversion, $rename = false) {
         // Define field learningtools to be added to cdelement_chapter.
         $table = new xmldb_table('cdelement_chapter');
         $field = new xmldb_field('learningtools', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'visible');
-        // Add field if it doesn't already exist.
+        // Add field if it doesn't already exist; existing chapters get the default 0. Chapters of the free edition
+        // already have the field, their values are kept.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        // Set the default value for existing records.
-        $DB->set_field('cdelement_chapter', 'learningtools', 0);
         // Don't run the upgrade savepoint if the plugin is renamed.
         if (!$runwithoutupgradpoint) {
             // Save new version.

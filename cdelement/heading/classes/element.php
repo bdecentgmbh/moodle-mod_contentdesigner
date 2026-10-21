@@ -97,7 +97,7 @@ class element extends \mod_contentdesigner\elements {
             ['size' => '60'],
             ['usefilepicker' => true]
         );
-        $mform->setType('headingurl', PARAM_RAW_TRIMMED);
+        $mform->setType('headingurl', PARAM_URL);
         $mform->addHelpButton('headingurl', 'headingurl', 'mod_contentdesigner');
 
         $headings = [
@@ -147,16 +147,19 @@ class element extends \mod_contentdesigner\elements {
      */
     public function render($instance) {
         $content = '';
-        if ($instance->visible && $instance->heading && $instance->headingtype) {
-            $hozclass = "hl-" . $instance->horizontal;
-            $vertclass = "vl-" . $instance->vertical;
+        if ($instance->visible && $instance->heading) {
+            // The stored values are restricted again, as backups may contain anything.
+            $tag = in_array($instance->headingtype, ['h2', 'h3']) ? $instance->headingtype : 'h2';
+            $horizontal = in_array($instance->horizontal, ['left', 'center', 'right']) ? $instance->horizontal : 'left';
+            $vertical = in_array($instance->vertical, ['top', 'middle', 'bottom']) ? $instance->vertical : 'top';
             $heading = html_writer::tag(
-                $instance->headingtype,
-                format_string($instance->heading),
-                ['class' => "element-heading $hozclass $vertclass"]
+                $tag,
+                format_string($instance->heading, true, ['context' => $this->get_context()]),
+                ['class' => "element-heading hl-$horizontal vl-$vertical"]
             );
-            $content .= ($instance->headingurl)
-                ? html_writer::link($instance->headingurl, $heading, ['target' => $instance->target]) : $heading;
+            $url = clean_param((string) $instance->headingurl, PARAM_URL);
+            $target = ($instance->target == '_self') ? '_self' : '_blank';
+            $content .= $url ? html_writer::link($url, $heading, ['target' => $target]) : $heading;
         }
         return $content;
     }

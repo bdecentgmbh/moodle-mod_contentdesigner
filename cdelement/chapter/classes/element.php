@@ -27,6 +27,9 @@ namespace cdelement_chapter;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_contentdesigner\editor;
+use mod_contentdesigner\hook\chapter_completion;
+use mod_contentdesigner\hook\content_navigation;
+use mod_contentdesigner\local\extensions;
 use moodle_exception;
 
 require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
@@ -49,6 +52,13 @@ class element extends \mod_contentdesigner\elements {
      * Chapter completion: Auto.
      */
     const CHAPTER_COMPLETION_AUTO = 1;
+
+    /**
+     * Whether the navigation is sequential, see {@see is_sequential()}.
+     *
+     * @var bool|null
+     */
+    protected $sequential = null;
 
     /**
      * Element name which is visbile for the users
@@ -108,16 +118,6 @@ class element extends \mod_contentdesigner\elements {
         $mform->addElement('select', 'visible', get_string('visibility', 'mod_contentdesigner'), $visibleoptions);
         $mform->addHelpButton('visible', 'visibility', 'mod_contentdesigner');
         $mform->setDefault('visible', $default);
-
-        // Compeltion mode.
-        $compeltionoptions = [
-            self::CHAPTER_COMPLETION_MANUAL => get_string('manual', 'mod_contentdesigner'),
-            self::CHAPTER_COMPLETION_AUTO => get_string('auto', 'mod_contentdesigner'),
-        ];
-        $default = get_config('cdelement_chapter', 'completionmode');
-        $mform->addElement('select', 'completionmode', get_string('completionmode', 'mod_contentdesigner'), $compeltionoptions);
-        $mform->setDefault('completionmode', $default ?: self::CHAPTER_COMPLETION_MANUAL);
-        $mform->addHelpButton('completionmode', 'completionmode', 'mod_contentdesigner');
 
         if (cdelement_chapter_has_learningtools()) {
             // Learning Tools setting.
@@ -187,49 +187,18 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
-     * Create the basic instance for the element. Override this function if need to add custom changes.
+     * Creates a chapter at the end of the activity, with the default general options of the site.
      *
-     * @param int $contentdesignerid Contnet deisnger instance id.
-     * @return int Element instance id.
+     * @param int $contentdesignerid Content designer instance id.
+     * @param array $record Values of the chapter table to set.
+     * @return int Chapter id.
      */
-    public function create_basic_instance($contentdesignerid) {
+    public function create_basic_instance($contentdesignerid, array $record = []) {
         global $DB;
-
-        $record = [
-            'contentdesignerid' => $contentdesignerid,
-            'timecreated' => time(),
-            'timemodified' => time(),
-        ];
-
-        if ($this->is_table_exists()) {
-            $lastelement = (int) $DB->get_field_sql('SELECT max(position) from {cdelement_chapter}
-                WHERE contentdesignerid = ?', [$this->cm->instance]);
-            $record['position'] = $lastelement ? $lastelement + 1 : 1;
-
-            $result = $DB->insert_record($this->tablename, $record);
-
-            $data = [];
-            $fields = $this->get_options_fields();
-            foreach ($fields as $field) {
-                $globalvalues = get_config('mod_contentdesigner', $field);
-                $data[$field] = $globalvalues ?? '';
-            }
-
-            $data['element'] = $this->elementid;
-            $data['instance'] = $result;
-            $data['timecreated'] = time();
-
-            if (
-                !$DB->record_exists('contentdesigner_options', ['instance' => $result,
-                'element' => $this->elementid])
-            ) {
-                $DB->insert_record('contentdesigner_options', $data);
-            }
-
-            return $result;
-        } else {
-            throw new \moodle_exception('tablenotfound', 'contentdesigner');
-        }
+        $lastposition = (int) $DB->get_field_sql('SELECT MAX(position) FROM {cdelement_chapter} WHERE contentdesignerid = ?',
+            [$contentdesignerid]);
+        $record += ['position' => $lastposition + 1];
+        return parent::create_basic_instance($contentdesignerid, $record);
     }
 
     /**
@@ -304,10 +273,9 @@ class element extends \mod_contentdesigner\elements {
     public function get_chapters_data($visible = false, $render = false, $chapterafter = false) {
         global $DB, $USER;
         if (empty($this->cm)) {
-            throw new \moodle_exception('coursemoduleidmissing', 'format_levels');
+            throw new \moodle_exception('invalidcoursemodule', 'error');
         }
         $list = []; // List of chapters.
-        $context = \context_system::instance();
         $condition = ['contentdesignerid' => $this->cm->instance];
         $condition += $visible ? ['visible' => 1] : [];
         if ($chapters = $DB->get_records('cdelement_chapter', $condition, 'position ASC')) {
@@ -329,21 +297,22 @@ class element extends \mod_contentdesigner\elements {
 
                 $completion = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter->id, 'userid' => $USER->id]);
                 $chapterprevent = ($render && $this->prevent_nextelements($chapter));
-                $element = \mod_contentdesigner\editor::get_element('chapter', $this->cmid, $this->cdattempt);
                 $editurl = new \moodle_url('/mod/contentdesigner/element.php', [
                     'cmid' => $this->cmid,
-                    'element' => $element->shortname,
+                    'element' => $this->shortname,
                     'id' => $chapter->id,
-                    'sesskey' => sesskey(),
                 ]);
 
                 $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
                     'id' => $this->cmid,
                     'instanceid' => $chapter->id,
-                    'element' => $element->shortname,
+                    'element' => $this->shortname,
                     'action' => 'copy',
                     'sesskey' => sesskey(),
                 ]);
+
+                // Learners complete the chapter with the button, unless an addon completes it automatically.
+                $automatic = $render && extensions::dispatch(new chapter_completion($this->cm, $chapter))->is_automatic();
 
                 $list[] = [
                     'instancedata' => $chapter,
@@ -355,14 +324,12 @@ class element extends \mod_contentdesigner\elements {
                     'chapterprevent' => $chapterprevent,
                     'chaptercta' => ($render) ?: false,
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
-                    'completionmode' => ($chapter->completionmode == self::CHAPTER_COMPLETION_MANUAL)
-                         ? true : false,
+                    'completionmode' => !$automatic,
+                    'autocompletion' => $automatic,
                     'copyurl' => $copyurl,
                     'learningtools' => $learningtools, // Add the learning tools flag.
-                    'hasbookmarkcapability' => (!empty($chapter->learningtools))
-                        ? has_capability('ltool/bookmarks:createbookmarks', $context) : false,
-                    'hasnotecapability' => (!empty($chapter->learningtools))
-                        ? has_capability('ltool/note:createnote', $context) : false,
+                    'hasbookmarkcapability' => $learningtools['show'] && $learningtools['canbookmark'],
+                    'hasnotecapability' => $learningtools['show'] && $learningtools['cannote'],
                 ];
 
                 // Prevent the next chapters when user needs to complete any of activities.
@@ -422,6 +389,8 @@ class element extends \mod_contentdesigner\elements {
         // Learning tools data.
         $learningtools = [
             'show' => false,
+            'canbookmark' => false,
+            'cannote' => false,
             'chapterid' => $chapter->id,
             'bookmarked' => false,
             'notescount' => 0,
@@ -443,6 +412,8 @@ class element extends \mod_contentdesigner\elements {
             // Only show learning tools if user has at least one capability.
             if ($hasbookmarkcapability || $hasnotescapability) {
                 $learningtools['show'] = true;
+                $learningtools['canbookmark'] = $hasbookmarkcapability;
+                $learningtools['cannote'] = $hasnotescapability;
                 // Check if the chapter is bookmarked by the user.
                 $learningtools['bookmarked'] = $DB->record_exists('ltool_bookmarks_data', [
                     'itemtype' => 'chapter',
@@ -469,10 +440,14 @@ class element extends \mod_contentdesigner\elements {
         $params = ['chapterid' => $chapter->id];
 
         $contents = $DB->get_records_sql($sql, $params);
+        $editor = \mod_contentdesigner\editor::get_editor($this->cmid);
+        $installed = editor::get_element_names();
+        $sequential = $this->is_sequential();
         foreach ($contents as $content) {
-            $cm = $this->get_cm_from_modinstance($content->contentdesignerid);
-            $element = \mod_contentdesigner\editor::get_element($content->elementname, $cm->id, $this->cdattempt);
-            $editor = \mod_contentdesigner\editor::get_editor($this->cmid);
+            if ($content->contentdesignerid != $this->cm->instance || !in_array($content->elementname, $installed, true)) {
+                continue;
+            }
+            $element = \mod_contentdesigner\editor::get_element($content->elementname, $this->cmid, $this->cdattempt);
             $instance = $element->get_instance($content->instance, $visible);
             if ($instance) {
                 $instance->titleplain = $instance->title;
@@ -491,7 +466,6 @@ class element extends \mod_contentdesigner\elements {
                     'cmid' => $this->cmid,
                     'element' => $element->shortname,
                     'id' => $instance->id,
-                    'sesskey' => sesskey(),
                 ]);
 
                 $copyurl = new \moodle_url('/mod/contentdesigner/editor.php', [
@@ -502,8 +476,10 @@ class element extends \mod_contentdesigner\elements {
                     'sesskey' => sesskey(),
                 ]);
 
-                $reporturl = new \moodle_url('/mod/contentdesigner/cdelement/' . $element->shortname . '/report.php', [
-                    'id' => $instance->id, 'cmid' => $this->cmid]);
+                $reporturl = $element->supports_reports()
+                    ? new \moodle_url('/mod/contentdesigner/cdelement/' . $element->shortname . '/report.php', [
+                        'id' => $instance->id, 'cmid' => $this->cmid])
+                    : null;
 
                 $list[] = (array) $content + [
                     'info' => $element->info(),
@@ -517,16 +493,30 @@ class element extends \mod_contentdesigner\elements {
                 ];
 
                 // Prevent the elements next to the manatory elements.
-                if (!$record->navigation) {
-                    if ($render && $element->prevent_nextelements($instance)) {
-                        $prevent = true;
-                        break;
-                    }
+                if ($sequential && $render && $element->prevent_nextelements($instance)) {
+                    $prevent = true;
+                    break;
                 }
             }
         }
 
         return [$prevent, $list, $learningtools];
+    }
+
+    /**
+     * Whether the navigation is sequential: elements after an incomplete mandatory element stay hidden.
+     *
+     * Addons can let learners move freely (hook {@see content_navigation}).
+     *
+     * @return bool
+     */
+    public function is_sequential(): bool {
+        global $DB;
+        if ($this->sequential === null) {
+            $instance = $DB->get_record('contentdesigner', ['id' => $this->cm->instance], '*', MUST_EXIST);
+            $this->sequential = extensions::dispatch(new content_navigation($this->cm, $instance))->is_sequential();
+        }
+        return $this->sequential;
     }
 
     /**
@@ -644,50 +634,46 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
-     * Delete the element settings.
+     * Deletes the completions, learning tools data and elements of a chapter before the chapter itself.
      *
-     * @param int $instanceid
-     * @return bool $status
+     * @param int $instanceid The chapter id.
      */
-    public function delete_element($instanceid) {
+    protected function delete_instance_data(int $instanceid): void {
         global $DB;
-        try {
-            $transaction = $DB->start_delegated_transaction();
-            // Delete the element settings.
-            if ($this->get_instance($instanceid)) {
-                $DB->delete_records($this->tablename(), ['id' => $instanceid]);
-                $DB->delete_records('cdelement_chapter_completion', ['instance' => $instanceid]);
-            }
 
-            $dbman = $DB->get_manager();
-            // Deleted the Learningtools bookmarks and notes data.
-            if ($dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid')) {
-                $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
-            }
+        $DB->delete_records('cdelement_chapter_completion', ['instance' => $instanceid]);
 
-            // Delete the notes data.
-            if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
-                $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
-            }
-
-            if ($contents = $DB->get_records('contentdesigner_content', ['chapter' => $instanceid])) {
-                foreach ($contents as $key => $value) {
-                    $element = editor::get_element($value->element, $this->cmid);
-                    $element->delete_element($value->instance);
-                }
-            }
-
-            if ($this->get_instance_options($instanceid)) {
-                // Delete the element general settings.
-                $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
-                    'instance' => $instanceid]);
-            }
-            $transaction->allow_commit();
-        } catch (\Exception $e) {
-            // Extra cleanup steps.
-            $transaction->rollback($e); // Rethrows exception.
-            throw new \moodle_exception('chapternotdeleted', 'cdelement_chapter');
+        // Delete the bookmarks and notes of Learning Tools on the chapter.
+        $dbman = $DB->get_manager();
+        if ($dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid')) {
+            $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
         }
-        return true;
+        if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
+            $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+        }
+
+        $installed = editor::get_element_names();
+        $sql = 'SELECT cc.*, ce.shortname AS elementname
+                  FROM {contentdesigner_content} cc
+                  JOIN {contentdesigner_elements} ce ON ce.id = cc.element
+                 WHERE cc.chapter = ?';
+        foreach ($DB->get_records_sql($sql, [$instanceid]) as $content) {
+            if (in_array($content->elementname, $installed, true)) {
+                editor::get_element($content->elementname, $this->cmid)->delete_element($content->instance);
+            } else {
+                $DB->delete_records('contentdesigner_content', ['id' => $content->id]);
+            }
+        }
+    }
+
+    /**
+     * Deletes the chapter completions of all learners in an activity.
+     *
+     * @param int $contentdesignerid The activity instance id.
+     */
+    public function reset_userdata(int $contentdesignerid): void {
+        global $DB;
+        $DB->delete_records_select('cdelement_chapter_completion',
+            'instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = ?)', [$contentdesignerid]);
     }
 }

@@ -27,7 +27,6 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
 
-use cdelement_chapter\element as chapter;
 
 // Chapter visibility.
 $name = 'cdelement_chapter/visibility';
@@ -46,18 +45,6 @@ $title = get_string('titlestatus', 'mod_contentdesigner');
 $description = get_string('titlestatus_help', 'mod_contentdesigner');
 $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
 $page->add($setting);
-
-// Chapter completion mode.
-$name = 'cdelement_chapter/completionmode';
-$title = get_string('completionmode', 'mod_contentdesigner');
-$description = get_string('completionmode_help', 'mod_contentdesigner');
-$compeltionoptions = [
-    chapter::CHAPTER_COMPLETION_MANUAL => get_string('manual', 'mod_contentdesigner'),
-    chapter::CHAPTER_COMPLETION_AUTO => get_string('auto', 'mod_contentdesigner'),
-];
-$setting = new admin_setting_configselect($name, $title, $description, chapter::CHAPTER_COMPLETION_MANUAL, $compeltionoptions);
-$page->add($setting);
-
 
 if (cdelement_chapter_has_learningtools()) {
     // Learning Tools setting.

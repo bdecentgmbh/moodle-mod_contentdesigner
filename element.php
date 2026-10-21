@@ -32,31 +32,21 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $chapter = optional_param('chapter', 0, PARAM_INT);
 $position = optional_param('position', 'bottom', PARAM_ALPHA);
 
-// Check element exist or not.
-$elements = contentdesigner_get_element_pluginnames();
-if (!in_array($element, $elements)) {
-    throw new moodle_exception('invaildelement', 'mod_contentdesigner');
-}
-
- [$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
+[$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
 $context = context_module::instance($cm->id);
 
-$elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
+require_login($course, true, $cm);
+require_capability('mod/contentdesigner:viewcontenteditor', $context);
 
+// Only installed elements, and only instances and chapters of this activity.
+$elementobj = \mod_contentdesigner\local\access::get_element($element, $cm->id);
 if ($id) {
-    $elementrecord = $DB->get_record("cdelement_" . $element, ['id' => $id]);
-    if (!$elementrecord) {
-        throw new moodle_exception('invaildrecord', 'mod_contentdesigner');
-    }
+    $elementrecord = \mod_contentdesigner\local\access::get_element_instance($elementobj, $id, $cm->instance);
     $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
     $chapter = isset($content->chapter) ? $content->chapter : 0;
+} else if ($chapter) {
+    \mod_contentdesigner\local\access::get_chapter($chapter, $cm->instance);
 }
-
-require_login($course, true, $cm);
-
-require_sesskey();
-
-require_capability('mod/contentdesigner:viewcontenteditor', $context);
 
 $record = new stdClass();
 $record->course = $course->id;
@@ -69,14 +59,14 @@ $urlparams = [
     'action' => $action,
     'cmid' => $cmid,
     'element' => $element,
-    'sesskey' => sesskey(),
+    'chapter' => $chapter,
+    'position' => $position,
 ];
 $url = new moodle_url('/mod/contentdesigner/element.php', $urlparams);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title($course->shortname . ': ' . get_string('createnewelement', 'contentdesigner'));
 
-$elementobj = \mod_contentdesigner\editor::get_element($element, $cmid);
 $formdata = [
     'element' => $element,
     'context' => $context,
@@ -99,7 +89,7 @@ if ($elementobj->supports_custom_form()) {
 }
 
 if ($mform->is_cancelled()) {
-    redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]));
+    redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid]));
 } else if ($formdata = $mform->get_data()) {
     $formdata->course = $course->id;
     $formdata->cmid = $cm->id;
@@ -110,7 +100,7 @@ if ($mform->is_cancelled()) {
     $formdata->elementshortname = $elementobj->shortname;
 
     $elementobj->update_element($formdata);
-    $editorurl = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]);
+    $editorurl = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid]);
     redirect($editorurl, get_string('savechanges'), null, \core\output\notification::NOTIFY_INFO);
 }
 

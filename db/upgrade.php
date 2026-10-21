@@ -32,16 +32,11 @@ function xmldb_contentdesigner_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // Verify the plugin is upgraded from a free version.
-    $upgradepro = false;
-
-    // Check if the contentdesigner_completion table exists.
-    // If it does not exist, it means the plugin is upgraded from a free version.
-    if (!$dbman->table_exists('contentdesigner_completion')) {
-        // Upgrade from free version.
-        $upgradepro = true;
-        $SESSION->contentdesigner_upgradepro = true;
-    }
+    // Verify the plugin is upgraded from the free edition 1.x, which has no contentdesigner_completion table. Its
+    // versions are higher than the steps of the pro edition, so these steps run regardless of the version. The
+    // elements read the flag in their upgrade (in the same request), so it is set on every upgrade.
+    $upgradepro = !$dbman->table_exists('contentdesigner_completion');
+    $SESSION->contentdesigner_upgradepro = $upgradepro;
 
     if ($oldversion < 2024092308 || $upgradepro) {
         // Contentdesigner table.

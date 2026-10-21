@@ -69,4 +69,13 @@ class restore_cdelement_richtext_subplugin extends restore_subplugin {
     public function after_execute_contentdesigner() {
         $this->add_related_files('mod_contentdesigner', 'cdelement_richtext_content', 'richtext_instanceid');
     }
+
+    /**
+     * The contents of the element with links to decode after a restore.
+     *
+     * @return restore_decode_content[]
+     */
+    public static function define_decode_contents() {
+        return [new restore_decode_content('cdelement_richtext', ['content'], 'richtext_instanceid')];
+    }
 }

@@ -28,13 +28,6 @@ require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 
 $ADMIN->add('modsettings', new admin_category('modcontentdesigner', new lang_string('pluginname', 'mod_contentdesigner')));
 
-$settings = new admin_settingpage(
-    'contentdesignergeneralsettings',
-    get_string('gerneralsettings', 'mod_contentdesigner'),
-    'moodle/site:config',
-    false
-);
-
 $elementsettings = new admin_settingpage(
     'elementgeneralsettings',
     get_string('elementstrgeneralsettings', 'mod_contentdesigner'),
@@ -43,19 +36,6 @@ $elementsettings = new admin_settingpage(
 );
 
 if ($ADMIN->fulltree) {
-    $options = [
-        CONTENTDESIGNER_NAVIGATION_SEQUENTIAL => get_string('sequential', 'contentdesigner'),
-        CONTENTDESIGNER_NAVIGATION_FREE => get_string('free', 'contentdesigner'),
-    ];
-
-    $settings->add(new admin_setting_configselect(
-        'mod_contentdesigner/navigation',
-        get_string('navigation', 'mod_contentdesigner'),
-        get_string('navigation_help', 'mod_contentdesigner'),
-        CONTENTDESIGNER_NAVIGATION_SEQUENTIAL,
-        $options
-    ));
-
     $visibilityoptions = [
         1 => get_string('visibility', 'mod_contentdesigner'),
         0 => get_string('hidden', 'mod_contentdesigner'),
@@ -187,12 +167,13 @@ if ($ADMIN->fulltree) {
     ));
 }
 
-$ADMIN->add('modcontentdesigner', $settings);
 $ADMIN->add('modcontentdesigner', $elementsettings);
 
 $settings = null; // Reset the settings.
 
-foreach (\core_plugin_manager::instance()->get_plugins_of_type('cdelement') as $plugin) {
-    // Load all the element plugins settings pages.
-    $plugin->load_settings($ADMIN, 'modcontentdesigner', $hassiteconfig);
+// Load the settings pages of the elements and the addons.
+foreach (['cdelement', 'cdaddon'] as $plugintype) {
+    foreach (\core_plugin_manager::instance()->get_plugins_of_type($plugintype) as $plugin) {
+        $plugin->load_settings($ADMIN, 'modcontentdesigner', $hassiteconfig);
+    }
 }

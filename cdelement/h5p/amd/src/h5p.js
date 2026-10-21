@@ -37,29 +37,25 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
          *
          * @param {int} instance
          * @param {int} cdattemptid
+         * @param {bool} storemaxscore Whether the user may store the maximum score of the content (editors).
          */
-        const elementH5P = (instance, cdattemptid) => {
+        const elementH5P = (instance, cdattemptid, storemaxscore) => {
             let instanceElem = document.querySelector('.element-h5p .element-content[data-instanceid="' + instance + '"]');
             var iframe = instanceElem.querySelector('.h5p-player');
-            iframe.onload = () => h5pExternal(instance, cdattemptid);
+            iframe.onload = () => h5pExternal(instance, cdattemptid, storemaxscore);
         };
 
-
-        const h5pExternal = (instance, cdattemptid) => {
+        const h5pExternal = (instance, cdattemptid, storemaxscore) => {
             let instanceElem = document.querySelector('.element-h5p .element-content[data-instanceid="' + instance + '"]');
             var iframe = instanceElem.querySelector('.h5p-player');
 
-            if (iframe.contentWindow.H5P == undefined) {
-                setTimeout(() => elementH5P(instance), 200);
+            // Wait until the H5P framework is loaded in the iframe.
+            if (iframe.contentWindow.H5P === undefined || iframe.contentWindow.H5P.externalDispatcher === undefined) {
+                setTimeout(() => h5pExternal(instance, cdattemptid, storemaxscore), 200);
                 return;
             }
 
             var h5p = iframe.contentWindow.H5P;
-
-            if (h5p.externalDispatcher === undefined) {
-                setTimeout(() => elementH5P(instance), 200);
-                return;
-            }
 
             /** @var {boolean} statementPosted Whether the statement has been sent or not, to avoid sending xAPI State after it. */
             var statementPosted = false;
@@ -131,7 +127,9 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
                     || (statement.result.score.max == statement.result.score.raw)
                     || (statement.result.success !== undefined && statement.result.success == true)) : true;
 
-                storeMaxscore(statement, instance);
+                if (storemaxscore) {
+                    storeMaxscore(statement, instance);
+                }
                 if (isCompleted && !isChild && isResponsed && isInteracted && isPassed) {
                     var promises = storeUserResponse(statement, instance, cdattemptid);
                     if (!promises) {
@@ -248,8 +246,8 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
         };
 
         return {
-            init: function(instance, cdattemptid) {
-                elementH5P(instance, cdattemptid);
+            init: function(instance, cdattemptid, storemaxscore) {
+                elementH5P(instance, cdattemptid, storemaxscore);
             }
         };
     });

@@ -14,19 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_contentdesigner\hook;
+
 /**
- * Event observer for the content designer module.
+ * Lets plugins add pages, for example reports, to the secondary navigation of a Content Designer activity.
  *
  * @package    mod_contentdesigner
- * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die;
-
-$observers = [
-    [
-        'eventname' => '\mod_contentdesigner\event\course_module_viewed',
-        'callback' => '\mod_contentdesigner\eventobserver::course_module_starttime',
-    ],
-];
+#[\core\attribute\label('Allows plugins to add pages to the navigation of a Content Designer activity.')]
+#[\core\attribute\tags('mod_contentdesigner', 'navigation')]
+final class extend_settings_navigation {
+    /**
+     * Creates the hook.
+     *
+     * @param \navigation_node $node The node of the activity.
+     * @param \cm_info $cm The activity.
+     */
+    public function __construct(
+        /** @var \navigation_node The node of the activity */
+        public readonly \navigation_node $node,
+        /** @var \cm_info The activity */
+        public readonly \cm_info $cm,
+    ) {
+    }
+}

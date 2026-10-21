@@ -22,13 +22,13 @@
  * manipulation, and includes features such as entrance animations and scrolling
  * effects for elements in the viewport.
  *
- * @module mod_contentdesigner/editor
+ * @module mod_contentdesigner/elements
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingicon', 'mod_contentdesigner/anime',
-    'core/notification'], function($, Fragment, Templates, AJAX, LoadingIcon, anime, Notification) {
+define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesigner/anime', 'core/notification'],
+    function(Fragment, Templates, LoadingIcon, anime, Notification) {
 
         /**
          * Selectors.
@@ -37,9 +37,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingi
             chapter: '[data-elementshortname="chapter"]',
             chapterList: '.chapter-elements-list',
             elementContent: '.element-content',
-            fragments: {
-                nextContents: 'load_remain_capter_contents'
-            },
             contentWrapper: '.contentdesigner-wrapper',
         };
 
@@ -69,8 +66,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingi
             var cmdata = (cmdetails) ? JSON.parse(cmdetails) : '';
             return cmdata || contentDesignerElementsData();
         };
-
-        var completionupdated = false;
 
         let animations = {};
 
@@ -116,10 +111,9 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingi
                                 Templates.appendNodeContents(chapterSelector + ' .chapter-elements-list', element, '');
 
                             } else if (elementindocument !== null && elementindocument.dataset.replaceonrefresh == true) {
-                                if (elementindocument.dataset.elementshortname == 'tableofcontents') {
-                                    var selector = 'li.element-item[data-instanceid="' + dataset.instanceid + '"]';
-                                    selector += '[data-elementshortname="' + dataset.elementshortname + '"]';
-                                    elementindocument = document.querySelector(selector);
+                                // Elements above the content (e.g. a table of contents) are replaced with their list item.
+                                if (elementindocument.closest('.topinstance') !== null) {
+                                    elementindocument = elementindocument.closest('li.element-item');
                                 }
 
                                 Templates.replaceNode(elementindocument, element, '');
@@ -187,39 +181,10 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingi
                 });
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
                 animateElements();
-            }).catch();
+            }).catch(Notification.exception);
 
             LoadingIcon.addIconToContainerRemoveOnCompletion(button(), promise);
         };
-
-        const loadNextElements = function(currentElement) {
-
-            Fragment.loadFragment(
-                'mod_contentdesigner', SELECTORS.fragments.nextContents,
-                contentDesignerData().contextid, {contentid: currentElement.dataset.contentid}
-            ).done((html, js) => {
-                const selector = currentElement.parentNode.parentNode;
-                Templates.appendNodeContents(selector, html, js);
-            });
-        };
-
-        const updateCompletion = (completionmethod) => {
-            // Update the compeltion once in the page load.
-            var promises = AJAX.call([{
-                methodname: 'mod_contentdesigner_update_completion',
-                args: {
-                    contentdesignerid: contentDesignerData().contentdesignerid,
-                    method: completionmethod,
-                }
-            }]);
-
-            promises[0].done(() => {
-                if (!completionupdated) {
-                    completionupdated = true;
-                }
-            }).catch();
-        };
-
 
         /**
          * Verify the given element in the viewport.
@@ -408,12 +373,10 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingi
             contentDesignerData: contentDesignerData,
             refreshContent: refreshContent,
             loadNextChapters: loadNextChapters,
-            updateCompletion: updateCompletion,
             inView: inView,
             animateElements: animateElements,
             courseContent: courseContent,
             removeWarning: removeWarning,
-            loadNextElements: loadNextElements,
             contentDesignerElementsData: contentDesignerElementsData,
             selectors: SELECTORS
         };

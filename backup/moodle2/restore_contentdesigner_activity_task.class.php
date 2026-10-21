@@ -51,16 +51,22 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('contentdesigner', ['intro'], 'contentdesigner');
-        $contents[] = new \restore_decode_content('cdelement_richtext', ['content'], 'richtext_instanceid');
-        $contents[] = new \restore_decode_content('cdelement_tableofcontents', ['intro'], 'tableofcontents_instanceid');
-        $contents[] = new \restore_decode_content('cdelement_outro', ['outrocontent'], 'outro_instanceid');
+
+        // The elements declare their contents with links in the static method define_decode_contents() of their
+        // restore class, if they have such contents.
+        foreach (core_component::get_plugin_list('cdelement') as $name => $dir) {
+            $file = $dir . '/backup/moodle2/restore_cdelement_' . $name . '_subplugin.class.php';
+            $class = 'restore_cdelement_' . $name . '_subplugin';
+            if (file_exists($file)) {
+                require_once($file);
+                if (method_exists($class, 'define_decode_contents')) {
+                    $contents = array_merge($contents, $class::define_decode_contents());
+                }
+            }
+        }
         return $contents;
     }
 
-    /**
-     * Define the decoding rules for links belonging
-     * to the activity to be executed by the link decoder
-     */
     public static function define_decode_rules() {
         return [];
     }

@@ -32,11 +32,8 @@ require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
   * @return string Html of progress bar.
   */
 function cdelement_chapter_output_fragment_update_progressbar($args) {
-    if (isset($args['cmid'])) {
-        $cmid = $args['cmid'];
-        $element = mod_contentdesigner\editor::get_element('chapter', $cmid);
-        return $element->build_progress();
-    }
+    [, $cm] = \mod_contentdesigner\local\access::from_context($args['context'], \mod_contentdesigner\local\access::VIEW);
+    return mod_contentdesigner\editor::get_element('chapter', $cm->id)->build_progress();
 }
 
 /**

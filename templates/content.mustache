@@ -183,26 +183,26 @@
                 <li class="topinstance" data-instanceid="{{topinstance.instancedata.id}}"
                   data-elementshortname="{{topinstance.info.shortname}}">
                   <ul>
-                    <li class="element-item item-{{{topinstance.info.shortname}}} toc-block"
-                        data-elementid="{{{topinstance.element}}}"
+                    <li class="element-item item-{{topinstance.info.shortname}} toc-block"
+                        data-elementid="{{topinstance.element}}"
                         data-elementshortname="{{topinstance.info.shortname}}"
                         data-instanceid="{{topinstance.instancedata.id}}">
-                        <div class="element-content general-options {{{topinstance.instancedata.classes}}}"
-                          data-elementid="{{{topinstance.element}}}"
+                        <div class="element-content general-options {{topinstance.instancedata.classes}}"
+                          data-elementid="{{topinstance.element}}"
                           data-elementshortname="{{topinstance.info.shortname}}"
                           data-instanceid="{{topinstance.instancedata.id}}"
                           data-contentid="{{id}}"
                           data-entranceanimation="{{topinstance.instancedata.entranceanimation}}"
                           data-replaceonrefresh="{{topinstance.instancedata.replaceonrefresh}}"
-                          style="{{{topinstance.instancedata.style}}}"
-                          data-scrolleffect="{{tableofcontents.instancedata.scrolleffect}}"
+                          style="{{topinstance.instancedata.style}}"
+                          data-scrolleffect="{{topinstance.instancedata.scrolleffect}}"
                           data-margin="{{topinstance.instancedata.margin}}"
                           data-padding="{{topinstance.instancedata.padding}}">
 
                             <div class="background-options">
-                                <div class="bg-color" style="{{{topinstance.instancedata.belowcolorbg}}}"></div>
-                                <div class="bg-image" style="{{{topinstance.instancedata.backimage}}}"></div>
-                                <div class="bg-overlay" style="{{{topinstance.instancedata.abovecolorbg}}}"></div>
+                                <div class="bg-color" style="{{topinstance.instancedata.belowcolorbg}}"></div>
+                                <div class="bg-image" style="{{topinstance.instancedata.backimage}}"></div>
+                                <div class="bg-overlay" style="{{topinstance.instancedata.abovecolorbg}}"></div>
                             </div>
                             {{{topinstance.contents}}}
                         </div>
@@ -213,7 +213,7 @@
                 {{#chapters}}
                     <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
                       data-id="{{instancedata.id}}" data-elementshortname="chapter"
-                      data-completionmode="{{instancedata.completionmode}}">
+                      {{#autocompletion}}data-autocompletion="1"{{/autocompletion}}>
                         {{#instancedata.titlestatus}}
                             <div class="chapter-title" data-chapter="{{instancedata.id}}">
                                 <h4>{{instancedata.chaptertitle}}</h4>
@@ -227,20 +227,20 @@
                         <ul class="chapter-elements-list">
                             {{#contents}}
                             <li class="element-item element-{{info.shortname}}">
-                                <div class="element-content general-options {{{instancedata.classes}}}"
-                                  data-elementid="{{{element}}}"
+                                <div class="element-content general-options {{instancedata.classes}}"
+                                  data-elementid="{{element}}"
                                   data-elementshortname="{{info.shortname}}"
                                   data-instanceid="{{instancedata.id}}"
                                   data-contentid="{{id}}"
                                   data-entranceanimation="{{instancedata.entranceanimation}}"
                                   data-replaceonrefresh="{{instancedata.replaceonrefresh}}"
-                                  style="{{{instancedata.style}}}"
+                                  style="{{instancedata.style}}"
                                   data-scrolleffect="{{instancedata.scrolleffect}}">
 
                                     <div class="background-options">
-                                        <div class="bg-color" style="{{{instancedata.belowcolorbg}}}"></div>
-                                        <div class="bg-image" style="{{{instancedata.backimage}}}"></div>
-                                        <div class="bg-overlay" style="{{{instancedata.abovecolorbg}}}"></div>
+                                        <div class="bg-color" style="{{instancedata.belowcolorbg}}"></div>
+                                        <div class="bg-image" style="{{instancedata.backimage}}"></div>
+                                        <div class="bg-overlay" style="{{instancedata.abovecolorbg}}"></div>
                                     </div>
 
                                     {{#content.general.showdescription}}
@@ -336,45 +336,37 @@
                 {{^chapterprevent}}
                 {{^prevent}}
                 <li class="element-item "
-                    data-elementid="{{{outro.element}}}"
+                    data-elementid="{{outro.element}}"
                     data-title="{{outro.instancedata.title}}"
                     data-elementshortname="{{outro.info.shortname}}"
                     data-instanceid="{{outro.instancedata.id}}">
 
-                    <div class="element-content general-options {{{outro.instancedata.classes}}}"
-                        data-elementid="{{{element}}}"
+                    <div class="element-content general-options {{outro.instancedata.classes}}"
+                        data-elementid="{{element}}"
                         data-elementshortname="{{outro.info.shortname}}"
                         data-instanceid="{{outro.instancedata.id}}"
                         data-contentid="{{id}}"
                         data-entranceanimation="{{outro.instancedata.entranceanimation}}"
                         data-replaceonrefresh="{{outro.instancedata.replaceonrefresh}}"
-                        style="{{{outro.instancedata.style}}}"
+                        style="{{outro.instancedata.style}}"
                         data-scrolleffect="{{outro.instancedata.scrolleffect}}">
 
                         <div class="background-options">
-                            <div class="bg-color" style="{{{outro.instancedata.belowcolorbg}}}"></div>
-                            <div class="bg-image" style="{{{outro.instancedata.backimage}}}"></div>
-                            <div class="bg-overlay" style="{{{outro.instancedata.abovecolorbg}}}"></div>
+                            <div class="bg-color" style="{{outro.instancedata.belowcolorbg}}"></div>
+                            <div class="bg-image" style="{{outro.instancedata.backimage}}"></div>
+                            <div class="bg-overlay" style="{{outro.instancedata.abovecolorbg}}"></div>
                         </div>
                         <div class="element-outro element-content">
                             {{{outro.contents}}}
                         </div>
-                        {{#isgraded}}
-                        <div class="finish-attempt-container text-center mt-4">
-                          <form method="post" action="{{config.wwwroot}}/mod/contentdesigner/view.php">
-                              <input type="hidden" name="id" value="{{cm.id}}">
-                              <input type="hidden" name="attemptid" value="{{attempt.id}}">
-                              <input type="hidden" name="sesskey" value="{{sesskey}}">
-                              <input type="hidden" name="action" value="finishattempt">
-                              <button type="submit" class="btn btn-primary">
-                                  {{#str}} finishattempt, mod_contentdesigner{{/str}}
-                              </button>
-                          </form>
-                        </div>
-                        {{/isgraded}}
                     </div>
 
                 </li>
+                {{#extracontent}}
+                <li class="element-item contentdesigner-extracontent">
+                    {{{extracontent}}}
+                </li>
+                {{/extracontent}}
                 {{/prevent}}
                 {{/chapterprevent}}
             </ul>

@@ -26,6 +26,9 @@ namespace cdelement_outro;
 
 use html_writer;
 use mod_contentdesigner\editor;
+use mod_contentdesigner\hook\outro_button;
+use mod_contentdesigner\hook\outro_button_types;
+use mod_contentdesigner\local\extensions;
 use moodle_url;
 
 /**
@@ -62,10 +65,6 @@ class element extends \mod_contentdesigner\elements {
      */
     const OUTRO_BUTTON_BACKTOSECTION = 4;
 
-    /**
-     * Outro button finish attempt option.
-     */
-    const OUTRO_BUTTON_FINISHATTEMPT = 5;
 
     /**
      * Element name which is visbile for the users
@@ -137,8 +136,9 @@ class element extends \mod_contentdesigner\elements {
             self::OUTRO_BUTTON_NEXT => get_string('outro:btnnext', 'mod_contentdesigner'),
             self::OUTRO_BUTTON_BACKTOCOURSE => get_string('outro:btnbacktocourse', 'mod_contentdesigner'),
             self::OUTRO_BUTTON_BACKTOSECTION => get_string('outro:btnbacktosection', 'mod_contentdesigner'),
-            self::OUTRO_BUTTON_FINISHATTEMPT => get_string('outro:btnfinishattempt', 'mod_contentdesigner'),
         ];
+        // Addons offer more buttons, for example to finish an attempt.
+        $options += extensions::dispatch(new outro_button_types())->get_types();
         $mform->addElement('select', 'primarybutton', get_string('primarybutton', 'mod_contentdesigner'), $options);
         $mform->setDefault('primarybutton', self::OUTRO_BUTTON_DISABLED);
         $mform->addHelpButton('primarybutton', 'primarybutton', 'mod_contentdesigner');
@@ -180,45 +180,6 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
-     * Initiate the element js for the view page.
-     *
-     * @return void
-     */
-    public function initiate_js() {
-        global $PAGE;
-        $cmdata = $this->cm->get_custom_data();
-        $completionendreach = (isset($cmdata['customcompletionrules']['completionendreach'])
-            && $cmdata['customcompletionrules']['completionendreach'] == 1) ? true : false;
-
-        if ($completionendreach) {
-            $PAGE->requires->js_amd_inline("
-                require(['mod_contentdesigner/elements'], function(Elements) {
-                    var updateCompletion = false;
-                    document.querySelector('#page').addEventListener('scroll', () => {
-                        outroCompletion();
-                    });
-                    window.addEventListener('scroll', () => {
-                        outroCompletion();
-                    });
-                    var modalBody = document.querySelector('.path-course-view .modal-dialog-scrollable .modal-body');
-                    if (modalBody !== null) {
-                        modalBody.addEventListener('scroll', function(e) {
-                            outroCompletion();
-                        });
-                    }
-                    function outroCompletion() {
-                        var outroElement = document.querySelector('#outro-reached');
-                        if (!updateCompletion && outroElement != null && Elements.inView(outroElement)) {
-                            Elements.updateCompletion('completionendreach');
-                            updateCompletion = true;
-                        }
-                    }
-                    outroCompletion();
-                })");
-        }
-    }
-
-    /**
      * Render the view of element instance, Which is displayed in the student view.
      *
      * @param stdclass $data
@@ -245,27 +206,60 @@ class element extends \mod_contentdesigner\elements {
 
         $html = html_writer::start_div('element-outro');
         $html .= html_writer::div('', 'complete-module', ['id' => 'outro-reached']);
-        $html .= ($file) ? html_writer::img($file, 'completed', ['class' => 'completion-img img-fluid']) : ''; // Outro image.
+        if ($file) {
+            $html .= html_writer::img($file, get_string('pluginname', 'cdelement_outro'), ['class' => 'completion-img img-fluid']);
+        }
 
         $html .= html_writer::div(html_writer::div($outrocontent, 'outro-content'), 'outro-content-block'); // Outro content block.
 
         $html .= html_writer::start_div('element-button'); // Outro buttons.
         if (!empty($data->primarybutton)) {
-            [$primarybtntext, $primarybtnurl] = $this->get_button_data($data->primarybutton, 'primary', $data);
-            if (!empty($primarybtntext)) {
-                $html .= html_writer::link($primarybtnurl, $primarybtntext, ['class' => 'btn btn-primary']); // Primary button.
-            }
+            $html .= $this->render_button((int) $data->primarybutton, true, $data);
         }
         if (!empty($data->secondarybutton)) {
-            [$secondarybtntext, $secondarybtnurl] = $this->get_button_data($data->secondarybutton, 'secondary', $data);
-            if (!empty($secondarybtntext)) {
-                // Secondary button.
-                $html .= html_writer::link($secondarybtnurl, $secondarybtntext, ['class' => 'btn btn-secondary']);
-            }
+            $html .= $this->render_button((int) $data->secondarybutton, false, $data);
         }
         $html .= html_writer::end_div();
         $html .= html_writer::end_div();
         return $html;
+    }
+
+    /**
+     * Renders a button of the outro: one of the outro, or one of an addon.
+     *
+     * @param int $type The button type.
+     * @param bool $primary Whether it is the primary button.
+     * @param \stdClass $data The outro instance.
+     * @return string HTML
+     */
+    protected function render_button(int $type, bool $primary, \stdClass $data): string {
+        if ($type > self::OUTRO_BUTTON_BACKTOSECTION) {
+            $hook = extensions::dispatch(new outro_button($this->cm, $this->cdattempt, $type, $primary));
+            return $hook->get_html() ?? '';
+        }
+        [$text, $url] = $this->get_button_data($type, $primary ? 'primary' : 'secondary', $data);
+        if (empty($text) || empty($url)) {
+            return '';
+        }
+        return html_writer::link($url, format_string($text, true, ['context' => $this->get_context()]),
+            ['class' => $primary ? 'btn btn-primary' : 'btn btn-secondary']);
+    }
+
+    /**
+     * Creates the outro of an activity with the default content and buttons of the site.
+     *
+     * @param int $contentdesignerid Content designer instance id.
+     * @param array $record Values of the element table to set.
+     * @return int Element instance id.
+     */
+    public function create_basic_instance($contentdesignerid, array $record = []) {
+        $record += [
+            'outrocontent' => (string) get_config('cdelement_outro', 'outro_content'),
+            'outrocontentformat' => FORMAT_HTML,
+            'primarybutton' => (int) get_config('cdelement_outro', 'primarybutton'),
+            'secondarybutton' => (int) get_config('cdelement_outro', 'secondarybutton'),
+        ];
+        return parent::create_basic_instance($contentdesignerid, $record);
     }
 
     /**
@@ -428,33 +422,11 @@ class element extends \mod_contentdesigner\elements {
                 $buttontext = get_string('outro:btnbacktocourse', 'mod_contentdesigner');
                 $buttonurl = new moodle_url('/course/view.php', ['id' => $this->course->id]);
                 break;
-            case self::OUTRO_BUTTON_FINISHATTEMPT:
-                $buttontext = get_string('finishattempt', 'mod_contentdesigner');
-                $buttonurl = new moodle_url('/mod/contentdesigner/view.php', [
-                    'id' => $this->cm->id,
-                    'attemptid' => $this->cdattempt->id,
-                    'sesskey' => sesskey(),
-                    'action' => 'finishattempt',
-                ]);
-                break;
             case self::OUTRO_BUTTON_BACKTOSECTION:
                 $buttontext = get_string('outro:btnbacktosection', 'mod_contentdesigner');
                 $section = $DB->get_record('course_sections', ['id' => $this->cm->section]);
-                if ($section->id) {
-                    if ($CFG->branch >= 404) {
-                        $buttonurl = new moodle_url('/course/section.php', ['id' => $section->id]);
-                    } else {
-                        $buttonurl = new moodle_url('/course/view.php', ['id' => $this->course->id]);
-                        $sectionno = $section->section;
-                        if ($sectionno != 0) {
-                            $buttonurl->param('section', $sectionno);
-                        } else {
-                            if (empty($CFG->linkcoursesections)) {
-                                return null;
-                            }
-                            $buttonurl->set_anchor('section-' . $sectionno);
-                        }
-                    }
+                if ($section) {
+                    $buttonurl = new moodle_url('/course/section.php', ['id' => $section->id]);
                 }
                 break;
         }

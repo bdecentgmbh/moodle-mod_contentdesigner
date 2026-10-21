@@ -24,38 +24,40 @@
 
 namespace cdelement_h5p;
 
-defined('MOODLE_INTERNAL') || die('No direct access');
-
-use external_value;
-require_once($CFG->libdir . '/externallib.php');
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_single_structure;
+use core_external\external_value;
+use mod_contentdesigner\editor;
+use mod_contentdesigner\local\access;
 
 /**
- * Chapter external service methods.
+ * Web services of the H5P element: the results of the learners.
  */
-class external extends \external_api {
+class external extends external_api {
     /**
      * Paramters definition for the methos update chapter progress of user.
      *
      * @return external_function_parameters
      */
     public static function store_result_data_parameters() {
-        return new \external_function_parameters(
+        return new external_function_parameters(
             [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'instanceid' => new external_value(PARAM_INT, 'H5P element instance id'),
                 'cdattemptid' => new external_value(PARAM_INT, 'Content designer attempt id'),
-                'result' => new \external_single_structure(
+                'result' => new external_single_structure(
                     [
-                        'completion' => new external_value(PARAM_BOOL, 'Attempt userid'),
-                        'success' => new external_value(PARAM_BOOL, 'Attempt userid'),
+                        'completion' => new external_value(PARAM_BOOL, 'Whether the H5P content is completed'),
+                        'success' => new external_value(PARAM_BOOL, 'Whether the H5P content is passed'),
                         'response' => new external_value(PARAM_TEXT, 'Response of the user attempt', VALUE_OPTIONAL),
                         'duration' => new external_value(PARAM_TEXT, 'Duration of the user attempt', VALUE_OPTIONAL),
-                        'score' => new \external_single_structure(
+                        'score' => new external_single_structure(
                             [
-                                'max' => new external_value(PARAM_FLOAT, 'Max number of score'),
-                                'min' => new external_value(PARAM_FLOAT, 'Max number of score'),
-                                'scaled' => new external_value(PARAM_FLOAT, 'Max number of score'),
-                                'raw' => new external_value(PARAM_ALPHANUMEXT, 'Max number of score'),
+                                'max' => new external_value(PARAM_FLOAT, 'Maximum score'),
+                                'min' => new external_value(PARAM_FLOAT, 'Minimum score'),
+                                'scaled' => new external_value(PARAM_FLOAT, 'Scaled score'),
+                                'raw' => new external_value(PARAM_FLOAT, 'Score'),
                             ]
                         ),
                     ]
@@ -65,7 +67,7 @@ class external extends \external_api {
     }
 
     /**
-     * Store the user response for the H5P.
+     * Store the result of the current user in an H5P element, in an unfinished attempt of the user.
      *
      * @param int $cmid Course module id.
      * @param int $instanceid Instance id of the H5P.
@@ -76,46 +78,46 @@ class external extends \external_api {
     public static function store_result_data($cmid, $instanceid, $cdattemptid, $result) {
         global $DB, $USER;
 
-        $vaildparams = self::validate_parameters(
+        $params = self::validate_parameters(
             self::store_result_data_parameters(),
             ['cmid' => $cmid, 'instanceid' => $instanceid, 'cdattemptid' => $cdattemptid, 'result' => $result]
         );
-
-        self::validate_context(\context_module::instance($cmid));
-
-        $instanceid = $vaildparams['instanceid'];
-        $result = $vaildparams['result'];
-
-        if (
-            $record = $DB->get_record('cdelement_h5p_completion', ['instance' => $instanceid, 'cdattemptid' => $cdattemptid,
-            'userid' => $USER->id])
-        ) {
-            // Store only highest scored results only.
-            if ($record->score > $result['score']['raw']) {
-                return true;
-            }
+        [, $cm] = access::from_cmid($params['cmid'], access::VIEW);
+        $element = editor::get_element('h5p', $cm->id);
+        $instance = access::get_element_instance($element, $params['instanceid'], $cm->instance, true);
+        $attempt = access::get_attempt($params['cdattemptid'], $cm->instance, $USER->id);
+        if ($attempt->timefinish) {
+            throw new \moodle_exception('attemptfinished', 'cdelement_h5p');
         }
 
-        $data = new \stdclass();
-        $data->instance = $instanceid;
-        $data->cdattemptid = $cdattemptid;
-        $data->userid = $USER->id;
-        $data->completion = $result['completion'];
-        $data->success = $result['success'];
-        $data->duration = $result['duration'] ?: '';
-        $data->score = $result['score']['raw'];
-        $data->scoredata = json_encode($result['score']);
-        $data->response = $result['response'];
-        $data->timemodified = time();
-        if (isset($record->id)) {
+        $result = $params['result'];
+        $score = max(0, min((float) $result['score']['raw'], (float) $result['score']['max']));
+        $conditions = ['instance' => $instance->id, 'cdattemptid' => $attempt->id, 'userid' => $USER->id];
+        $record = $DB->get_record('cdelement_h5p_completion', $conditions);
+        // Store only highest scored results only.
+        if ($record && $record->score > $score) {
+            return true;
+        }
+
+        $data = (object) array_merge($conditions, [
+            'completion' => $result['completion'] ? 1 : 0,
+            'success' => $result['success'] ? 1 : 0,
+            'duration' => $result['duration'] ?? '',
+            'score' => $score,
+            'scoredata' => json_encode(['min' => (float) $result['score']['min'], 'max' => (float) $result['score']['max'],
+                'raw' => $score, 'scaled' => (float) $result['score']['scaled']]),
+            'response' => $result['response'] ?? '',
+            'timemodified' => time(),
+        ]);
+        if ($record) {
             $data->id = $record->id;
             $DB->update_record('cdelement_h5p_completion', $data);
         } else {
             $data->timecreated = time();
-            if (!$DB->insert_record('cdelement_h5p_completion', $data)) {
-                return false;
-            }
+            $DB->insert_record('cdelement_h5p_completion', $data);
         }
+
+        $element->progress_updated($USER->id);
         return true;
     }
 
@@ -134,7 +136,7 @@ class external extends \external_api {
      * @return external_function_parameters
      */
     public static function store_max_score_parameters() {
-        return new \external_function_parameters(
+        return new external_function_parameters(
             [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'instanceid' => new external_value(PARAM_INT, 'H5P element instance id'),
@@ -144,31 +146,28 @@ class external extends \external_api {
     }
 
     /**
-     * Store the user response for the H5P.
+     * Stores the maximum score of an H5P element, reported by the player of a user who edits the content.
+     *
+     * Learners' results carry their own maximum score; this one counts for learners who have not answered yet.
      *
      * @param int $cmid Course module id.
      * @param int $instanceid Instance id of the H5P.
-     * @param int $maxscore Max score of the H5P.
+     * @param float $maxscore Max score of the H5P.
      * @return bool
      */
     public static function store_max_score($cmid, $instanceid, $maxscore) {
         global $DB;
 
-        $vaildparams = self::validate_parameters(
+        $params = self::validate_parameters(
             self::store_max_score_parameters(),
             ['cmid' => $cmid, 'instanceid' => $instanceid, 'maxscore' => $maxscore]
         );
-
-        self::validate_context(\context_module::instance($cmid));
-
-        $instanceid = $vaildparams['instanceid'];
-        $maxscore = $vaildparams['maxscore'];
-
-        if ($record = $DB->get_record('cdelement_h5p', ['id' => $instanceid])) {
-            $record->maxscore = $maxscore;
-            $DB->update_record('cdelement_h5p', $record);
+        [, $cm] = access::from_cmid($params['cmid'], access::EDIT);
+        $element = editor::get_element('h5p', $cm->id);
+        $instance = access::get_element_instance($element, $params['instanceid'], $cm->instance);
+        if ($params['maxscore'] >= 0 && $instance->maxscore != $params['maxscore']) {
+            $DB->set_field('cdelement_h5p', 'maxscore', $params['maxscore'], ['id' => $instance->id]);
         }
-
         return true;
     }
 

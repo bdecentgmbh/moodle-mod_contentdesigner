@@ -27,9 +27,14 @@ declare(strict_types=1);
 namespace mod_contentdesigner\completion;
 
 use core_completion\activity_custom_completion;
+use mod_contentdesigner\local\extensions;
 
 /**
- * Custom activity completion defined for content designer.
+ * Custom activity completion of Content Designer: the rules come from the addons.
+ *
+ * @package    mod_contentdesigner
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class custom_completion extends activity_custom_completion {
     /**
@@ -39,28 +44,12 @@ class custom_completion extends activity_custom_completion {
      * @return int The completion state.
      */
     public function get_state(string $rule): int {
-        global $DB;
-
         $this->validate_rule($rule);
-
-        switch ($rule) {
-            case 'completionendreach':
-                $status = $DB->record_exists(
-                    'contentdesigner_completion',
-                    ['contentdesignerid' => $this->cm->instance, 'userid' => $this->userid, 'completion' => 1]
-                );
-                break;
-            case 'completionmandatory':
-                $status = $DB->record_exists(
-                    'contentdesigner_completion',
-                    ['contentdesignerid' => $this->cm->instance, 'userid' => $this->userid, 'mandatorycompletion' => 1]
-                );
-                break;
-            default:
-                $status = false;
-                break;
+        $rules = extensions::completion_rules();
+        if (!isset($rules[$rule])) {
+            return COMPLETION_INCOMPLETE;
         }
-        return $status ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
+        return $rules[$rule]->get_state($this->cm, $this->userid);
     }
 
     /**
@@ -69,10 +58,7 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public static function get_defined_custom_rules(): array {
-        return [
-            'completionendreach',
-            'completionmandatory',
-        ];
+        return array_keys(extensions::completion_rules());
     }
 
     /**
@@ -81,11 +67,11 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-
-        return [
-            'completionendreach' => get_string('completiondetail:reachend', 'contentdesigner'),
-            'completionmandatory' => get_string('completiondetail:mandatory', 'contentdesigner'),
-        ];
+        $descriptions = [];
+        foreach (extensions::completion_rules() as $name => $rule) {
+            $descriptions[$name] = $rule->get_description();
+        }
+        return $descriptions;
     }
 
     /**
@@ -94,12 +80,10 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_sort_order(): array {
-        return [
-            'completionview',
-            'completionendreach',
-            'completionmandatory',
-            'completionusegrade',
-            'completionpassgrade',
-        ];
+        return array_merge(
+            ['completionview'],
+            array_keys(extensions::completion_rules()),
+            ['completionusegrade', 'completionpassgrade']
+        );
     }
 }
