@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for (some of) mod/book/lib.php.
+ * Tests of the element base class with the heading element.
  *
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
@@ -31,11 +31,12 @@ use stdClass;
 global $CFG;
 
 /**
- * Unit tests for (some of) mod/book/lib.php.
+ * Tests of the element base class with the heading element.
  *
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \mod_contentdesigner\elements
  */
 final class lib_test extends \advanced_testcase {
     /**
@@ -86,7 +87,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test update_element.
-     * @covers ::update_element
      */
     public function test_element_update_element(): void {
         global $DB;
@@ -119,7 +119,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test get_instance.
-     * @covers ::get_instance
      */
     public function test_element_get_instance(): void {
         $this->create_heading_element();
@@ -130,7 +129,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test info.
-     * @covers ::info
      */
     public function test_element_info(): void {
         $this->create_heading_element();
@@ -142,7 +140,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test get_contentdesigner.
-     * @covers ::get_contentdesigner
      */
     public function test_get_contentdesigner(): void {
         $result = $this->headingelement->get_contentdesigner();
@@ -151,7 +148,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test get_cm_from_modinstance.
-     * @covers ::get_cm_from_modinstance
      */
     public function test_get_cm_from_modinstance(): void {
         $result = $this->headingelement->get_cm_from_modinstance($this->contentdesigner->id);
@@ -160,7 +156,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test delete_element.
-     * @covers ::delete_element
      */
     public function test_delete_element(): void {
         global $DB;
@@ -175,7 +170,6 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Test update_visibility.
-     * @covers ::update_visibility
      */
     public function test_update_visibility(): void {
         global $DB;
