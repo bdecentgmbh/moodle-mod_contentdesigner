@@ -3,7 +3,6 @@ pagetypes:
   - mod-contentdesigner-*
   - admin-setting-elementgeneralsettings
   - admin-setting-cdelement_*
-  - admin-setting-cdaddon_*
   - admin-category-modcontentdesigner
 ---
 
