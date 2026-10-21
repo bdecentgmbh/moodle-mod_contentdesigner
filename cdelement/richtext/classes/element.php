@@ -94,7 +94,7 @@ class element extends \mod_contentdesigner\elements {
      * @return void
      */
     public function element_form(&$mform, $formobj) {
-        $editoroptions = $this->editor_options($formobj->_customdata['context']);
+        $editoroptions = $this->editor_options($formobj->get_customdata()['context']);
         $mform->addElement('editor', 'content_editor', get_string('richtext', 'mod_contentdesigner'), null, $editoroptions);
         $mform->setType('content_editor', PARAM_RAW);
         $mform->addRule('content_editor', null, 'required');
@@ -117,7 +117,7 @@ class element extends \mod_contentdesigner\elements {
             'cdelement_richtext_content',
             $data->instance
         );
-        $content = format_text($content, $data->contentformat, ['context' => $context->id]);
+        $content = format_text($content, $data->contentformat, ['context' => $context->id, 'trusted' => true, 'noclean' => true]);
         return html_writer::div(html_writer::div($content, 'richtext-content'), 'richtet-content-block');
     }
 
@@ -214,6 +214,8 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
+            'trust' => true,
+            'noclean' => true,
             'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
     }

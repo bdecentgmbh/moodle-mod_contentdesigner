@@ -43,6 +43,7 @@ class external extends \external_api {
             [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'instanceid' => new external_value(PARAM_INT, 'H5P element instance id'),
+                'cdattemptid' => new external_value(PARAM_INT, 'Content designer attempt id'),
                 'result' => new \external_single_structure(
                     [
                         'completion' => new external_value(PARAM_BOOL, 'Attempt userid'),
@@ -68,24 +69,27 @@ class external extends \external_api {
      *
      * @param int $cmid Course module id.
      * @param int $instanceid Instance id of the H5P.
+     * @param int $cdattemptid Content designer attempt id.
      * @param array $result Result object form the H5P data statement.
      * @return bool
      */
-    public static function store_result_data($cmid, $instanceid, $result) {
+    public static function store_result_data($cmid, $instanceid, $cdattemptid, $result) {
         global $DB, $USER;
 
-        $vaildparams = self::validate_parameters(self::store_result_data_parameters(), [
-            'cmid' => $cmid,
-            'instanceid' => $instanceid,
-            'result' => $result,
-        ]);
+        $vaildparams = self::validate_parameters(
+            self::store_result_data_parameters(),
+            ['cmid' => $cmid, 'instanceid' => $instanceid, 'cdattemptid' => $cdattemptid, 'result' => $result]
+        );
 
         self::validate_context(\context_module::instance($cmid));
 
         $instanceid = $vaildparams['instanceid'];
         $result = $vaildparams['result'];
 
-        if ($record = $DB->get_record('cdelement_h5p_completion', ['instance' => $instanceid, 'userid' => $USER->id])) {
+        if (
+            $record = $DB->get_record('cdelement_h5p_completion', ['instance' => $instanceid, 'cdattemptid' => $cdattemptid,
+            'userid' => $USER->id])
+        ) {
             // Store only highest scored results only.
             if ($record->score > $result['score']['raw']) {
                 return true;
@@ -94,6 +98,7 @@ class external extends \external_api {
 
         $data = new \stdclass();
         $data->instance = $instanceid;
+        $data->cdattemptid = $cdattemptid;
         $data->userid = $USER->id;
         $data->completion = $result['completion'];
         $data->success = $result['success'];
@@ -120,6 +125,59 @@ class external extends \external_api {
      * @return external_value True if data updated otherwise  returns false.
      */
     public static function store_result_data_returns() {
+        return new external_value(PARAM_BOOL, 'Result of stored user response');
+    }
+
+    /**
+     * Paramters definition for the methos update chapter progress of user.
+     *
+     * @return external_function_parameters
+     */
+    public static function store_max_score_parameters() {
+        return new \external_function_parameters(
+            [
+                'cmid' => new external_value(PARAM_INT, 'Course module id'),
+                'instanceid' => new external_value(PARAM_INT, 'H5P element instance id'),
+                'maxscore' => new external_value(PARAM_FLOAT, 'Max number of score'),
+            ]
+        );
+    }
+
+    /**
+     * Store the user response for the H5P.
+     *
+     * @param int $cmid Course module id.
+     * @param int $instanceid Instance id of the H5P.
+     * @param int $maxscore Max score of the H5P.
+     * @return bool
+     */
+    public static function store_max_score($cmid, $instanceid, $maxscore) {
+        global $DB;
+
+        $vaildparams = self::validate_parameters(
+            self::store_max_score_parameters(),
+            ['cmid' => $cmid, 'instanceid' => $instanceid, 'maxscore' => $maxscore]
+        );
+
+        self::validate_context(\context_module::instance($cmid));
+
+        $instanceid = $vaildparams['instanceid'];
+        $maxscore = $vaildparams['maxscore'];
+
+        if ($record = $DB->get_record('cdelement_h5p', ['id' => $instanceid])) {
+            $record->maxscore = $maxscore;
+            $DB->update_record('cdelement_h5p', $record);
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the updated result of store data.
+     *
+     * @return external_value True if data updated otherwise  returns false.
+     */
+    public static function store_max_score_returns() {
         return new external_value(PARAM_BOOL, 'Result of stored user response');
     }
 }

@@ -25,23 +25,24 @@
 require_once('../../config.php');
 require_once('lib.php');
 require_once(__DIR__ . '/lib.php');
+require_once(__DIR__ . '/locallib.php');
 
 $id = required_param('id', PARAM_INT);    // Course Module ID.
+$action = optional_param('action', '', PARAM_ALPHA); // Action parameter.
 
 if (!$cm = get_coursemodule_from_id('contentdesigner', $id)) {
-    // NOTE this is invalid use of print_error, must be a lang string id.
     throw new moodle_exception('invalidcoursemodule');
 }
 
-$PAGE->set_url('/mod/contentdesigner/view.php', ['id' => $cm->id]);
+$contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance], '*', MUST_EXIST);
+
+$PAGE->set_url('/mod/contentdesigner/view.php', ['id' => $cm->id, 'action' => $action]);
 
 if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
-    // Thorw error if the given moulde coure is exists.
     throw new moodle_exception('invalidcourse');
 }
 require_course_login($course, false, $cm);
 if (!$data = $DB->get_record('contentdesigner', ['id' => $cm->instance])) {
-    // NOTE As above.
     throw new moodle_exception('course module is incorrect');
 }
 $context = \context_module::instance($cm->id);
@@ -52,18 +53,9 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($data);
 $PAGE->add_body_class('limitedwidth');
 
-// Add animation of given elements.
-$PAGE->requires->css('/mod/contentdesigner/style/animate.css');
-
-// Completion and trigger events.
 contentdesigner_view($data, $course, $cm, $context);
 
-echo $OUTPUT->header();
-// Render the page view of the elements.
-$editor = new mod_contentdesigner\editor($cm, $course);
-$editor->initiate_js();
-
-echo $editor->render_elements();
 $PAGE->requires->js_call_amd('mod_contentdesigner/elements', 'animateElements', []);
 
-echo $OUTPUT->footer();
+$contentdesignerinstance = new \mod_contentdesigner\content_display($contentdesigner, $cm, $course, $context);
+$contentdesignerinstance->view($action);

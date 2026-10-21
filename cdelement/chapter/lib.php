@@ -25,7 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
-
  /**
   * Update the completion of chapter and generate the progress bar for the current module contents.
   *
@@ -53,5 +52,6 @@ function cdelement_chapter_has_learningtools() {
         $fieldsexists = $dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid');
         return $fieldsexists;
     }
+
     return false;
 }

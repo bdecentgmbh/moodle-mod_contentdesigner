@@ -39,6 +39,7 @@ use core_privacy\local\request\approved_contextlist;
  */
 class provider implements
     \core_privacy\local\metadata\provider,
+        // This plugin is capable of determining which users have data within it.
     \core_privacy\local\request\core_userlist_provider,
     \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
@@ -58,7 +59,11 @@ class provider implements
             'score' => 'privacy:metadata:completion:score',
             'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
-        $collection->add_database_table('cdelement_h5p_completion', $completionmetadata, 'privacy:metadata:h5pcompletion');
+        $collection->add_database_table(
+            'cdelement_h5p_completion',
+            $completionmetadata,
+            'privacy:metadata:h5pcompletion'
+        );
 
         return $collection;
     }
@@ -71,7 +76,6 @@ class provider implements
      *
      * @param array $contentdesignerids Array of completions to export the logs for.
      * @param stdclass $user User record object.
-     * @return array
      */
     public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
         global $DB;
@@ -88,6 +92,7 @@ class provider implements
             'userid' => $user->id,
         ];
         $completions = $DB->get_records_sql($sql, $params + $inparams);
+        $data = [];
         foreach ($completions as $h5pid => $completion) {
             $data[$h5pid] = (object) [
                 'completed' => (($completion->completion == 1) ? get_string('yes') : get_string('no')),
@@ -138,11 +143,15 @@ class provider implements
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
 
-        [$userinsql, $userparam] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
         $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $contentdesigner->id]);
         $ids = array_column($list, 'id');
         [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_h5p_completion', "userid {$userinsql} AND instance $insql ", $userparam + $inparams);
+        $DB->delete_records_select(
+            'cdelement_h5p_completion',
+            "userid {$userinsql} AND instance $insql ",
+            $userinparams + $inparams
+        );
     }
 
     /**
@@ -163,8 +172,11 @@ class provider implements
             $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $instanceid]);
             $ids = array_column($list, 'id');
             [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select('cdelement_h5p_completion', "userid=:userid AND instance $insql", [
-            'userid' => $userid] + $inparams);
+            $DB->delete_records_select(
+                'cdelement_h5p_completion',
+                "userid=:userid AND instance $insql",
+                ['userid' => $userid] + $inparams
+            );
         }
     }
 

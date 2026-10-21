@@ -146,13 +146,13 @@ class cdelement extends \core\plugininfo\base {
                         }
 
                         $filerecord = [
-                            'contextid'    => $file->get_contextid(),
-                            'component'    => $filearea == 'package' ? $newpluginname : 'mod_contentdesigner',
-                            'filearea'     => $newfilearea,
-                            'itemid'       => $file->get_itemid(),
-                            'filepath'     => $file->get_filepath(),
-                            'filename'     => $file->get_filename(),
-                            'timecreated'  => $file->get_timecreated(),
+                            'contextid' => $file->get_contextid(),
+                            'component' => $filearea == 'package' ? $newpluginname : 'mod_contentdesigner',
+                            'filearea' => $newfilearea,
+                            'itemid' => $file->get_itemid(),
+                            'filepath' => $file->get_filepath(),
+                            'filename' => $file->get_filename(),
+                            'timecreated' => $file->get_timecreated(),
                             'timemodified' => $file->get_timemodified(),
                         ];
                         $fs->create_file_from_storedfile($filerecord, $file);
@@ -166,18 +166,21 @@ class cdelement extends \core\plugininfo\base {
         if (class_exists('\core\output\progress_trace\progress_trace_buffer')) {
             // Uninstall the plugin addon_report, this will remove the missing from the disk issue.
             $progress = new \core\output\progress_trace\progress_trace_buffer(
-            new \core\output\progress_trace\text_progress_trace(), false);
+                new \core\output\progress_trace\text_progress_trace(),
+                false
+            );
         } else {
             require_once($CFG->libdir . '/weblib.php');
             $progress = new \progress_trace_buffer(new \text_progress_trace(), false);
         }
 
+        // Uninstall the plugin element_chapter using Moodle's default method.
+
+         // Uninstall the plugin addon_report, this will remove the missing from the disk issue.
         if (class_exists('\core\plugin_manager')) {
-            // Uninstall the plugin element_chapter using Moodle's default method.
             \core\plugin_manager::instance()->uninstall_plugin($pluginname, $progress);
         } else {
-            require_once($CFG->libdir . '/adminlib.php');
-            core_plugin_manager::instane()->uninstall_plugin($pluginname, $progress);
+            \core_plugin_manager::instance()->uninstall_plugin($pluginname, $progress);
         }
     }
 }

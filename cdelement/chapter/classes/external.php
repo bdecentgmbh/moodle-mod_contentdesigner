@@ -26,13 +26,15 @@ namespace cdelement_chapter;
 
 defined('MOODLE_INTERNAL') || die('No direct access');
 
-use external_value;
+use core_external\external_value;
+use core_external\external_function_parameters;
+
 require_once($CFG->libdir . '/externallib.php');
 
 /**
  * Chapter external service methods.
  */
-class external extends \external_api {
+class external extends \core_external\external_api {
     /**
      * Paramters definition for the methos update chapter progress of user.
      *
@@ -57,9 +59,15 @@ class external extends \external_api {
     public static function update_completion($cmid, $chapter) {
         global $DB, $USER;
 
-        $vaildparams = self::validate_parameters(self::update_completion_parameters(), ['cmid' => $cmid, 'chapter' => $chapter]);
+        $vaildparams = self::validate_parameters(
+            self::update_completion_parameters(),
+            ['cmid' => $cmid, 'chapter' => $chapter]
+        );
+
         self::validate_context(\context_module::instance($cmid));
+
         $chapter = $vaildparams['chapter'];
+
         $record = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter, 'userid' => $USER->id]);
         $data = new \stdclass();
         $data->instance = $chapter;

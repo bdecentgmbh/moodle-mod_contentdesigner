@@ -38,8 +38,8 @@ if (!in_array($element, $elements)) {
     throw new moodle_exception('invaildelement', 'mod_contentdesigner');
 }
 
-[$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
-$context = \context_module::instance($cm->id);
+ [$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
+$context = context_module::instance($cm->id);
 
 $elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
 
@@ -76,14 +76,27 @@ $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title($course->shortname . ': ' . get_string('createnewelement', 'contentdesigner'));
 
-$mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(false), [
+$elementobj = \mod_contentdesigner\editor::get_element($element, $cmid);
+$formdata = [
     'element' => $element,
     'context' => $context,
     'instanceid' => $id,
     'cmid' => $cmid,
     'chapterid' => $chapter,
     'position' => $position,
-]);
+    'courseid' => $course->id,
+    'elementobj' => $elementobj,
+];
+
+// Load the custom form if the element supports its own form definitions.
+// Otherwise use the general form and it includes the element form fields.
+if ($elementobj->supports_custom_form()) {
+    $dummyform = new stdClass();
+    $mformclass = $elementobj->element_form($dummyform, []);
+    $mform = new $mformclass($PAGE->url->out(false), $formdata);
+} else {
+    $mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(false), $formdata);
+}
 
 if ($mform->is_cancelled()) {
     redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]));

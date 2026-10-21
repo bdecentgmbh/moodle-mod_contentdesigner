@@ -179,9 +179,41 @@
         <div class="content">
             <div class="contentdesigner-progress">{{{progressbar}}}</div>
             <ul class="course-content-list">
+                {{#topinstance.instancedata.visible}}
+                <li class="topinstance" data-instanceid="{{topinstance.instancedata.id}}"
+                  data-elementshortname="{{topinstance.info.shortname}}">
+                  <ul>
+                    <li class="element-item item-{{{topinstance.info.shortname}}} toc-block"
+                        data-elementid="{{{topinstance.element}}}"
+                        data-elementshortname="{{topinstance.info.shortname}}"
+                        data-instanceid="{{topinstance.instancedata.id}}">
+                        <div class="element-content general-options {{{topinstance.instancedata.classes}}}"
+                          data-elementid="{{{topinstance.element}}}"
+                          data-elementshortname="{{topinstance.info.shortname}}"
+                          data-instanceid="{{topinstance.instancedata.id}}"
+                          data-contentid="{{id}}"
+                          data-entranceanimation="{{topinstance.instancedata.entranceanimation}}"
+                          data-replaceonrefresh="{{topinstance.instancedata.replaceonrefresh}}"
+                          style="{{{topinstance.instancedata.style}}}"
+                          data-scrolleffect="{{tableofcontents.instancedata.scrolleffect}}"
+                          data-margin="{{topinstance.instancedata.margin}}"
+                          data-padding="{{topinstance.instancedata.padding}}">
+
+                            <div class="background-options">
+                                <div class="bg-color" style="{{{topinstance.instancedata.belowcolorbg}}}"></div>
+                                <div class="bg-image" style="{{{topinstance.instancedata.backimage}}}"></div>
+                                <div class="bg-overlay" style="{{{topinstance.instancedata.abovecolorbg}}}"></div>
+                            </div>
+                            {{{topinstance.contents}}}
+                        </div>
+                    </li>
+                  </ul>
+                </li>
+                {{/topinstance.instancedata.visible}}
                 {{#chapters}}
                     <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
-                      data-id="{{instancedata.id}}" data-elementshortname="chapter">
+                      data-id="{{instancedata.id}}" data-elementshortname="chapter"
+                      data-completionmode="{{instancedata.completionmode}}">
                         {{#instancedata.titlestatus}}
                             <div class="chapter-title" data-chapter="{{instancedata.id}}">
                                 <h4>{{instancedata.chaptertitle}}</h4>
@@ -194,7 +226,7 @@
                         {{/instancedata.showdescription}}
                         <ul class="chapter-elements-list">
                             {{#contents}}
-                            <li class="element-item">
+                            <li class="element-item element-{{info.shortname}}">
                                 <div class="element-content general-options {{{instancedata.classes}}}"
                                   data-elementid="{{{element}}}"
                                   data-elementshortname="{{info.shortname}}"
@@ -269,23 +301,28 @@
                           </div>
                           {{/learningtools.show}}
 
-                        {{^prevent}}
-                        {{#chaptercta}}
-                        {{#count}}
-                            {{#completion}}
-                                <button class="btn btn-success btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
-                                    {{#pix}} e/tick, core {{/pix}}
-                                    {{#str}} completion_manual:done, course {{/str}}
+
+                          {{^prevent}}
+                          {{#chaptercta}}
+                          {{#count}}
+                              {{#completion}}
+                                {{#completionmode}}
+                                  <button class="btn btn-success btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                      {{#pix}} e/tick, core {{/pix}}
+                                      {{#str}} completion_manual:done, course {{/str}}
+                                  </button>
+                                {{/completionmode}}
+                              {{/completion}}
+                              {{^completion}}
+                                {{#completionmode}}
+                                <button class="btn btn-outline-secondary btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                    {{#str}} completion_manual:markdone, course {{/str}}
                                 </button>
-                            {{/completion}}
-                            {{^completion}}
-                              <button class="btn btn-outline-secondary btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
-                                  {{#str}} completion_manual:markdone, course {{/str}}
-                              </button>
-                            {{/completion}}
-                        {{/count}}
-                        {{/chaptercta}}
-                        {{/prevent}}
+                                {{/completionmode}}
+                              {{/completion}}
+                          {{/count}}
+                          {{/chaptercta}}
+                          {{/prevent}}
                         </div>
                     </li>
 
@@ -322,6 +359,19 @@
                         <div class="element-outro element-content">
                             {{{outro.contents}}}
                         </div>
+                        {{#isgraded}}
+                        <div class="finish-attempt-container text-center mt-4">
+                          <form method="post" action="{{config.wwwroot}}/mod/contentdesigner/view.php">
+                              <input type="hidden" name="id" value="{{cm.id}}">
+                              <input type="hidden" name="attemptid" value="{{attempt.id}}">
+                              <input type="hidden" name="sesskey" value="{{sesskey}}">
+                              <input type="hidden" name="action" value="finishattempt">
+                              <button type="submit" class="btn btn-primary">
+                                  {{#str}} finishattempt, mod_contentdesigner{{/str}}
+                              </button>
+                          </form>
+                        </div>
+                        {{/isgraded}}
                     </div>
 
                 </li>

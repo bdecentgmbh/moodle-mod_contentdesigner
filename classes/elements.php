@@ -84,6 +84,13 @@ abstract class elements {
     public $course;
 
     /**
+     * Content designer attempt data.
+     *
+     * @var stdclass $cdattempt
+     */
+    public $cdattempt;
+
+    /**
      * This element is not mandatory.
      */
     public const ENABLE_MANDATORY = 1;
@@ -94,15 +101,27 @@ abstract class elements {
     public const DISBLE_MANDATORY = 0;
 
     /**
+     * Status visibility: visible.
+     */
+    public const STATUS_VISIBLE = 1;
+
+    /**
+     * Status visibility: disable.
+     */
+    public const STATUS_DISABLE = 1;
+
+    /**
      * Constructor method, Setup the element basic information and context.
      *
      * @param int $cmid
+     * @param stdclass|null $cdattempt
      */
-    public function __construct($cmid) {
+    public function __construct($cmid, $cdattempt = null) {
         $this->cmid = $cmid;
         $this->shortname = $this->element_shortname();
         $this->tablename = 'cdelement_' . $this->shortname;
         $this->elementid = $this->element_id();
+        $this->cdattempt = $cdattempt;
         if ($cmid) {
             [$course, $cm] = get_course_and_cm_from_cmid($cmid);
             $this->cm = $cm;
@@ -174,12 +193,50 @@ abstract class elements {
     }
 
     /**
-     * Is the element supports the multiple instance for one activity instance. ie(element_outro)
+     * Verify the element is supports the grade.
+     *
+     * @return bool
+     */
+    public function supports_grade() {
+        return false;
+    }
+
+    /**
+     * Verify the element is supports top of the contents. ie(cdelement_tableofcontents)
+     *
+     * @return bool
+     */
+    public function supports_top_instance() {
+        return false;
+    }
+
+    /**
+     * Is the element supports the multiple instance for one activity instance. ie(cdelement_outro)
      *
      * @return bool
      */
     public function supports_multiple_instance() {
         return true;
+    }
+
+    /**
+     * Is the element supports the custom form, then the element should contain the entire general_element_form and its definitions.
+     *
+     * Otherwise it shoudld contains simple field definitions.
+     *
+     * @return bool
+     */
+    public function supports_custom_form(): bool {
+        return false;
+    }
+
+    /**
+     * Is the element supports the reports.
+     *
+     * @return bool
+     */
+    public function supports_reports(): bool {
+        return false;
     }
 
     /**
@@ -200,7 +257,7 @@ abstract class elements {
      * @return string
      */
     public function element_description() {
-        return (get_string_manager()->string_exists('elementdescription',  'cdelement_' . $this->element_shortname()))
+        return (get_string_manager()->string_exists('elementdescription', 'cdelement_' . $this->element_shortname()))
             ? get_string('elementdescription', 'cdelement_' . $this->element_shortname()) : '';
     }
 
@@ -211,17 +268,27 @@ abstract class elements {
      * @param stdclas $data Submitted moodle_form data.
      */
     public function save_areafiles($data) {
+
         if (isset($data->bgimage)) {
-            file_save_draft_area_files($data->bgimage, $data->contextid,
-            'mod_contentdesigner', $data->elementshortname . 'elementbg', $data->instance
+            file_save_draft_area_files(
+                $data->bgimage,
+                $data->contextid,
+                'mod_contentdesigner',
+                $data->elementshortname . 'elementbg',
+                $data->instance
             );
         }
 
         if (isset($data->description_editor)) {
             $editoroptions = $this->editor_options(\context_module::instance($data->cmid));
             $data = file_postupdate_standard_editor(
-                $data, 'description', $editoroptions, \context_module::instance($data->cmid),
-                'mod_contentdesigner', $this->element_shortname().'description', $data->instance
+                $data,
+                'description',
+                $editoroptions,
+                \context_module::instance($data->cmid),
+                'mod_contentdesigner',
+                $this->element_shortname() . 'description',
+                $data->instance
             );
         }
     }
@@ -235,15 +302,26 @@ abstract class elements {
     public function prepare_standard_file_editor(&$formdata) {
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('bgimage');
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner',
-            $this->element_shortname() . 'elementbg', $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
+            file_prepare_draft_area(
+                $draftitemid,
+                $this->context->id,
+                'mod_contentdesigner',
+                $this->element_shortname() . 'elementbg',
+                $formdata->instance,
+                ['subdirs' => 0, 'maxfiles' => 1]
+            );
             $formdata->bgimage = $draftitemid;
 
             // Description editor.
             $editoroptions = $this->editor_options($this->context);
             file_prepare_standard_editor(
-                $formdata, 'description', $editoroptions, $this->context, 'mod_contentdesigner',
-                $this->element_shortname().'description', $formdata->instance
+                $formdata,
+                'description',
+                $editoroptions,
+                $this->context,
+                'mod_contentdesigner',
+                $this->element_shortname() . 'description',
+                $formdata->instance
             );
         }
         return $formdata;
@@ -257,7 +335,6 @@ abstract class elements {
      */
     public function editor_options($context) {
         global $CFG;
-
         return [
             'subdirs' => 1,
             'maxbytes' => $CFG->maxbytes,
@@ -344,7 +421,21 @@ abstract class elements {
             'cmid' => $this->cmid,
             'contextid' => \context_module::instance($this->cmid)->id,
             'contentdesignerid' => $this->cm->instance,
+            'attemptid' => $this->cdattempt->id,
         ];
+
+        $cmdata = $this->cm->get_custom_data();
+        $completionmandatory = (isset($cmdata['customcompletionrules']['completionmandatory'])
+            && $cmdata['customcompletionrules']['completionmandatory'] == 1) ? true : false;
+
+        if ($completionmandatory && $this->get_mandatory_completion()) {
+            $PAGE->requires->js_amd_inline("
+                require(['mod_contentdesigner/elements'], function(Elements) {
+                    Elements.updateCompletion('completionmandatory');
+                })
+            ");
+        }
+
         $PAGE->requires->js_call_amd('mod_contentdesigner/elements', 'contentDesignerElementsData', $data);
     }
 
@@ -368,13 +459,20 @@ abstract class elements {
      */
     public function title_editable($instance) {
         global $OUTPUT;
+
         $title = $instance->title ?: $this->info()->name;
         $name = 'instance_title[' . $this->shortname . '][' . $instance->id . ']';
         // Todo: Need to implement capability in place of true 4th param.
-        $tmpl = new \core\output\inplace_editable('mod_contentdesigner', $name, $this->elementid . $instance->id,
-        true, format_string($title), $title, get_string('titleeditable', 'mod_contentdesigner'),
-        get_string('newvalue', 'mod_contentdesigner') . format_string($title));
-
+        $tmpl = new \core\output\inplace_editable(
+            'mod_contentdesigner',
+            $name,
+            $this->elementid . $instance->id,
+            true,
+            format_string($title),
+            $title,
+            get_string('titleeditable', 'mod_contentdesigner'),
+            get_string('newvalue', 'mod_contentdesigner') . format_string($title)
+        );
         return $OUTPUT->render($tmpl);
     }
 
@@ -387,7 +485,9 @@ abstract class elements {
      */
     public static function insertelement(string $shortname) {
         global $DB;
+
         $record = ['shortname' => $shortname, 'timemodified' => time()];
+
         if (!$DB->record_exists('contentdesigner_elements', ['shortname' => $shortname])) {
             return $DB->insert_record('contentdesigner_elements', $record);
         }
@@ -446,8 +546,14 @@ abstract class elements {
                 $content = get_config('cdelement_outro', 'outro_content');
                 $primarybutton = get_config('cdelement_outro', 'primarybutton');
                 $secondarybutton = get_config('cdelement_outro', 'secondarybutton');
-                $outrocontenthtml = file_rewrite_pluginfile_urls($content, 'pluginfile.php',
-                $this->context->id, 'mod_contentdesigner', 'outrocontent', 0);
+                $outrocontenthtml = file_rewrite_pluginfile_urls(
+                    $content,
+                    'pluginfile.php',
+                    $this->context->id,
+                    'mod_contentdesigner',
+                    'outrocontent',
+                    0
+                );
                 $outrocontenthtml = format_text($outrocontenthtml, FORMAT_HTML, ['trusted' => true, 'noclean' => true]);
 
                 $record['outrocontent'] = $outrocontenthtml ?? '';
@@ -469,7 +575,11 @@ abstract class elements {
                 $data['instance'] = $result;
                 $data['timecreated'] = time();
                 $data['timemodified'] = time();
-                if (!$DB->record_exists('contentdesigner_options', ['instance' => $result, 'element' => $this->elementid])) {
+
+                if (
+                    !$DB->record_exists('contentdesigner_options', ['instance' => $result,
+                    'element' => $this->elementid])
+                ) {
                     $DB->insert_record('contentdesigner_options', $data);
                 }
             }
@@ -491,19 +601,24 @@ abstract class elements {
 
         if ($this->is_table_exists()) {
             $params = ['id' => $instanceid, 'elementid' => $this->elementid];
-            $sql = 'SELECT ee.id, co.id as optionid, co.*, ee.* FROM {'.$this->tablename.'} ee
+            $sql = 'SELECT ee.id, co.id as optionid, co.*, ee.* FROM {' . $this->tablename . '} ee
             LEFT JOIN {contentdesigner_options} co ON ee.id = co.instance AND co.element=:elementid
             WHERE ee.id = :id';
             if ($visible) {
-                $sql .= ' AND ee.visible = :visible ';
+                $sql .= ' AND ee.visible=:visible ';
                 $params += ['visible' => 1];
             }
+
             $sql .= ' GROUP BY ee.id, ee.visible, co.id';
             if ($record = $DB->get_record_sql($sql, $params, IGNORE_MULTIPLE)) {
                 if ($record->description) {
                     $record->description = file_rewrite_pluginfile_urls(
-                        $record->description, 'pluginfile.php', $this->context->id,
-                        'mod_contentdesigner', $this->element_shortname().'description', $instanceid
+                        $record->description,
+                        'pluginfile.php',
+                        $this->context->id,
+                        'mod_contentdesigner',
+                        $this->element_shortname() . 'description',
+                        $instanceid
                     );
                     $record->description = format_text($record->description, FORMAT_HTML, ['context' => $this->context]);
                 }
@@ -563,7 +678,6 @@ abstract class elements {
 
         try {
             $transaction = $DB->start_delegated_transaction();
-
             $instanceid = $this->update_instance($data);
             // Setup instanceid if the elment is not inserted before.
             $data->instance = ($data->instanceid) ?: $instanceid;
@@ -575,7 +689,6 @@ abstract class elements {
                 $position = (isset($data->position) && $data->position == 'top') ? 1 : 0;
                 // Insert element in content section.
                 $content = $editor->add_module_element($this, $data->instance, $data->chapterid, $position);
-
                 $data->contentid = $content->id;
                 // Add the content id of the element in chapter sequence.
                 $editor->set_elements_inchapter($data->chapterid, $content->id);
@@ -654,6 +767,7 @@ abstract class elements {
             }
             $DB->delete_records('contentdesigner_content', ['element' => $this->element_id(),
             'instance' => $instanceid]);
+
             if ($this->get_instance_options($instanceid)) {
                 // Delete the element general settings.
                 $DB->delete_records('contentdesigner_options', ['element' => $this->element_id(),
@@ -722,7 +836,6 @@ abstract class elements {
         if ($instance->direction) {
             $instance->scrolleffect = json_encode($scrolldata);
         }
-
         return $instance;
     }
 
@@ -761,7 +874,7 @@ abstract class elements {
 
         foreach ($contents as $content) {
             $cm = $this->get_cm_from_modinstance($content->contentdesignerid);
-            $element = \mod_contentdesigner\editor::get_element($content->elementname, $cm->id);
+            $element = \mod_contentdesigner\editor::get_element($content->elementname, $cm->id, $this->cdattempt);
             $instance = $element->get_instance($content->instance);
 
             // Check if this element is mandatory.
@@ -794,5 +907,41 @@ abstract class elements {
             'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
             'hidemobile', 'timecreated', 'timemodified', 'description', 'showdescription',
         ];
+    }
+
+    /**
+     * Calculate the grade for this question element.
+     *
+     * @param int $qmark The mark obtained by the user.
+     * @param int $qmaxmark The maximum mark for the question.
+     * @param int $userid The ID of the user.
+     *
+     * @return int The calculated grade.
+     */
+    public function calculate_grade($qmark, $qmaxmark, $userid) {
+        global $DB, $CFG;
+
+        require_once($CFG->dirroot . '/mod/contentdesigner/locallib.php');
+        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $this->cm->instance]);
+        $contentdesignerelementmark = \mod_contentdesigner\editor::get_contentdesigner_overallelement_maxmark(
+            $this->cm->instance,
+            $this->cdattempt,
+            $userid
+        );
+        if ($contentdesignerelementmark) {
+            $qpercent = (int) round(($qmark / $contentdesignerelementmark) * $contentdesigner->grade);
+            return $qpercent;
+        }
+        return 0;
+    }
+
+    /**
+     * Prepare data for the duplicate element.
+     *
+     * @param stdClass $record
+     * @return stdClass
+     */
+    public function prepare_duplicatedata($record) {
+        return $record;
     }
 }

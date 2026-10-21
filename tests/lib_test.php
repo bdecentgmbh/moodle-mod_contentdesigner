@@ -99,7 +99,7 @@ final class lib_test extends \advanced_testcase {
     /**
      * Create a heading element.
      */
-    public function create_heading_element() {
+    public function create_heading_element(): void {
         global $DB;
         $data = new stdClass();
         $data->heading = "Heading 01";

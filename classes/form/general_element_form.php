@@ -36,11 +36,13 @@ require_once($CFG->dirroot . '/lib/formslib.php');
  */
 class general_element_form extends \moodleform {
     /**
-     * Make the custom data as public varaible to access on the elements forms.
+     * Get the custom data passed to this form, for access from element form definitions.
      *
-     * @var array
+     * @return array
      */
-    public $_customdata;
+    public function get_customdata() {
+        return $this->_customdata;
+    }
 
     /**
      * Define the form.
@@ -52,14 +54,16 @@ class general_element_form extends \moodleform {
         $instanceid = $this->_customdata['instanceid'];
         $cmid = $this->_customdata['cmid'];
         $element = \mod_contentdesigner\editor::get_element($element, $cmid);
-
-        $mform->addElement('header', 'elementsettings',
-        get_string('elementsettings', 'mod_contentdesigner', ucfirst($element->element_name())));
+        $mform->addElement(
+            'header',
+            'elementsettings',
+            get_string('elementsettings', 'mod_contentdesigner', ucfirst($element->element_name()))
+        );
         $element->element_form($mform, $this);
 
         if ($element->supports_standard_elements()) {
             // Extend the elements own options as mform element.
-            $this->standard_element_settings($mform);
+            $this->standard_element_settings($mform, $element);
         }
 
         $buttonstr = '';
@@ -75,8 +79,12 @@ class general_element_form extends \moodleform {
         $mform->addElement('hidden', 'sesskey', sesskey());
         $mform->setType('sesskey', PARAM_ALPHANUMEXT);
 
-        if (($this->_customdata['element'] == "chapter") && ($record = $DB->get_record('cdelement_chapter',
-        ['id' => $instanceid]))) {
+        if (
+            ($this->_customdata['element'] == "chapter") && ($record = $DB->get_record(
+                'cdelement_chapter',
+                ['id' => $instanceid]
+            ))
+        ) {
             $mform->addElement('hidden', 'position', $record->position);
             $mform->setType('position', PARAM_INT);
         } else {
@@ -91,13 +99,15 @@ class general_element_form extends \moodleform {
      * Defined the standard general options moodle form elements for content designer elements.
      *
      * @param moodle_form $mform Moodle quick form.
+     * @param object $element Element object.
      * @return void
      */
-    public function standard_element_settings($mform) {
-
+    public function standard_element_settings($mform, $element) {
+        global $DB;
         // Print the required moodle fields first.
         // Title for General element.
         $mform->addElement('header', 'generalsettings', get_string('generaltitle', 'mod_contentdesigner'));
+
         $mform->addElement('text', 'title', get_string('elementtitle', 'mod_contentdesigner'), 'maxlength="100" size="30"');
         $mform->setType('title', PARAM_NOTAGS);
         $mform->addHelpButton('title', 'elementtitle', 'mod_contentdesigner');
@@ -126,14 +136,14 @@ class general_element_form extends \moodleform {
         $mform->setDefault('visible', $default ?: 1);
 
         // Margin for General element.
-        $mform->addElement('text', 'margin',  get_string('margin', 'mod_contentdesigner'), 'size="30"');
+        $mform->addElement('text', 'margin', get_string('margin', 'mod_contentdesigner'), 'size="30"');
         $mform->setType('margin', PARAM_RAW);
         $mform->addHelpButton('margin', 'margin', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'margin');
         $mform->setDefault('margin', $default ?: '');
 
         // Padding for General element.
-        $mform->addElement('text', 'padding',  get_string('padding', 'mod_contentdesigner'), 'size="30"');
+        $mform->addElement('text', 'padding', get_string('padding', 'mod_contentdesigner'), 'size="30"');
         $mform->setType('padding', PARAM_RAW);
         $mform->addHelpButton('padding', 'padding', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'padding');
@@ -142,8 +152,12 @@ class general_element_form extends \moodleform {
         $mform->addElement('header', 'backgroundsettings', get_string('backgroundtitle', 'mod_contentdesigner'));
 
         // Background for general element.
-        $mform->addElement('text', 'abovecolorbg', get_string('abovecolorbg', 'mod_contentdesigner'),
-        ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
+        $mform->addElement(
+            'text',
+            'abovecolorbg',
+            get_string('abovecolorbg', 'mod_contentdesigner'),
+            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]
+        );
         $mform->setType('abovecolorbg', PARAM_RAW);
         $mform->addHelpButton('abovecolorbg', 'abovecolorbg', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'abovecolorbg');
@@ -158,8 +172,12 @@ class general_element_form extends \moodleform {
         $mform->addElement('filemanager', 'bgimage', get_string('elementbgimage', 'mod_contentdesigner'), null, $options);
         $mform->addHelpButton('bgimage', 'elementbgimage', 'mod_contentdesigner');
 
-        $mform->addElement('text', 'belowcolorbg', get_string('belowcolorbg', 'mod_contentdesigner'),
-        ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]);
+        $mform->addElement(
+            'text',
+            'belowcolorbg',
+            get_string('belowcolorbg', 'mod_contentdesigner'),
+            ['placeholder' => 'linear-gradient(#e66465, #9198e5)', 'size' => "60"]
+        );
         $mform->setType('belowcolorbg', PARAM_RAW);
         $mform->addHelpButton('belowcolorbg', 'belowcolorbg', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'belowcolorbg');
@@ -236,5 +254,14 @@ class general_element_form extends \moodleform {
         $mform->addHelpButton('hidemobile', 'hideonmobile', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'hidemobile');
         $mform->setDefault('hidemobile', $default ?: 0);
+
+         [$course, $cm] = get_course_and_cm_from_cmid($this->_customdata['cmid'], 'contentdesigner');
+        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
+
+        if ($contentdesigner && $element->supports_grade() && $contentdesigner->enablegrading) {
+            $mform->addElement('header', 'gradesettings', get_string('gradesettings', 'mod_contentdesigner'));
+            $mform->addElement('advcheckbox', 'excludeungraded', get_string('excludegrade', 'mod_contentdesigner'));
+            $mform->setDefault('excludeungraded', 0);
+        }
     }
 }

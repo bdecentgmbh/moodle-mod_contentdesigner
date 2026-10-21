@@ -32,7 +32,6 @@ use mod_contentdesigner\editor;
  * Search area for mod_contentdesigner elements.
  */
 class elements extends \core_search\base_mod {
-
     /**
      * Returns a recordset with all required elements information.
      *
@@ -43,7 +42,7 @@ class elements extends \core_search\base_mod {
     public function get_document_recordset($modifiedfrom = 0, ?context $context = null) {
         global $DB;
 
-        list ($contextjoin, $contextparams) = $this->get_context_restriction_sql($context, 'contentdesigner', 'c');
+         [$contextjoin, $contextparams] = $this->get_context_restriction_sql($context, 'contentdesigner', 'c');
         if ($contextjoin === null) {
             return null;
         }
@@ -80,7 +79,6 @@ class elements extends \core_search\base_mod {
         global $DB;
 
         try {
-
             if (empty($record->id) || empty($record->contentdesignerid)) {
                 $table = 'cdelement_' . $record->elementname;
                 $contentdesignerid = $DB->get_field($table, 'contentdesignerid', ['id' => $record->instance], MUST_EXIST);
@@ -90,7 +88,6 @@ class elements extends \core_search\base_mod {
 
             $cm = $this->get_cm('contentdesigner', $record->contentdesignerid, $record->course);
             $context = \context_module::instance($cm->id);
-
         } catch (\dml_missing_record_exception $ex) {
             debugging('Error retrieving ' . $this->areaid . ' ' . $record->id . ' document, not all required data is available: ' .
                 $ex->getMessage(), DEBUG_DEVELOPER);
@@ -126,7 +123,7 @@ class elements extends \core_search\base_mod {
      */
     public function generate_additional_sql() {
 
-        list($titlesql, $contentsql, $contentformatsql, $joinsql) = self::get_elements_search_areas();
+        [$titlesql, $contentsql, $contentformatsql, $joinsql] = self::get_elements_search_areas();
 
         if (empty($titlesql) || empty($contentsql) || empty($joinsql)) {
             return ['select' => '', 'joins' => ''];
@@ -206,7 +203,6 @@ class elements extends \core_search\base_mod {
         global $DB;
 
         try {
-
             // Remove the deleted elements from the index.
             if (!$DB->record_exists('contentdesigner_options', ['id' => $id])) {
                 return \core_search\manager::ACCESS_DELETED;
@@ -216,7 +212,6 @@ class elements extends \core_search\base_mod {
             $context = \context::instance_by_id($content->contextid);
             $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
             $cminfo = $this->get_cm('contentdesigner', $cm->instance, $cm->course);
-
         } catch (\dml_missing_record_exception $ex) {
             return \core_search\manager::ACCESS_DELETED;
         } catch (\dml_exception $ex) {

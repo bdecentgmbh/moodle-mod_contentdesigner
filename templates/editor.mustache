@@ -153,12 +153,17 @@
     <div class="contentdesigner-wrapper">
         <div class="content">
             <ul class="course-content-list">
+                {{#topinstance}}
+                <li class="topinstance element-item">
+                    {{{topinstance}}}
+                </li>
+                {{/topinstance}}
                 {{^chapterscount}}
                 <li>
                   <div class="contentdesigner-addelement" data-position="bottom">
                       <span><i class="fa fa-plus"> </i></span>
                   </div>
-                </li>
+                <li>
                 {{/chapterscount}}
                 {{#chapters}}
                 <li class="chapters-list {{^count}} no-elements {{/count}}">

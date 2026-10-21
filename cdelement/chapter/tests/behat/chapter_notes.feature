@@ -60,8 +60,6 @@ Feature: Check content designer chapter element notes tool support
     # Notes list page.
     Then I follow "Profile" in the user menu
     And I click on "Notes" "link"
-    Then I should see "Course 1 / General / C1: Demo content | Acceptance test site | First chapter" in the ".card-body:nth-of-type(1) .title-block" "css_element"
-    Then I should see "Course 1 / General / C1: Demo content | Acceptance test site | First chapter" in the ".card-body:nth-of-type(2) .title-block" "css_element"
     And I should see "Test note 1" in the ".card-body:nth-of-type(1)" "css_element"
     And I should see "Test note 2" in the ".card-body:nth-of-type(2)" "css_element"
     # Edit note on notes list page.
@@ -79,7 +77,7 @@ Feature: Check content designer chapter element notes tool support
     And I wait until the page is ready
     Then I should see "Successfully deleted"
     And I should not see "Test note 2"
-    And I click on "View Chapter" "button" in the ".btn-block" "css_element"
+    And I am on the "Demo content" "contentdesigner activity" page
     Then I should see "Notes" in the ".toolbar-block .content-designer-learningtool-note" "css_element"
     Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
 

@@ -45,15 +45,26 @@ class backup_cdelement_h5p_subplugin extends backup_subplugin {
 
         $h5pcompletion = new backup_nested_element('elementh5p_completion');
         $h5pcompletionelement = new backup_nested_element('cdelement_h5p_completion', ['id'], [
-            'instance', 'userid', 'completion', 'success', 'score', 'scoredata', 'response', 'timecreated', 'timemodified',
+            'instance', 'userid', 'cdattemptid', 'completion', 'success', 'score', 'scoredata', 'response', 'timecreated',
+            'timemodified',
+        ]);
+
+        $h5pxapistate = new backup_nested_element('elementh5p_xapistates');
+        $h5pxapistateelement = new backup_nested_element('cdelement_h5p_xapistates', ['id'], [
+            "component", "userid", "itemid", "stateid", "statedata", "registration", "timecreated", "timemodified",
         ]);
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
+        // H5P completion.
         $subplugin->add_child($h5pcompletion);
         $h5pcompletion->add_child($h5pcompletionelement);
+
+        // H5P Api state.
+        $subplugin->add_child($h5pxapistate);
+        $h5pxapistate->add_child($h5pxapistateelement);
 
         // Set source to populate the data.
         $subpluginelement->set_source_table('cdelement_h5p', ['contentdesignerid' => backup::VAR_PARENTID]);
@@ -64,6 +75,10 @@ class backup_cdelement_h5p_subplugin extends backup_subplugin {
             )';
             $h5pcompletionelement->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
             $h5pcompletionelement->annotate_ids('user', 'userid');
+
+            $sql = 'SELECT * FROM {cdelement_h5p_xapistates} WHERE itemid=:contextid';
+            $h5pxapistateelement->set_source_sql($sql, ['contextid' => backup::VAR_CONTEXTID]);
+            $h5pxapistateelement->annotate_ids('user', 'userid');
         }
 
         $subpluginelement->annotate_files('cdelement_h5p', 'package', null);

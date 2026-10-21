@@ -72,6 +72,13 @@ echo $OUTPUT->header();
 
 echo $editor->display();
 
-$PAGE->requires->js_call_amd('mod_contentdesigner/editor', 'init',
-['contextid' => $context->id, 'cmid' => $cm->id, 'contentdesignerid' => $cm->instance]);
+$PAGE->requires->js_call_amd(
+    'mod_contentdesigner/editor',
+    'init',
+    [
+        'contextid' => $context->id,
+        'cmid' => $cm->id,
+        'contentdesignerid' => $cm->instance,
+    ]
+);
 echo $OUTPUT->footer();

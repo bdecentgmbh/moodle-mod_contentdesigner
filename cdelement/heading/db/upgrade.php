@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element heading upgrade code defined.
+ * Upgrade script for Moodle.
  *
- * @package   cdelement_heading
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @package    cdelement_heading
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,20 +26,34 @@
  * Handles the upgrade process for the cdelement_heading plugin in Moodle.
  *
  * @param int $oldversion The version of the plugin before the upgrade.
+ * @param bool $rename whether to rename the existing table or not.
  * @return bool True on successful upgrade.
  */
-function xmldb_cdelement_heading_upgrade($oldversion) {
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
+function xmldb_cdelement_heading_upgrade($oldversion, $rename = false) {
+    global $DB;
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
+    if ($rename) {
+        // Rename the table local_pulsepro_credits to pulseaddon_credits.
+        $table = new xmldb_table('element_heading');
+        $cdelementtable = new xmldb_table('cdelement_heading');
 
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
+        if ($dbman->table_exists($table)) {
+            if (!$dbman->table_exists($cdelementtable)) {
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_heading');
+            } else {
+                // Drop the existing table.
+                $dbman->drop_table($cdelementtable);
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_heading');
+            }
+        }
+
+        // Rename admin configuration settings.
+        mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_heading', 'cdelement_heading');
+    }
 
     return true;
 }

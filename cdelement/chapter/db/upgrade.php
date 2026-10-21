@@ -15,31 +15,38 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element chapter upgrade code defined.
+ * Upgrade script for the chapter element.
  *
- * @package   cdelement_chapter
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @package    cdelement_chapter
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Handles the upgrade process for the cdelement_chapter plugin in Moodle.
+ * Upgrede chapter element.
  *
- * @param int $oldversion The version of the plugin before the upgrade.
- * @return bool True on successful upgrade.
+ * @param string $oldversion the version we are upgrading from.
+ * @param bool $rename Due to changing the plugin name, we need to rename the existing table.
+ * @return bool
  */
-function xmldb_cdelement_chapter_upgrade($oldversion) {
-    global $DB;
+function xmldb_cdelement_chapter_upgrade($oldversion, $rename = false) {
+    global $DB, $SESSION;
 
     $dbman = $DB->get_manager();
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    // Check if the plugin is renamed.
+    // If the plugin is renamed, we need to rename the existing table without upgrade the save point.
+    $runwithoutupgradpoint = $rename;
 
-    if ($oldversion < 1) {
-        // Rename the table element_chapter to cdelement_chapter.
+    // Verify the plugin is upgraded from a free version.
+    // Check if the contentdesigner_completion table exists.
+    // If it does not exist, it means the plugin is upgraded from a free version.
+    if ($rename || (property_exists($SESSION, 'contentdesigner_upgradepro') && $SESSION->contentdesigner_upgradepro)) {
+        $runwithoutupgradpoint = true;
+    }
+
+    if ($runwithoutupgradpoint) {
+        // Rename the table local_pulsepro_credits to pulseaddon_credits.
         $table = new xmldb_table('element_chapter');
         $cdchaptertable = new xmldb_table('cdelement_chapter');
 
@@ -55,7 +62,7 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
             }
         }
 
-        // Rename the table element_chapter_completion to cdelement_chapter_completion.
+        // Rename the table local_pulsepro_credits to pulseaddon_credits.
         $completiontable = new xmldb_table('element_chapter_completion');
         $cdcompletiontable = new xmldb_table('cdelement_chapter_completion');
 
@@ -75,21 +82,60 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_chapter', 'cdelement_chapter');
     }
 
-    if ($oldversion < 2024110801 && $oldversion) {
+    if ($oldversion < 2024110801 || $runwithoutupgradpoint) {
         // Element chapter table.
         $table = new xmldb_table('cdelement_chapter');
+
         // Title status.
-        $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, null, null, '0', 'position');
+        $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'position');
         if (!$dbman->field_exists($table, $titlestatus)) {
             $dbman->add_field($table, $titlestatus);
         }
-        upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'chapter');
+
+        // Chapter completion.
+        $completionmode = new xmldb_field('completionmode', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'titlestatus');
+        if (!$dbman->field_exists($table, $completionmode)) {
+            $dbman->add_field($table, $completionmode);
+        }
+
+        // Don't run the upgrade savepoint if the plugin is renamed.
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'chapter');
+        }
     }
 
-    if ($oldversion < 2025041500 && $oldversion) {
+    if ($oldversion < 2025021303 || $runwithoutupgradpoint) {
         // Element chapter table.
         $table = new xmldb_table('cdelement_chapter');
+
+        // Title status.
+        $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'position');
+
+        if ($dbman->field_exists($table, $titlestatus)) {
+            // Ensure existing NULL values are replaced with the default value.
+            $DB->execute("UPDATE {cdelement_chapter} SET titlestatus = '0' WHERE titlestatus IS NULL");
+            // Change the field to NOT NULL.
+            $dbman->change_field_notnull($table, $titlestatus);
+        }
+
+        // Chapter completion mode.
+        $completionmode = new xmldb_field('completionmode', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'titlestatus');
+        if ($dbman->field_exists($table, $completionmode)) {
+            // Ensure existing NULL values are replaced with the default value.
+            $DB->execute("UPDATE {cdelement_chapter} SET completionmode = '0' WHERE completionmode IS NULL");
+            // Change the field to NOT NULL.
+            $dbman->change_field_notnull($table, $completionmode);
+        }
+
+        // Don't run the upgrade savepoint if the plugin is renamed.
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2025021303, 'cdelement', 'chapter');
+        }
+    }
+
+    if ($oldversion < 2025050601 || $runwithoutupgradpoint) {
         // Define field learningtools to be added to cdelement_chapter.
+        $table = new xmldb_table('cdelement_chapter');
         $field = new xmldb_field('learningtools', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'visible');
         // Add field if it doesn't already exist.
         if (!$dbman->field_exists($table, $field)) {
@@ -97,9 +143,44 @@ function xmldb_cdelement_chapter_upgrade($oldversion) {
         }
         // Set the default value for existing records.
         $DB->set_field('cdelement_chapter', 'learningtools', 0);
+        // Don't run the upgrade savepoint if the plugin is renamed.
+        if (!$runwithoutupgradpoint) {
+            // Save new version.
+            upgrade_plugin_savepoint(true, 2025050601, 'cdelement', 'chapter');
+        }
+    }
 
-        // Save new version.
-        upgrade_plugin_savepoint(true, 2025041500, 'cdelement', 'chapter');
+    if ($oldversion < 2025050602 || $runwithoutupgradpoint) {
+        // Schema alignment for v1.6 release.
+        $table = new xmldb_table('cdelement_chapter');
+
+        // ...titlestatus — enforce NOT NULL.
+        $titlestatus = new xmldb_field('titlestatus', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'position');
+        if ($dbman->field_exists($table, $titlestatus)) {
+            $DB->execute("UPDATE {cdelement_chapter} SET titlestatus = '0' WHERE titlestatus IS NULL");
+            $dbman->change_field_notnull($table, $titlestatus);
+        }
+
+        // Completionmode — enforce NOT NULL.
+        $completionmode = new xmldb_field(
+            'completionmode',
+            XMLDB_TYPE_INTEGER,
+            '2',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'titlestatus'
+        );
+        if ($dbman->field_exists($table, $completionmode)) {
+            $DB->execute("UPDATE {cdelement_chapter} SET completionmode = '0' WHERE completionmode IS NULL");
+            $dbman->change_field_notnull($table, $completionmode);
+        }
+
+        // Don't run the upgrade savepoint if the plugin is renamed.
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2025050602, 'cdelement', 'chapter');
+        }
     }
 
     return true;

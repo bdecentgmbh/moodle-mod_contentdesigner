@@ -63,6 +63,11 @@ class element extends \mod_contentdesigner\elements {
     const OUTRO_BUTTON_BACKTOSECTION = 4;
 
     /**
+     * Outro button finish attempt option.
+     */
+    const OUTRO_BUTTON_FINISHATTEMPT = 5;
+
+    /**
      * Element name which is visbile for the users
      *
      * @return string
@@ -120,7 +125,7 @@ class element extends \mod_contentdesigner\elements {
         $mform->addElement('filemanager', 'image', get_string('strimage', 'mod_contentdesigner'), null, $options);
         $mform->addHelpButton('image', 'strimage', 'mod_contentdesigner');
 
-        $editoroptions = $this->editor_options($formobj->_customdata['context']);
+        $editoroptions = $this->editor_options($formobj->get_customdata()['context']);
         $mform->addElement('editor', 'outrocontent_editor', get_string('content', 'mod_contentdesigner'), null, $editoroptions);
         $mform->setType('outrocontent_editor', PARAM_RAW);
         $mform->addHelpButton('outrocontent_editor', 'content', 'mod_contentdesigner');
@@ -132,13 +137,18 @@ class element extends \mod_contentdesigner\elements {
             self::OUTRO_BUTTON_NEXT => get_string('outro:btnnext', 'mod_contentdesigner'),
             self::OUTRO_BUTTON_BACKTOCOURSE => get_string('outro:btnbacktocourse', 'mod_contentdesigner'),
             self::OUTRO_BUTTON_BACKTOSECTION => get_string('outro:btnbacktosection', 'mod_contentdesigner'),
+            self::OUTRO_BUTTON_FINISHATTEMPT => get_string('outro:btnfinishattempt', 'mod_contentdesigner'),
         ];
         $mform->addElement('select', 'primarybutton', get_string('primarybutton', 'mod_contentdesigner'), $options);
         $mform->setDefault('primarybutton', self::OUTRO_BUTTON_DISABLED);
         $mform->addHelpButton('primarybutton', 'primarybutton', 'mod_contentdesigner');
 
-        $mform->addElement('text', 'primarytext', get_string('primarybuttontext', 'mod_contentdesigner'),
-        'maxlength="100" size="30"');
+        $mform->addElement(
+            'text',
+            'primarytext',
+            get_string('primarybuttontext', 'mod_contentdesigner'),
+            'maxlength="100" size="30"'
+        );
         $mform->setType('primarytext', PARAM_NOTAGS);
         $mform->addHelpButton('primarytext', 'primarybuttontext', 'mod_contentdesigner');
         $mform->hideIf('primarytext', 'primarybutton', 'neq', self::OUTRO_BUTTON_CUSTOM);
@@ -153,8 +163,12 @@ class element extends \mod_contentdesigner\elements {
         $mform->setDefault('secondarybutton', self::OUTRO_BUTTON_DISABLED);
         $mform->addHelpButton('secondarybutton', 'secondarybutton', 'mod_contentdesigner');
 
-        $mform->addElement('text', 'secondarytext', get_string('secondarybuttontext', 'mod_contentdesigner'),
-        'maxlength="100" size="30"');
+        $mform->addElement(
+            'text',
+            'secondarytext',
+            get_string('secondarybuttontext', 'mod_contentdesigner'),
+            'maxlength="100" size="30"'
+        );
         $mform->setType('secondarytext', PARAM_NOTAGS);
         $mform->addHelpButton('secondarytext', 'secondarybuttontext', 'mod_contentdesigner');
         $mform->hideIf('secondarytext', 'secondarybutton', 'neq', self::OUTRO_BUTTON_CUSTOM);
@@ -200,8 +214,7 @@ class element extends \mod_contentdesigner\elements {
                         }
                     }
                     outroCompletion();
-                })"
-            );
+                })");
         }
     }
 
@@ -287,8 +300,11 @@ class element extends \mod_contentdesigner\elements {
                 'cdelement_outro_outrocontent',
                 $data->instance
             );
-            $updatedata = (object) ['id' => $data->instance, 'outrocontentformat' => $data->outrocontentformat,
-                'outrocontent' => $data->outrocontent];
+            $updatedata = (object) [
+                'id' => $data->instance,
+                'outrocontentformat' => $data->outrocontentformat,
+                'outrocontent' => $data->outrocontent,
+            ];
             $DB->update_record('cdelement_outro', $updatedata);
         }
     }
@@ -304,8 +320,14 @@ class element extends \mod_contentdesigner\elements {
         $formdata = parent::prepare_standard_file_editor($formdata);
         if (isset($formdata->instance)) {
             $draftitemid = file_get_submitted_draft_itemid('image');
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_contentdesigner', 'cdelement_outro_outroimage',
-            $formdata->instance, ['subdirs' => 0, 'maxfiles' => 1]);
+            file_prepare_draft_area(
+                $draftitemid,
+                $this->context->id,
+                'mod_contentdesigner',
+                'cdelement_outro_outroimage',
+                $formdata->instance,
+                ['subdirs' => 0, 'maxfiles' => 1]
+            );
             $formdata->image = $draftitemid;
         }
 
@@ -341,12 +363,12 @@ class element extends \mod_contentdesigner\elements {
         $formdata = clone $data;
         $formdata->outrocontentformat = $formdata->outrocontent_editor['format'];
         $formdata->outrocontent = $formdata->outrocontent_editor['text'];
+        $formdata->timemodified = time();
+
         if ($formdata->instanceid == false) {
-            $formdata->timemodified = time();
             $formdata->timecreated = time();
             return $DB->insert_record($this->tablename, $formdata);
         } else {
-            $formdata->timecreated = time();
             $formdata->id = $formdata->instanceid;
             if ($DB->update_record($this->tablename, $formdata)) {
                 return $formdata->id;
@@ -405,6 +427,15 @@ class element extends \mod_contentdesigner\elements {
             case self::OUTRO_BUTTON_BACKTOCOURSE:
                 $buttontext = get_string('outro:btnbacktocourse', 'mod_contentdesigner');
                 $buttonurl = new moodle_url('/course/view.php', ['id' => $this->course->id]);
+                break;
+            case self::OUTRO_BUTTON_FINISHATTEMPT:
+                $buttontext = get_string('finishattempt', 'mod_contentdesigner');
+                $buttonurl = new moodle_url('/mod/contentdesigner/view.php', [
+                    'id' => $this->cm->id,
+                    'attemptid' => $this->cdattempt->id,
+                    'sesskey' => sesskey(),
+                    'action' => 'finishattempt',
+                ]);
                 break;
             case self::OUTRO_BUTTON_BACKTOSECTION:
                 $buttontext = get_string('outro:btnbacktosection', 'mod_contentdesigner');

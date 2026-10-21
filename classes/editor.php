@@ -24,7 +24,13 @@
 
 namespace mod_contentdesigner;
 
+defined('MOODLE_INTERNAL') || die('No direct access');
+
+require_once($CFG->dirroot . '/mod/contentdesigner/locallib.php');
+require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 use html_writer;
+use moodle_url;
+use cdelement_outro\element as outro;
 
 /**
  * Mod contnet designer editor class.
@@ -59,16 +65,25 @@ class editor {
     public $chapter;
 
     /**
+     * Attempt object.
+     *
+     * @var stdclass
+     */
+    public $attempt;
+
+    /**
      * Constructor, setup the class variables and course module objects.
      *
      * @param stdclass $cm Course Moudle instance record.
      * @param stdclass $course Course record object.
+     * @param stdclass|null $attempt Attempt object.
      */
-    public function __construct($cm, $course) {
+    public function __construct($cm, $course, $attempt = null) {
         $this->cm = $cm;
         $this->course = $course;
         $this->cmcontext = \context_module::instance($cm->id);
-        $this->chapter = new \cdelement_chapter\element($this->cm->id);
+        $this->chapter = new \cdelement_chapter\element($this->cm->id, $attempt);
+        $this->attempt = $attempt;
     }
 
     /**
@@ -77,14 +92,26 @@ class editor {
      * @return string HTML of the available elments elementbox.
      */
     public function display() {
-        global $OUTPUT;
-
+        global $OUTPUT, $DB;
         $data = [
             'cm' => $this->cm,
             'course' => $this->course,
             'chapters' => $this->chapter->get_chapters_data(),
             'outro' => $this->get_module_outro(),
         ];
+
+        // Top instance editor data.
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
+        foreach ($plugins as $plugin => $version) {
+            $elementobj = self::get_element($plugin, $this->cm->id);
+            if ($elementobj->supports_top_instance()) {
+                if ($DB->record_exists('contentdesigner_elements', ['shortname' => $elementobj->shortname])) {
+                    $data += [
+                        'topinstance' => $elementobj->get_editor_data(),
+                    ];
+                }
+            }
+        }
 
         // Hide the add element option after outro.
         $data['chapterscount'] = count($data['chapters']);
@@ -97,16 +124,29 @@ class editor {
      * @return string HTML of the elements.
      */
     public function render_elements($chapterafter = false) {
-        global $OUTPUT;
-
+        global $OUTPUT, $DB;
         $data = [
             'cm' => $this->cm,
+            'attempt' => $this->attempt,
             'course' => $this->course,
             'progressbar' => $this->chapter->build_progress(),
             'chapters' => $this->chapter->get_chapters_data(true, true, $chapterafter),
             'outro' => $this->render_module_outro(),
             'cmdetails' => $this->cm_details(),
+            'sesskey' => sesskey(),
         ];
+        // Top instance contents.
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
+        foreach ($plugins as $plugin => $version) {
+            $elementobj = self::get_element($plugin, $this->cm->id, $this->attempt);
+            if ($elementobj->supports_top_instance()) {
+                if ($DB->record_exists('contentdesigner_elements', ['shortname' => $elementobj->shortname])) {
+                    $data += [
+                        'topinstance' => $elementobj->render_module_topcontents(),
+                    ];
+                }
+            }
+        }
 
         $end = (!empty($data['chapters'])) ? end($data['chapters']) : '';
         if (!empty($end)) {
@@ -114,6 +154,14 @@ class editor {
             $data['chapterprevent'] = $end['chapterprevent'] ? true : false;
         }
 
+        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $this->cm->instance], '*', MUST_EXIST);
+        $outro = $DB->get_record("cdelement_outro", ['contentdesignerid' => $this->cm->instance]);
+        if ($outro) {
+            $data['isgraded'] = ($contentdesigner->enablegrading && $outro->primarybutton != outro::OUTRO_BUTTON_FINISHATTEMPT &&
+            $outro->secondarybutton != outro::OUTRO_BUTTON_FINISHATTEMPT) ? true : false;
+        } else {
+            $data['isgraded'] = $contentdesigner->enablegrading;
+        }
         return $OUTPUT->render_from_template('mod_contentdesigner/content', $data);
     }
 
@@ -127,6 +175,7 @@ class editor {
             'cmid' => $this->cm->id,
             'contextid' => \context_module::instance($this->cm->id)->id,
             'contentdesignerid' => $this->cm->instance,
+            'attemptid' => $this->attempt->id,
         ];
         return html_writer::empty_tag('input', [
             'type' => 'hidden', 'name' => 'contentdesigner_cm_details', 'value' => json_encode($data),
@@ -143,9 +192,44 @@ class editor {
     public function initiate_js() {
         $plugins = \core_plugin_manager::instance()->get_installed_plugins('cdelement');
         foreach ($plugins as $plugin => $version) {
-            $elementobj = self::get_element($plugin, $this->cm->id);
+            $elementobj = self::get_element($plugin, $this->cm->id, $this->attempt);
             $elementobj->initiate_js();
         }
+    }
+
+    /**
+     * Get the overall max mark of the content designer.
+     *
+     * @param int $contentdesignerid Content designer instance id.
+     * @param stdclass $attempt Attempt object.
+     * @param int $userid User id.
+     *
+     * @return int Max mark of the content designer.
+     */
+    public static function get_contentdesigner_overallelement_maxmark($contentdesignerid, $attempt, $userid) {
+        global $DB;
+        $sql  = 'SELECT cc.*, ce.id as elementid, ce.shortname as elementname
+        FROM {contentdesigner_content} cc
+        JOIN {contentdesigner_elements} ce ON ce.id = cc.element
+        WHERE cc.contentdesignerid = ?';
+
+        $params = [$contentdesignerid];
+        $contents = $DB->get_records_sql($sql, $params);
+        $maxmark = 0;
+        $cm = get_coursemodule_from_instance('contentdesigner', $contentdesignerid);
+        foreach ($contents as $content) {
+            $element = self::get_element($content->element, $cm->id, $attempt);
+            $editor = self::get_editor($cm->id);
+            $instance = $element->get_instance($content->instance);
+            if ($element->supports_grade() && !$editor->get_option_field($instance->id, $content->element, 'excludeungraded')) {
+                // Process the grade before calculating the final grade.
+                if (method_exists($element, 'pre_process_grade')) {
+                    $element->pre_process_grade();
+                }
+                $maxmark += $element->get_max_mark($instance, $userid);
+            }
+        }
+        return $maxmark;
     }
 
     /**
@@ -179,7 +263,9 @@ class editor {
             $description = html_writer::span($info->description, 'element-description');
             $name = html_writer::span($info->name, 'element-name');
 
-            $li[] = html_writer::tag('li', $info->icon . $name . $description,
+            $li[] = html_writer::tag(
+                'li',
+                $info->icon . $name . $description,
                 ['data-element' => $info->shortname, 'class' => 'element-item']
             );
         }
@@ -192,16 +278,17 @@ class editor {
      *
      * @param int|string $element
      * @param int|null $cmid
+     * @param int|null $attempt
      * @return \elements
      */
-    public static function get_element($element, $cmid = null) {
+    public static function get_element($element, $cmid = null, $attempt = null) {
         global $DB;
         if (is_number($element)) {
             $element = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $element]);
         }
         $class = 'cdelement_' . $element . '\element';
         if (class_exists($class)) {
-            return new $class($cmid);
+            return new $class($cmid, $attempt);
         } else {
             throw new \moodle_exception('elementnotfound', 'mod_contentdesigner');
         }
@@ -249,7 +336,11 @@ class editor {
         global $OUTPUT, $DB;
 
         $element = self::get_element('outro', $this->cm->id);
-        $instance = $DB->get_field('cdelement_outro', 'id', ['contentdesignerid' => $this->cm->instance]);
+        $instance = $DB->get_field(
+            'cdelement_outro',
+            'id',
+            ['contentdesignerid' => $this->cm->instance]
+        );
 
         if (!$instance) {
             $instance = $element->create_basic_instance($this->cm->instance);
@@ -280,7 +371,7 @@ class editor {
      */
     public function render_module_outro() {
         global $DB;
-        $element = self::get_element('outro', $this->cm->id);
+        $element = self::get_element('outro', $this->cm->id, $this->attempt);
         $editor = self::get_editor($this->cm->id);
         $instance = $DB->get_record('cdelement_outro', ['contentdesignerid' => $this->cm->instance]);
         if ($instance) {
@@ -308,13 +399,35 @@ class editor {
      */
     public function get_option($instanceid, $elementid) {
         global $DB;
-        $record = $DB->get_record('contentdesigner_options', [
-        'instance' => $instanceid, 'element' => $elementid], '*', IGNORE_MULTIPLE);
+        $record = $DB->get_record(
+            'contentdesigner_options',
+            ['instance' => $instanceid, 'element' => $elementid],
+            '*',
+            IGNORE_MULTIPLE
+        );
         if (!empty($record)) {
             $element = self::get_element($record->element, $this->cm->id);
             $record->backimage = $this->get_element_areafiles($element->shortname . "elementbg", $instanceid);
         }
         return $record;
+    }
+
+    /**
+     * Fetch the genernal options as records.
+     *
+     * @param int $instanceid Element instance id
+     * @param int $elementid Element list id.
+     * @param string $field Field name to fetch.
+     * @return mixed
+     */
+    public function get_option_field($instanceid, $elementid, $field) {
+        global $DB;
+        return $DB->get_field(
+            'contentdesigner_options',
+            $field,
+            ['instance' => $instanceid, 'element' => $elementid],
+            IGNORE_MULTIPLE
+        );
     }
 
     /**
@@ -324,24 +437,56 @@ class editor {
      * @param int $itemid Id for the filearea.
      * @param string $component Plugin component name.
      * @param context_module $context Course module instance object.
-     * @return string File Path of the given fileareas, If not false.
+     * @param bool $multiple If true then returns array of file urls, else returns single file url.
+     * @return string|array File Path of the given fileareas, If not false.
      */
-    public function get_element_areafiles($filearea, $itemid = 0, $component = 'mod_contentdesigner', $context = null) {
+    public function get_element_areafiles(
+        $filearea,
+        $itemid = 0,
+        $component = 'mod_contentdesigner',
+        $context = null,
+        $multiple = false
+    ) {
         $context = ($context === null) ? \context_module::instance($this->cm->id) : $context;
-        $files = get_file_storage()->get_area_files($context->id, $component, $filearea, $itemid,
-        'itemid, filepath, filename', false);
-        if (empty($files) ) {
-            return '';
+        $files = get_file_storage()->get_area_files(
+            $context->id,
+            $component,
+            $filearea,
+            $itemid,
+            'itemid, filepath, filename',
+            false
+        );
+        if (empty($files)) {
+            return $multiple ? [] : '';
         }
+
+        if ($multiple) {
+            $fileurls = [];
+            foreach ($files as $file) {
+                $fileurl = moodle_url::make_pluginfile_url(
+                    $file->get_contextid(),
+                    $file->get_component(),
+                    $file->get_filearea(),
+                    $file->get_itemid(),
+                    $file->get_filepath(),
+                    $file->get_filename(),
+                    false
+                );
+                $fileurls[] = $fileurl->out(false);
+            }
+            return $fileurls;
+        }
+
         $file = current($files);
         $fileurl = \moodle_url::make_pluginfile_url(
-        $file->get_contextid(),
-        $file->get_component(),
-        $file->get_filearea(),
-        $file->get_itemid(),
-        $file->get_filepath(),
-        $file->get_filename(),
-        false);
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename(),
+            false
+        );
         return $fileurl->out(false);
     }
 
@@ -365,6 +510,7 @@ class editor {
             // Create basic instance for element EX:elemnet_h5p.
             $data->instance = $element->create_basic_instance($this->cm->instance);
             $data->instancedata = $element->get_instance($data->instance);
+
             if ($element->supports_content()) {
                 if ($chapterid == null) {
                     $chapterid = $this->chapter->get_default($this->cm->instance, true);
@@ -438,8 +584,7 @@ class editor {
             } else {
                 // Get the latest positions of the chapter element in element going to insert in bottom.
                 $lastelement = (int) $DB->get_field_sql('SELECT max(position) from {contentdesigner_content}
-                    WHERE contentdesignerid = ? AND chapter=?', [$this->cm->instance, $chapter]
-                );
+                    WHERE contentdesignerid = ? AND chapter=?', [$this->cm->instance, $chapter]);
             }
             $content->position = $lastelement ? $lastelement + 1 : 1;
             $content->id = $DB->insert_record('contentdesigner_content', $content);
@@ -469,6 +614,7 @@ class editor {
      */
     public function duplicate($id, $element, $newchapterid = 0) {
         global $DB;
+
         $tablename = 'cdelement_' . $element;
         $context = \context_module::instance($this->cm->id);
         $elementobj = self::get_element($element, $this->cm->id);
@@ -489,10 +635,9 @@ class editor {
             $record->elementshortname = $elementobj->shortname;
             $record->timecreated = time();
 
-            if ($element == "richtext") {
-                $record->content_editor['format'] = $record->contentformat;
-                $record->content_editor['text'] = $record->content;
-            }
+            $elementobj->prepare_standard_file_editor($record);
+
+            $elementobj->prepare_duplicatedata($record);
 
             $elementobj->update_element($record);
         }

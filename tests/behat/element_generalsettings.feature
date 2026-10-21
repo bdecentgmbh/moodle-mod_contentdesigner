@@ -22,7 +22,7 @@ Feature: Check content designer element settings
       | course      | C1                           |
     And I log out
 
-  Scenario: Check the element general settings.
+  Scenario: Check the element general settings
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
     And I click on "Content editor" "link"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
@@ -35,28 +35,30 @@ Feature: Check content designer element settings
     And I click on ".elements-list li[data-element=paragraph]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
       | Content     | Lorem Ipsum is simply dummy text of the printing and typesetting industry.  |
-      | Title       | Paragraph description |
+      | Title       | Paragraph description                                                       |
     And I press "Create element"
     And I click on "Content Designer" "link"
     Then I should see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
+    And I click on ".chapters-list:nth-child(2) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Visibility | Hidden |
     And I press "Update element"
     And I click on "Content Designer" "link"
     Then I should not see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     And I click on "Content editor" "link"
-    And I click on ".chapters-list:nth-child(1) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
+    And I click on ".chapters-list:nth-child(2) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
-      | Visibility | Visible |
-      | Margin    | 10 |
-      | Padding   | 20 |
-      | Margin    | 10 |
-      | Animation | Slide in from right|
-      | Duration | Fast |
-      | Delay    | 1000 |
+      | Visibility | Visible              |
+      | Margin     | 10                   |
+      | Padding    | 20                   |
+      | Margin     | 10                   |
+      | Animation  | Slide in from right  |
+      | Duration   | Fast                 |
+      | Delay      | 1000                 |
     And I press "Update element"
     And I click on "Content Designer" "link"
+    Then I wait "5" seconds
+    And I scroll to the bottom of page
     Then I should see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
-    Then ".chapter-elements-list li.element-item .general-options[data-entranceanimation='{\"animation\":\"slideInRight\",\"duration\":\"fast\",\"delay\":\"1000\"}']" "css_element" should exist
+    Then ".chapter-elements-list li.element-heading .general-options[data-entranceanimation='{\"animation\":\"slideInRight\",\"duration\":\"fast\",\"delay\":\"1000\"}']" "css_element" should exist

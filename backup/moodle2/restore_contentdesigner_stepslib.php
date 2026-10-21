@@ -22,8 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_contentdesigner\editor;
-
 /**
  * Define all the restore steps that will be used by the restore_contentdesigner_activity_task
  */
@@ -45,18 +43,36 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
         $paths[] = $element;
 
         // Restore elements.
-        $elements = new restore_path_element('contentdesigner_elements',
-        '/activity/contentdesigner/elements/contentdesigner_elements');
+        $elements = new restore_path_element(
+            'contentdesigner_elements',
+            '/activity/contentdesigner/elements/contentdesigner_elements'
+        );
         $paths[] = $elements;
+
+        if ($userinfo) {
+            $paths[] = new restore_path_element(
+                'contentdesigner_completion',
+                '/activity/contentdesigner/completion/contentdesigner_completion'
+            );
+        }
 
         $this->add_subplugin_structure('cdelement', $element);
 
-        $paths[] = new restore_path_element('contentdesigner_content',
-        '/activity/contentdesigner/content/contentdesigner_content');
+        $paths[] = new restore_path_element(
+            'contentdesigner_content',
+            '/activity/contentdesigner/content/contentdesigner_content'
+        );
 
         // Restor general options of element instance.
-        $paths[] = new restore_path_element('contentdesigner_options',
-        '/activity/contentdesigner/contentdesigneropitons/contentdesigner_options');
+        $paths[] = new restore_path_element(
+            'contentdesigner_options',
+            '/activity/contentdesigner/contentdesigneropitons/contentdesigner_options'
+        );
+
+        $paths[] = new restore_path_element(
+            'contentdesigner_attempts',
+            '/activity/contentdesigner/attempts/contentdesigner_attempts'
+        );
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
@@ -132,6 +148,24 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
     }
 
     /**
+     * Process contentdesigner attempts records.
+     *
+     * @param object $data The data in object form
+     * @return void
+     */
+    protected function process_contentdesigner_attempts($data) {
+        global $DB;
+
+        $data = (object) $data;
+
+        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->timemodified = time();
+        // Insert the general options for the element instance.
+        $DB->insert_record('contentdesigner_attempts', $data);
+    }
+
+    /**
      * Process contentdesigner general options records.
      *
      * @param object $data The data in object form
@@ -153,6 +187,25 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
         $data->timemodified = time();
         // Insert the general options for the element instance.
         $DB->insert_record('contentdesigner_options', $data);
+    }
+
+    /**
+     * Process contentdesigner users completions.
+     *
+     * @param object $data The data in object form
+     * @return void
+     */
+    protected function process_contentdesigner_completion($data) {
+        global $DB;
+
+        $data = (object) $data;
+
+        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $DB->insert_record('contentdesigner_completion', $data);
+        // No need to save this mapping as far as nothing depend on it
+        // (child paths, file areas nor links decoder).
     }
 
     /**

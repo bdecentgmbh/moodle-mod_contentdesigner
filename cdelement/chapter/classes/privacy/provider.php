@@ -39,6 +39,7 @@ use core_privacy\local\request\approved_contextlist;
  */
 class provider implements
     \core_privacy\local\metadata\provider,
+        // This plugin is capable of determining which users have data within it.
     \core_privacy\local\request\core_userlist_provider,
     \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
@@ -56,7 +57,12 @@ class provider implements
             'completion' => 'privacy:metadata:completion:completion',
             'timecreated' => 'privacy:metadata:completion:timecreated',
         ];
-        $collection->add_database_table('cdelement_chapter_completion', $completionmetadata, 'privacy:metadata:chaptercompletion');
+        $collection->add_database_table(
+            'cdelement_chapter_completion',
+            $completionmetadata,
+            'privacy:metadata:chaptercompletion'
+        );
+
         return $collection;
     }
 
@@ -83,6 +89,8 @@ class provider implements
             'userid' => $user->id,
         ];
         $completions = $DB->get_records_sql($sql, $params + $inparams);
+        $data = [];
+
         foreach ($completions as $chapterid => $completion) {
             $data[$chapterid] = (object) [
                 'completed' => (($completion->completion == 1) ? get_string('yes') : get_string('no')),
@@ -107,7 +115,7 @@ class provider implements
         }
 
         $params = [
-            'instanceid'    => $context->instanceid,
+            'instanceid' => $context->instanceid,
         ];
 
         // Discussion authors.
@@ -134,8 +142,11 @@ class provider implements
         $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $contentdesigner->id]);
         $ids = array_column($list, 'id');
         [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_chapter_completion',
-        "userid {$userinsql} AND instance $insql", $userinparams + $inparams);
+        $DB->delete_records_select(
+            'cdelement_chapter_completion',
+            "userid {$userinsql} AND instance $insql",
+            $userinparams + $inparams
+        );
     }
 
     /**
@@ -156,8 +167,11 @@ class provider implements
             $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $instanceid]);
             $ids = array_column($list, 'id');
             [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select('cdelement_chapter_completion', "userid=:userid AND instance $insql", [
-            'userid' => $userid] + $inparams);
+            $DB->delete_records_select(
+                'cdelement_chapter_completion',
+                "userid=:userid AND instance $insql",
+                ['userid' => $userid] + $inparams
+            );
         }
     }
 

@@ -28,7 +28,6 @@ namespace mod_contentdesigner\search;
  * Search area for mod_contentdesigner activities.
  */
 class activity extends \core_search\base_activity {
-
     /**
      * Returns true if this area uses file indexing.
      *

@@ -99,9 +99,8 @@ Feature: Check content designer chapter element bookmark tool support
     Then I follow "Profile" in the user menu
     And I click on "Bookmarks" "link"
     Then I should see "C1: Demo content | Acceptance test site | First chapter" in the ".course-item" "css_element"
-    Then I should see "View Chapter" in the ".button-block" "css_element"
     Then I should see "Course 1 / General" in the ".category-item" "css_element"
-    And I click on "View Chapter" "button" in the ".button-block" "css_element"
+    And I am on the "Demo content" "contentdesigner activity" page
     Then I should see "Demo content"
     Then I should see "First chapter"
     Then I should see "Bookmarked" in the ".toolbar-block" "css_element"
@@ -110,7 +109,7 @@ Feature: Check content designer chapter element bookmark tool support
     Then I should see "This chapter bookmark removed and you can view the bookmarks under profile / learning tools / bookmarks."
     Then I follow "Profile" in the user menu
     And I click on "Bookmarks" "link"
-    Then I should not see "C1: Demo content"
-    Then I should not see "C1: Demo content | Acceptance test site | First chapter"
-    Then I should not see "View Chapter"
+    Then I should not see "First chapter: C1: Demo content"
+    Then I should not see "Course 1 / General"
+    Then I should not see "View Activity"
     And I log out

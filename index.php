@@ -32,14 +32,15 @@ $PAGE->set_pagelayout('incourse');
 
 // Trigger instances list viewed event.
 $event = \mod_contentdesigner\event\course_module_instance_list_viewed::create(
-['context' => \context_course::instance($course->id)]);
+    ['context' => \context_course::instance($course->id)]
+);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$strcontentdesigner         = get_string('modulename', 'contentdesigner');
-$strcontentdesigners        = get_string('modulenameplural', 'contentdesigner');
-$strname         = get_string('name');
-$strintro        = get_string('moduleintro');
+$strcontentdesigner = get_string('modulename', 'contentdesigner');
+$strcontentdesigners = get_string('modulenameplural', 'contentdesigner');
+$strname  = get_string('name');
+$strintro = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/contentdesigner/index.php', ['id' => $id]);

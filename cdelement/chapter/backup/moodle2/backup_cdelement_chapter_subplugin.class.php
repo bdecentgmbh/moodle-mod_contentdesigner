@@ -38,7 +38,7 @@ class backup_cdelement_chapter_subplugin extends backup_subplugin {
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
         $subpluginelement = new backup_nested_element('cdelement_chapter', ['id'], [
-            'contentdesignerid', 'title', 'visible', 'learningtools', 'contents', 'position', 'titlestatus',
+            'contentdesignerid', 'title', 'visible', 'learningtools', 'contents', 'position', 'titlestatus', 'completionmode',
             'timecreated', 'timemodified' ]);
 
         $chaptercompletion = new backup_nested_element('elementchapter_completion');

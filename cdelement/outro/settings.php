@@ -40,6 +40,7 @@ $options = [
     outro::OUTRO_BUTTON_NEXT => get_string('outro:btnnext', 'mod_contentdesigner'),
     outro::OUTRO_BUTTON_BACKTOCOURSE => get_string('outro:btnbacktocourse', 'mod_contentdesigner'),
     outro::OUTRO_BUTTON_BACKTOSECTION => get_string('outro:btnbacktosection', 'mod_contentdesigner'),
+    outro::OUTRO_BUTTON_FINISHATTEMPT => get_string('outro:btnfinishattempt', 'mod_contentdesigner'),
 ];
 $name = 'cdelement_outro/primarybutton';
 $title = get_string('primarybutton', 'mod_contentdesigner');

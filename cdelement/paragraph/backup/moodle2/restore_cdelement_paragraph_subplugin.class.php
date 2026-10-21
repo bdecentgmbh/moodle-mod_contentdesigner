@@ -58,7 +58,6 @@ class restore_cdelement_paragraph_subplugin extends restore_subplugin {
         // The mapping is set in the restore for the paragraph element instance.
         $newinstance = $DB->insert_record('cdelement_paragraph', $data);
         $this->set_mapping('paragraph_instanceid', $oldinstance, $newinstance, true);
-
         $this->add_related_files('mod_contentdesigner', 'paragraphelementbg', 'paragraph_instanceid', null, $oldinstance);
     }
 }

@@ -34,3 +34,17 @@ $options = [
 ];
 $setting = new admin_setting_configselect($name, $title, $description, 0, $options);
 $page->add($setting);
+
+// H5p save state.
+$name = 'cdelement_h5p/enablesavestate';
+$title = get_string('enablesavestate', 'mod_contentdesigner');
+$description = get_string('enablesavestate_help', 'mod_contentdesigner');
+$setting = new admin_setting_configcheckbox($name, $title, $description, 1);
+$page->add($setting);
+
+// Save state frequency.
+$name = 'cdelement_h5p/savestatefreq';
+$title = get_string('savestatefreq', 'mod_contentdesigner');
+$description = get_string('savestatefreq_help', 'mod_contentdesigner');
+$setting = new admin_setting_configtext($name, $title, $description, 60);
+$page->add($setting);

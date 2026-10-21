@@ -14,9 +14,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Provides actions for the content designer editor, including update, edit, and move element functionalities.
+ * Initializes event listeners and manages chapter completion and progress updates
+ * for the content designer module. Handles user interactions such as completing
+ * chapters and updating the progress bar. Supports both standard and popup formats.
+ * Utilizes AJAX calls to update chapter completion status and refreshes content
+ * accordingly. Ensures sticky progress bar behavior during scrolling.
  *
- * @module mod_contentdesigner/editor
+ * @module cdelement_chapter/chapter
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,6 +28,7 @@
 define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
     'core/fragment', 'core/templates', 'core/notification', 'core/loadingicon', 'core/modal'],
     function($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
+
         var contextID;
 
         var cmID;
@@ -45,6 +50,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 var addElement = e.target.closest('.contentdesigner-addelement');
                 var elementAction = e.target.closest(".element-item .element-actions .action-item");
                 var moduleElement = e.target.closest("div.element-item");
+
                 if (elementAction && elementAction != undefined
                     && moduleElement && moduleElement != undefined) {
                     var action = elementAction.getAttribute('data-action');
@@ -73,7 +79,6 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                     var chapter = addElement.dataset.chapter;
                     buildAddElementModal(position, chapter);
                 }
-
             });
         };
 
@@ -227,12 +232,13 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                     {key: 'deletechecktype', component: 'mod_contentdesigner', param: plugindata},
                     {key: 'yes'},
                     {key: 'no'}
-                ]).done(function (s) {
+                ]).done(function(s) {
                     Notification.confirm(s[0], s[1], s[2], s[3], onconfirm);
                 }
                 );
             });
         };
+
 
         /**
          * Load the elements list modal to insert new element
@@ -245,7 +251,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
             var params = {cmid: cmID};
             var promise;
             if ((typeof Modal.registerModalType !== 'undefined')) {
-                promise = Modal.create({
+                var promise = Modal.create({
                     type: ModalFactory.TYPE,
                     title: Str.get_string('addelement', 'contentdesigner'),
                     body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),

@@ -27,8 +27,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/notification', 'mod_contentdesigner/anime'],
-    function($, Fragment, Templates, LoadingIcon, Notification, anime) {
+define(['jquery', 'core/fragment', 'core/templates', 'core/ajax', 'core/loadingicon', 'mod_contentdesigner/anime',
+    'core/notification'], function($, Fragment, Templates, AJAX, LoadingIcon, anime, Notification) {
 
         /**
          * Selectors.
@@ -51,13 +51,15 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
          * @param {int} cmID
          * @param {int} contextID
          * @param {int} contentdesignerID
+         * @param {int} attemptID
          * @returns {object}
          */
-        function contentDesignerElementsData(cmID, contextID, contentdesignerID) {
+        function contentDesignerElementsData(cmID, contextID, contentdesignerID, attemptID) {
             var data = {
                 cmid: cmID,
                 contextid: contextID,
-                contentdesignerid: contentdesignerID
+                contentdesignerid: contentdesignerID,
+                attemptid: attemptID,
             };
             return data;
         }
@@ -67,6 +69,8 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
             var cmdata = (cmdetails) ? JSON.parse(cmdetails) : '';
             return cmdata || contentDesignerElementsData();
         };
+
+        var completionupdated = false;
 
         let animations = {};
 
@@ -80,7 +84,8 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
 
         const refreshContent = () => {
             var params = {
-                cmid: contentDesignerData().cmid
+                cmid: contentDesignerData().cmid,
+                attemptid: contentDesignerData().attemptid,
             };
             var promise = Fragment.loadFragment('mod_contentdesigner', 'load_elements', contentDesignerData().contextid, params);
             promise.done((html, js) => {
@@ -90,6 +95,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 var filterChapter = [];
 
                 chapters.forEach((chapter) => {
+
                     var elementSelector = 'li.element-item[data-instanceid="' + chapter.dataset.instanceid + '"]';
                     elementSelector += '[data-elementshortname="' + chapter.dataset.elementshortname + '"]';
                     let chapterSelector = 'li.chapters-list[data-id="' + chapter.dataset.id + '"]';
@@ -106,8 +112,16 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
 
                             if (!document.querySelector(selector)
                                 && document.querySelector(chapterSelector + ' .chapter-elements-list') !== undefined) {
-                                document.querySelector(chapterSelector + ' .chapter-elements-list').appendChild(element);
+
+                                Templates.appendNodeContents(chapterSelector + ' .chapter-elements-list', element, '');
+
                             } else if (elementindocument !== null && elementindocument.dataset.replaceonrefresh == true) {
+                                if (elementindocument.dataset.elementshortname == 'tableofcontents') {
+                                    var selector = 'li.element-item[data-instanceid="' + dataset.instanceid + '"]';
+                                    selector += '[data-elementshortname="' + dataset.elementshortname + '"]';
+                                    elementindocument = document.querySelector(selector);
+                                }
+
                                 Templates.replaceNode(elementindocument, element, '');
                             }
                         });
@@ -117,6 +131,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                         if (chapter.querySelector('.chapter-title') !== null) {
                             chapter.querySelector('.chapter-title').remove();
                         }
+
                         if (chapter.children.length > 0 && document.querySelector(chapterSelector) != undefined) {
                             removeMarkBtn(chapterSelector);
                             document.querySelector(chapterSelector).append(chapter.children[0]);
@@ -151,7 +166,8 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
         const loadNextChapters = function(currentChapter) {
             var params = {
                 cmid: contentDesignerData().cmid,
-                chapter: currentChapter
+                chapter: currentChapter,
+                attemptid: contentDesignerData().attemptid,
             };
             var promise = Fragment.loadFragment('mod_contentdesigner', 'load_next_chapters',
                 contentDesignerData().contextid, params);
@@ -171,23 +187,39 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 });
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
                 animateElements();
-            }).catch((error) => Notification.exception(error));
+            }).catch();
 
             LoadingIcon.addIconToContainerRemoveOnCompletion(button(), promise);
         };
 
-        const loadNextElements = function (currentElement) {
+        const loadNextElements = function(currentElement) {
 
             Fragment.loadFragment(
                 'mod_contentdesigner', SELECTORS.fragments.nextContents,
                 contentDesignerData().contextid, {contentid: currentElement.dataset.contentid}
             ).done((html, js) => {
-
                 const selector = currentElement.parentNode.parentNode;
-
                 Templates.appendNodeContents(selector, html, js);
             });
         };
+
+        const updateCompletion = (completionmethod) => {
+            // Update the compeltion once in the page load.
+            var promises = AJAX.call([{
+                methodname: 'mod_contentdesigner_update_completion',
+                args: {
+                    contentdesignerid: contentDesignerData().contentdesignerid,
+                    method: completionmethod,
+                }
+            }]);
+
+            promises[0].done(() => {
+                if (!completionupdated) {
+                    completionupdated = true;
+                }
+            }).catch();
+        };
+
 
         /**
          * Verify the given element in the viewport.
@@ -376,6 +408,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
             contentDesignerData: contentDesignerData,
             refreshContent: refreshContent,
             loadNextChapters: loadNextChapters,
+            updateCompletion: updateCompletion,
             inView: inView,
             animateElements: animateElements,
             courseContent: courseContent,

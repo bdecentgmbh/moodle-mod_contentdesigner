@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element richtext upgrade code defined.
+ * Upgrade script for Moodle.
  *
- * @package   cdelement_richtext
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @package    cdelement_richtext
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,20 +26,31 @@
  * Handles the upgrade process for the cdelement_richtext plugin in Moodle.
  *
  * @param int $oldversion The version of the plugin before the upgrade.
+ * @param bool $rename whether to rename the existing table or not.
  * @return bool True on successful upgrade.
  */
-function xmldb_cdelement_richtext_upgrade($oldversion) {
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
+function xmldb_cdelement_richtext_upgrade($oldversion, $rename = false) {
+    global $DB;
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
+    if ($rename) {
+        // Rename the table element_richtext to cdelement_richtext.
+        $table = new xmldb_table('element_richtext');
+        $cdelementtable = new xmldb_table('cdelement_richtext');
+        if ($dbman->table_exists($table)) {
+            if (!$dbman->table_exists($cdelementtable)) {
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_richtext');
+            } else {
+                // Drop the existing table.
+                $dbman->drop_table($cdelementtable);
+                // Rename the existing table.
+                $dbman->rename_table($table, 'cdelement_richtext');
+            }
+        }
+        // Rename admin configuration settings.
+        mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_richtext', 'cdelement_richtext', ['content']);
+    }
     return true;
 }

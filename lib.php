@@ -21,16 +21,43 @@
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 use mod_contentdesigner\editor;
 require_once($CFG->dirroot . '/mod/contentdesigner/classes/editor.php');
+require_once($CFG->dirroot . '/question/engine/lib.php');
+require_once($CFG->dirroot . "/mod/contentdesigner/locallib.php");
 
 /**
  * Chapter element shortname.
  */
 define('CONTENTDESIGNER_CHAPTER', 'chapter');
+
+/**
+ * Content designer navigation method: Sequential.
+ */
+define('CONTENTDESIGNER_NAVIGATION_SEQUENTIAL', 0);
+
+/**
+ * Content designer navigation method: Free.
+ */
+define('CONTENTDESIGNER_NAVIGATION_FREE', 1);
+
+/**#@+
+ * Option controlling what options are offered on the quiz settings form.
+ */
+define('CONTENTDESIGNER_MAX_ATTEMPT_OPTION', 10);
+
+/**#@+
+ * Options determining how the grades from individual attempts are combined to give
+ * the overall grade for a user
+ */
+define('CONTENTDESIGNER_GRADEHIGHEST', '1');
+define('CONTENTDESIGNER_GRADEAVERAGE', '2');
+define('CONTENTDESIGNER_ATTEMPTFIRST', '3');
+define('CONTENTDESIGNER_ATTEMPTLAST', '4');
+
+require_once($CFG->libdir . '/gradelib.php');
 
 /**
  * Add contentdesigner instance.
@@ -39,11 +66,20 @@ define('CONTENTDESIGNER_CHAPTER', 'chapter');
  * @return int instance id
  */
 function contentdesigner_add_instance($data, $mform = null) {
-    global$DB;
+    global $DB;
     contentdesigner_process_pre_save($data);
     $moduleid = $DB->insert_record('contentdesigner', $data);
+    $data->id = $moduleid;
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $moduleid, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'contentdesigner',
+        $moduleid,
+        $completiontimeexpected
+    );
+    if (isset($data->enablegrading) && $data->enablegrading) {
+        contentdesigner_grade_item_update($data);
+    }
     return $moduleid;
 }
 
@@ -62,6 +98,17 @@ function contentdesigner_process_pre_save(&$data) {
 }
 
 /**
+ * Delete all attempts for a content designer.
+ *
+ * @param int $contentdesignerid
+ * @return void
+ */
+function contentdesigner_delete_attempts($contentdesignerid) {
+    global $DB;
+    $DB->delete_records('contentdesigner_attempts', ['contentdesignerid' => $contentdesignerid]);
+}
+
+/**
  * Update page instance.
  *
  * @param stdClass $data
@@ -73,15 +120,34 @@ function contentdesigner_update_instance($data, $mform) {
     $data->id = $data->instance;
     contentdesigner_process_pre_save($data);
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $data->id, $completiontimeexpected);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'contentdesigner',
+        $data->id,
+        $completiontimeexpected
+    );
+    $data->completionendreach = $data->completionendreach ?? 0;
+    $data->completionmandatory = $data->completionmandatory ?? 0;
+
+    // Delete attempts based on the config change options.
+    if ($data->enablegrading != $DB->get_field('contentdesigner', 'enablegrading', ['id' => $data->id])) {
+        contentdesigner_delete_attempts($data->id);
+    }
+
     $DB->update_record('contentdesigner', $data);
+    if ($data->enablegrading) {
+        contentdesigner_grade_item_update($data);
+    } else {
+        // Cleanup gradebook.
+        contentdesigner_grade_item_delete($data);
+    }
     return true;
 }
 
 /**
  * Delete page instance.
  * @param int $id
- * @return bool true
+ * @return bool
  */
 function contentdesigner_delete_instance($id) {
     global $DB;
@@ -93,7 +159,8 @@ function contentdesigner_delete_instance($id) {
 
     \core_completion\api::update_completion_date_event($cm->id, 'contentdesigner', $record->id, null);
     $DB->delete_records('contentdesigner', ['id' => $record->id]);
-
+    $DB->delete_records('contentdesigner_completion', ['contentdesignerid' => $record->id]);
+    $DB->delete_records('contentdesigner_attempts', ['contentdesignerid' => $record->id]);
     $contents = $DB->get_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
     foreach ($contents as $content) {
         $elementobj = editor::get_element($content->element, $cm->id);
@@ -116,9 +183,33 @@ function contentdesigner_delete_instance($id) {
         }
     }
 
-    $DB->delete_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
+    // Cleanup gradebook.
+    contentdesigner_grade_item_delete($record);
 
+    $DB->delete_records('contentdesigner_content', ['contentdesignerid' => $record->id]);
     return true;
+}
+
+/**
+ * Delete grade item for given data
+ *
+ * @category grade
+ * @param object $data object
+ * @return object grade_item
+ */
+function contentdesigner_grade_item_delete($data) {
+    global $CFG;
+    require_once($CFG->libdir . '/gradelib.php');
+    return grade_update(
+        'mod/contentdesigner',
+        $data->course,
+        'mod',
+        'contentdesigner',
+        $data->id,
+        0,
+        null,
+        ['deleted' => 1]
+    );
 }
 
 /**
@@ -143,11 +234,11 @@ function contentdesigner_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
         case FEATURE_COMPLETION_HAS_RULES:
-            return false;
+            return true;
         case FEATURE_GRADE_HAS_GRADE:
-            return false;
+            return true;
         case FEATURE_GRADE_OUTCOMES:
-            return false;
+            return true;
         case FEATURE_BACKUP_MOODLE2:
             return true;
         case FEATURE_SHOW_DESCRIPTION:
@@ -155,6 +246,86 @@ function contentdesigner_supports($feature) {
         default:
             return null;
     }
+}
+
+/**
+ * Update grade item for given contentdesigner
+ *
+ * @param stdClass $contentdesigner instance object with extra cmidnumber
+ * @param mixed $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @return int 0 if ok, error code otherwise
+ */
+function contentdesigner_grade_item_update($contentdesigner, $grades = null) {
+    global $CFG;
+    require_once($CFG->libdir . '/gradelib.php');
+
+    $params = ['itemname' => $contentdesigner->name, 'idnumber' => $contentdesigner->cmidnumber];
+
+    if ($contentdesigner->grade > 0) {
+        $params['gradetype'] = GRADE_TYPE_VALUE;
+        $params['grademax']  = $contentdesigner->grade;
+        $params['grademin']  = 0;
+    } else if ($contentdesigner->grade < 0) {
+        $params['gradetype'] = GRADE_TYPE_SCALE;
+        $params['scaleid']   = -$contentdesigner->grade;
+    } else {
+        $params['gradetype'] = GRADE_TYPE_NONE;
+    }
+
+    if ($grades == 'reset') {
+        $params['reset'] = true;
+        $grades = null;
+    }
+
+    return grade_update(
+        'mod/contentdesigner',
+        $contentdesigner->course,
+        'mod',
+        'contentdesigner',
+        $contentdesigner->id,
+        0,
+        $grades,
+        $params
+    );
+}
+
+/**
+ * Update grades for all attempts by a user.
+ *
+ * @param object $contentdesigner The content designer object
+ * @param int $userid The ID of the user
+ */
+function contentdesigner_update_grades($contentdesigner, $userid) {
+    $grades = contentdesigner_get_user_grades($contentdesigner, $userid);
+    grade_update(
+        'mod/contentdesigner',
+        $contentdesigner->course,
+        'mod',
+        'contentdesigner',
+        $contentdesigner->id,
+        0,
+        $grades,
+        ['itemname' => $contentdesigner->name]
+    );
+}
+
+/**
+ * Get grades for a user in a content designer activity.
+ *
+ * @param object $contentdesigner The content designer object
+ * @param int $userid The ID of the user
+ * @return array An array of grade objects
+ */
+function contentdesigner_get_user_grades($contentdesigner, $userid) {
+    $grades = [];
+    $attempts = contentdesigner_get_user_attempts($contentdesigner->id, $userid);
+    if (!empty($attempts)) {
+        $grade = new stdClass();
+        $grade->userid = $userid;
+        $grade->rawgrade = contentdesigner_calculate_final_grade($contentdesigner, $attempts);
+        $grades[$userid] = $grade;
+    }
+    return $grades;
 }
 
 /**
@@ -290,7 +461,7 @@ function contentdesigner_output_fragment_get_elements_list($args) {
  * @return string
  */
 function contentdesigner_output_fragment_insert_element($args) {
-    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+     [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $editor = new mod_contentdesigner\editor($cm, $course);
     $chapter = $args['chapter'] ?? 0;
     return $editor->insert_element($args['elementID'], $chapter);
@@ -303,8 +474,18 @@ function contentdesigner_output_fragment_insert_element($args) {
  * @return string
  */
 function contentdesigner_output_fragment_load_elements($args) {
-    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
-    $editor = new mod_contentdesigner\editor($cm, $course);
+    global $DB;
+     [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+
+    if ($args['attemptid'] != null) {
+        $attempt = $DB->get_record('contentdesigner_attempts', ['id' => $args['attemptid']], '*', MUST_EXIST);
+    } else {
+        $attempt = null;
+    }
+
+    $editor = new mod_contentdesigner\editor($cm, $course, $attempt);
+    $editor->initiate_js();
+
     return $editor->render_elements();
 }
 
@@ -312,12 +493,14 @@ function contentdesigner_output_fragment_load_elements($args) {
  * Prepare the next available chapters to users view after the chapter completed.
  *
  * @param array $args
- * @return bool|string
+ * @return string|bool
  */
 function contentdesigner_output_fragment_load_next_chapters($args) {
-    [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
+    global $DB;
+     [$course, $cm] = get_course_and_cm_from_cmid($args['cmid'], 'contentdesigner');
     $completedchapter = $args['chapter'];
-    $editor = new mod_contentdesigner\editor($cm, $course);
+    $attempt = $DB->get_record('contentdesigner_attempts', ['id' => $args['attemptid']], '*', MUST_EXIST);
+    $editor = new mod_contentdesigner\editor($cm, $course, $attempt);
     if ($editor->chapter->is_chaptercompleted($completedchapter)) {
         return $editor->render_elements($completedchapter);
     }
@@ -331,6 +514,7 @@ function contentdesigner_output_fragment_load_next_chapters($args) {
  * @return string|bool
  */
 function contentdesigner_output_fragment_edit_element($args) {
+    global $DB;
     $elementid = $args['elementid'];
     $instanceid = $args['instanceid'];
     $cmid = $args['cmid'];
@@ -443,8 +627,19 @@ function contentdesigner_extend_settings_navigation(settings_navigation $setting
     if (has_capability('mod/contentdesigner:viewcontenteditor', $PAGE->cm->context)) {
         $url = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $PAGE->cm->id, 'sesskey' => sesskey()]);
         $node->add(
-            get_string('contenteditor', 'mod_contentdesigner'), $url, navigation_node::TYPE_SETTING, null, 'editorelement', null
+            get_string('contenteditor', 'mod_contentdesigner'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            'editorelement',
+            null
         );
+    }
+
+    // Actvity report table page.
+    if (has_capability('mod/contentdesigner:addinstance', $PAGE->cm->context)) {
+        $url = new moodle_url('/mod/contentdesigner/cdaddon/report/report.php', ['id' => $PAGE->cm->id]);
+        $node->add(get_string('pluginname', 'cdaddon_report'), $url);
     }
 }
 
@@ -466,7 +661,7 @@ function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $f
         return false;
     }
     $areas = contentdesigner_get_element_pluginnames();
-    $areas = array_map(function($area) {
+    $areas = array_map(function ($area) {
         return $area . "elementbg";
     }, $areas);
 
@@ -500,7 +695,7 @@ function contentdesigner_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
-    $fields = 'id, name, intro, introformat, timecreated, timemodified';
+    $fields = 'id, name, intro, introformat, completionendreach, navigation, completionmandatory, timecreated, timemodified';
     if (!$contentdesigner = $DB->get_record('contentdesigner', $dbparams, $fields)) {
         return false;
     }
@@ -513,5 +708,135 @@ function contentdesigner_get_coursemodule_info($coursemodule) {
         $result->content = format_module_intro('contentdesigner', $contentdesigner, $coursemodule->id, false);
     }
 
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionendreach'] = $contentdesigner->completionendreach;
+        $result->customdata['customcompletionrules']['completionmandatory'] = $contentdesigner->completionmandatory;
+    }
     return $result;
+}
+
+/**
+ * Grade options for the content designer activity.
+ * @return array
+ */
+function contentdesigner_get_grading_options() {
+    return [
+        CONTENTDESIGNER_GRADEHIGHEST => get_string('gradehighest', 'contentdesigner'),
+        CONTENTDESIGNER_GRADEAVERAGE => get_string('gradeaverage', 'contentdesigner'),
+        CONTENTDESIGNER_ATTEMPTFIRST => get_string('attemptfirst', 'contentdesigner'),
+        CONTENTDESIGNER_ATTEMPTLAST  => get_string('attemptlast', 'contentdesigner'),
+    ];
+}
+
+/**
+ * Update the grade for a user in a content designer activity.
+ *
+ * @param int $contentdesignerid The ID of the content designer activity
+ * @param int $userid The ID of the user
+ */
+function contentdesigner_update_grade($contentdesignerid, $userid) {
+    global $CFG;
+    require_once($CFG->libdir . '/gradelib.php');
+
+    $grades = contentdesigner_get_user_grades($contentdesigner, $userid);
+
+    if (!empty($grades)) {
+        contentdesigner_grade_item_update($contentdesigner, $grades);
+    } else if ($nullifnone) {
+        $grade = new stdClass();
+        $grade->userid = $userid;
+        $grade->rawgrade = null;
+        contentdesigner_grade_item_update($contentdesigner, $grade);
+    } else {
+        contentdesigner_grade_item_update($contentdesigner);
+    }
+}
+
+/**
+ * Get user attempts for a content designer activity.
+ *
+ * @param int $contentdesignerid The ID of the content designer activity
+ * @param int $userid The ID of the user
+ * @return array An array of attempt objects
+ */
+function contentdesigner_get_user_attempts($contentdesignerid, $userid) {
+    global $DB;
+    return $DB->get_records(
+        'contentdesigner_attempts',
+        ['contentdesignerid' => $contentdesignerid, 'userid' => $userid],
+        'timestart ASC'
+    );
+}
+
+/**
+ * Information message for the content designer activity.
+ *
+ * @param object $contentdesigner The content designer object
+ * @param object $gradeitem The grade item object
+ *
+ * @return string
+ */
+function contentdesigner_get_infomessages($contentdesigner, $gradeitem) {
+    $messages = [];
+    if ($contentdesigner->attemptsallowed != 1) {
+        $messages[] = get_string(
+            'gradingmethod',
+            'contentdesigner',
+            contentdesigner_get_grading_option_name($contentdesigner->grademethod)
+        );
+    }
+
+    if ($contentdesigner->attemptsallowed > 0) {
+        $messages[] = get_string('attemptsallowedn', 'contentdesigner', $contentdesigner->attemptsallowed);
+    }
+
+    if ($gradeitem && grade_floats_different($gradeitem->gradepass, 0)) {
+        $a = new stdClass();
+        $a->grade = contentdesigner_format_grade($gradeitem->gradepass);
+        $a->maxgrade = contentdesigner_format_grade($contentdesigner->grade);
+        $messages[] = get_string('gradetopassoutof', 'contentdesigner', $a);
+    }
+
+    $output = '';
+    foreach ($messages as $message) {
+        $output .= \html_writer::tag('p', $message, ['class' => 'text-start']);
+    }
+    return $output;
+}
+
+/**
+ * Get the grading option name for a content designer activity.
+ *
+ * @param int $option one of the values QUIZ_GRADEHIGHEST, QUIZ_GRADEAVERAGE,
+ *      QUIZ_ATTEMPTFIRST or QUIZ_ATTEMPTLAST.
+ * @return array lang string for that option.
+ */
+function contentdesigner_get_grading_option_name($option) {
+    $strings = contentdesigner_get_grading_options();
+    return $strings[$option];
+}
+
+/**
+ * Round a grade to the correct number of decimal places, and format it for display.
+ *
+ * @param float|null $grade The grade to round and display (or null meaning no grade).
+ * @return string
+ */
+function contentdesigner_format_grade($grade) {
+    if (is_null($grade)) {
+        return get_string('notyetgraded', 'contentdesigner');
+    }
+    return format_float($grade, 2);
+}
+
+/**
+ * Get icon mapping for font-awesome.
+ * @return string[]
+ */
+function mod_contentdesigner_get_fontawesome_icon_map() {
+    return [
+        'mod_contentdesigner:f/archive' => 'fa-archive',
+        'mod_contentdesigner:f/active' => 'fa-undo',
+    ];
 }

@@ -23,7 +23,6 @@
  */
 
 use mod_contentdesigner\editor;
-
 /**
  * Define the complete contentdesigner structure for backup, with file and id annotations.
  */
@@ -37,10 +36,14 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
 
         // Define each element separated - table fields.
         $contentdesigner = new backup_nested_element('contentdesigner', ['id'], [
-            'course', 'name', 'intro', 'introformat', 'timecreated',
-            'timemodified']);
+            'course', 'name', 'intro', 'introformat', 'completionendreach', 'navigation', 'completionmandatory', 'timecreated',
+            'timemodified', 'enablegrading', 'autostartattempts', 'grade', 'grademethod', 'attemptsallowed']);
 
         $this->add_subplugin_structure('cdelement', $contentdesigner, true);
+
+        $completion = new backup_nested_element('completion');
+        $contentdesignercompletion = new backup_nested_element('contentdesigner_completion', ['id'], [
+            'contentdesignerid', 'userid', 'completion', 'mandatorycompletion', 'starttime', 'timecreated']);
 
         $elements = new backup_nested_element('elements');
         $contentdesignerelements = new backup_nested_element('contentdesigner_elements', ['id'], [
@@ -55,12 +58,21 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
         $contentdesigneroptions = new backup_nested_element('contentdesigner_options', ['id'], [
             'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'abovegradientbg', 'bgimage', 'belowcolorbg',
             'belowgradientbg', 'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
-            'hidemobile', 'timecreated', 'timemodified',
+            'hidemobile', 'excludeungraded', 'timecreated', 'timemodified',
+        ]);
+
+        $attempts = new backup_nested_element('attempts');
+        $contentdesignerattempts = new backup_nested_element('contentdesigner_attempts', ['id'], [
+            'contentdesignerid', 'userid', 'attempt', 'grade', 'timestart', 'timefinish',
         ]);
 
         // Build the tree.
         $contentdesigner->add_child($elements);
         $elements->add_child($contentdesignerelements);
+
+        // User completion.
+        $contentdesigner->add_child($completion);
+        $completion->add_child($contentdesignercompletion);
 
         $contentdesigner->add_child($content);
         $content->add_child($contentdesignercontent);
@@ -68,17 +80,30 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
         $contentdesigner->add_child($options);
         $options->add_child($contentdesigneroptions);
 
+        $contentdesigner->add_child($attempts);
+        $attempts->add_child($contentdesignerattempts);
+
         // Define sources.
         // Define source to backup.
         $contentdesigner->set_source_table('contentdesigner', ['id' => backup::VAR_ACTIVITYID]);
         $contentdesignerelements->set_source_sql('SELECT * FROM {contentdesigner_elements}', []); // Get all records.
         $contentdesignercontent->set_source_table('contentdesigner_content', ['contentdesignerid' => backup::VAR_PARENTID]);
+        $contentdesignerattempts->set_source_table('contentdesigner_attempts', ['contentdesignerid' => backup::VAR_PARENTID]);
 
         $sql = 'SELECT co.* FROM {contentdesigner_content} cc
         JOIN {contentdesigner_options} co ON co.element=cc.element AND co.instance=cc.instance
         WHERE cc.contentdesignerid=:contentdesignerid';
 
         $contentdesigneroptions->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
+
+        // All the rest of elements only happen if we are including user info.
+        if ($userinfo) {
+            $contentdesignercompletion->set_source_table(
+                'contentdesigner_completion',
+                ['contentdesignerid' => backup::VAR_PARENTID]
+            );
+            $contentdesignercompletion->annotate_ids('user', 'userid');
+        }
 
         // Define file annotations.
         $contentdesigner->annotate_files('mod_contentdesigner', 'intro', null);

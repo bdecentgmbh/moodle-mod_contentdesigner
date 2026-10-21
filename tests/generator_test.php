@@ -44,10 +44,10 @@ final class generator_test extends \advanced_testcase {
         $params = ['course' => $course->id, 'name' => 'One more contentdesigner'];
         $contentdesigner = $this->getDataGenerator()->create_module('contentdesigner', $params);
         $this->assertEquals(2, $DB->count_records('contentdesigner', ['course' => $course->id]));
-        $this->assertEquals(
-            'One more contentdesigner',
-            $DB->get_field_select('contentdesigner',
-            'name', 'id = :id',
+        $this->assertEquals('One more contentdesigner', $DB->get_field_select(
+            'contentdesigner',
+            'name',
+            'id = :id',
             ['id' => $contentdesigner->id]
         ));
     }
