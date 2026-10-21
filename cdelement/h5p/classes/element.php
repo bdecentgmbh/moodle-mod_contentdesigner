@@ -255,11 +255,17 @@ class element extends \mod_contentdesigner\elements {
      */
     public function reset_userdata(int $contentdesignerid): void {
         global $DB;
-        $DB->delete_records_select('cdelement_h5p_completion',
-            'instance IN (SELECT id FROM {cdelement_h5p} WHERE contentdesignerid = ?)', [$contentdesignerid]);
+        $DB->delete_records_select(
+            'cdelement_h5p_completion',
+            'instance IN (SELECT id FROM {cdelement_h5p} WHERE contentdesignerid = ?)',
+            [$contentdesignerid]
+        );
         $registration = $DB->sql_concat("'cdelement_h5p-'", 'h.id');
-        $DB->delete_records_select('cdelement_h5p_xapistates',
-            "registration IN (SELECT $registration FROM {cdelement_h5p} h WHERE h.contentdesignerid = ?)", [$contentdesignerid]);
+        $DB->delete_records_select(
+            'cdelement_h5p_xapistates',
+            "registration IN (SELECT $registration FROM {cdelement_h5p} h WHERE h.contentdesignerid = ?)",
+            [$contentdesignerid]
+        );
     }
 
     /**
@@ -273,8 +279,12 @@ class element extends \mod_contentdesigner\elements {
         if (empty($this->cdattempt)) {
             return null;
         }
-        return $DB->get_record('cdelement_h5p_completion',
-            ['cdattemptid' => $this->cdattempt->id, 'instance' => $instance->id], '*', IGNORE_MULTIPLE) ?: null;
+        return $DB->get_record(
+            'cdelement_h5p_completion',
+            ['cdattemptid' => $this->cdattempt->id, 'instance' => $instance->id],
+            '*',
+            IGNORE_MULTIPLE
+        ) ?: null;
     }
 
     /**

@@ -31,7 +31,6 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
      * Define backup steps structure.
      */
     protected function define_structure() {
-
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated - table fields.
@@ -39,79 +38,83 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
             'course', 'name', 'intro', 'introformat', 'completionendreach', 'navigation', 'completionmandatory', 'timecreated',
             'timemodified', 'enablegrading', 'autostartattempts', 'grade', 'grademethod', 'attemptsallowed']);
 
+        // The attempts come first: the user data of the elements refers to them, so they are mapped on restore before.
+        $attempts = new backup_nested_element('attempts');
+        $contentdesignerattempts = new backup_nested_element('contentdesigner_attempts', ['id'], [
+            'userid', 'attempt', 'grade', 'timestart', 'timefinish',
+        ]);
+        $contentdesigner->add_child($attempts);
+        $attempts->add_child($contentdesignerattempts);
+
         $this->add_subplugin_structure('cdelement', $contentdesigner, true);
 
         $completion = new backup_nested_element('completion');
         $contentdesignercompletion = new backup_nested_element('contentdesigner_completion', ['id'], [
-            'contentdesignerid', 'userid', 'completion', 'mandatorycompletion', 'starttime', 'timecreated']);
+            'userid', 'completion', 'mandatorycompletion', 'starttime', 'timecreated']);
 
         $elements = new backup_nested_element('elements');
         $contentdesignerelements = new backup_nested_element('contentdesigner_elements', ['id'], [
-            'shortname', 'visible', 'timecreated']);
+            'shortname', 'visible', 'timemodified']);
 
         $content = new backup_nested_element('content');
         $contentdesignercontent = new backup_nested_element('contentdesigner_content', ['id'], [
-            'contentdesignerid', 'element', 'instance', 'chapter', 'position', 'timecreated', 'timemodified',
+            'element', 'instance', 'chapter', 'position', 'timecreated', 'timemodified',
         ]);
 
         $options = new backup_nested_element('contentdesigneropitons');
         $contentdesigneroptions = new backup_nested_element('contentdesigner_options', ['id'], [
-            'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'abovegradientbg', 'bgimage', 'belowcolorbg',
-            'belowgradientbg', 'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
-            'hidemobile', 'excludeungraded', 'timecreated', 'timemodified',
-        ]);
-
-        $attempts = new backup_nested_element('attempts');
-        $contentdesignerattempts = new backup_nested_element('contentdesigner_attempts', ['id'], [
-            'contentdesignerid', 'userid', 'attempt', 'grade', 'timestart', 'timefinish',
+            'element', 'instance', 'description', 'descriptionformat', 'showdescription', 'margin', 'padding', 'abovecolorbg',
+            'bgimage', 'belowcolorbg', 'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop',
+            'hidetablet', 'hidemobile', 'excludeungraded', 'timecreated', 'timemodified',
         ]);
 
         // Build the tree.
         $contentdesigner->add_child($elements);
         $elements->add_child($contentdesignerelements);
-
-        // User completion.
         $contentdesigner->add_child($completion);
         $completion->add_child($contentdesignercompletion);
-
         $contentdesigner->add_child($content);
         $content->add_child($contentdesignercontent);
-
         $contentdesigner->add_child($options);
         $options->add_child($contentdesigneroptions);
 
-        $contentdesigner->add_child($attempts);
-        $attempts->add_child($contentdesignerattempts);
-
         // Define sources.
-        // Define source to backup.
         $contentdesigner->set_source_table('contentdesigner', ['id' => backup::VAR_ACTIVITYID]);
-        $contentdesignerelements->set_source_sql('SELECT * FROM {contentdesigner_elements}', []); // Get all records.
+        $contentdesignerelements->set_source_sql('SELECT * FROM {contentdesigner_elements}', []);
         $contentdesignercontent->set_source_table('contentdesigner_content', ['contentdesignerid' => backup::VAR_PARENTID]);
-        $contentdesignerattempts->set_source_table('contentdesigner_attempts', ['contentdesignerid' => backup::VAR_PARENTID]);
+        // General options of all element instances of the activity (also those outside chapters: chapters, outro).
+        $wheres = [];
+        $params = [];
+        foreach (editor::get_element_names() as $i => $name) {
+            $wheres[] = "(ce.shortname = :sn$i
+                          AND co.instance IN (SELECT id FROM {cdelement_$name} WHERE contentdesignerid = :cd$i))";
+            $params["sn$i"] = backup_helper::is_sqlparam($name);
+            $params["cd$i"] = backup::VAR_PARENTID;
+        }
+        if ($wheres) {
+            $sql = 'SELECT co.*
+                      FROM {contentdesigner_options} co
+                      JOIN {contentdesigner_elements} ce ON ce.id = co.element
+                     WHERE ' . implode(' OR ', $wheres);
+            $contentdesigneroptions->set_source_sql($sql, $params);
+        }
 
-        $sql = 'SELECT co.* FROM {contentdesigner_content} cc
-        JOIN {contentdesigner_options} co ON co.element=cc.element AND co.instance=cc.instance
-        WHERE cc.contentdesignerid=:contentdesignerid';
-
-        $contentdesigneroptions->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
-
-        // All the rest of elements only happen if we are including user info.
+        // The progress of the learners only with user data.
         if ($userinfo) {
+            $contentdesignerattempts->set_source_table('contentdesigner_attempts', ['contentdesignerid' => backup::VAR_PARENTID]);
             $contentdesignercompletion->set_source_table(
                 'contentdesigner_completion',
                 ['contentdesignerid' => backup::VAR_PARENTID]
             );
-            $contentdesignercompletion->annotate_ids('user', 'userid');
         }
+        $contentdesignerattempts->annotate_ids('user', 'userid');
+        $contentdesignercompletion->annotate_ids('user', 'userid');
 
         // Define file annotations.
         $contentdesigner->annotate_files('mod_contentdesigner', 'intro', null);
-
-        $plugins = editor::get_elements();
-        foreach ($plugins as $plugin => $version) {
-            $filearea = $plugin . 'elementbg';
-            $contentdesigneroptions->annotate_files('mod_contentdesigner', $filearea, null);
+        foreach (array_keys(editor::get_elements()) as $plugin) {
+            $contentdesigneroptions->annotate_files('mod_contentdesigner', $plugin . 'elementbg', 'instance');
+            $contentdesigneroptions->annotate_files('mod_contentdesigner', $plugin . 'description', 'instance');
         }
 
         // Return the root element (data), wrapped into standard activity structure.

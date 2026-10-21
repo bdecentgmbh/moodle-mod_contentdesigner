@@ -67,6 +67,11 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
         return $contents;
     }
 
+    /**
+     * No links to decode for this activity.
+     *
+     * @return array
+     */
     public static function define_decode_rules() {
         return [];
     }

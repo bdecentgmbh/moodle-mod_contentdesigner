@@ -14,191 +14,211 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy class for requesting user data.
- *
- * @package   cdelement_h5p
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cdelement_h5p\privacy;
 
 use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
-use core_privacy\local\request\approved_userlist;
-use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\writer;
+use mod_contentdesigner\privacy\provider as activity_provider;
 
 /**
- * Privacy class for requesting user data.
+ * Privacy provider of the H5P element: the results of the learners and the saved state of the H5P content.
  *
- * @package   cdelement_h5p
+ * @package    cdelement_h5p
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
     \core_privacy\local\metadata\provider,
-        // This plugin is capable of determining which users have data within it.
-    \core_privacy\local\request\core_userlist_provider,
     \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
-     * List of used data fields summary meta key.
+     * The personal data stored by the element.
      *
      * @param collection $collection
      * @return collection
      */
     public static function get_metadata(collection $collection): collection {
-
-        // Module Completion table fields meta summary.
-        $completionmetadata = [
+        $collection->add_database_table('cdelement_h5p_completion', [
             'instance' => 'privacy:metadata:completion:h5pid',
             'userid' => 'privacy:metadata:completion:userid',
+            'cdattemptid' => 'privacy:metadata:completion:cdattemptid',
             'completion' => 'privacy:metadata:completion:completion',
             'success' => 'privacy:metadata:completion:success',
             'score' => 'privacy:metadata:completion:score',
+            'scoredata' => 'privacy:metadata:completion:scoredata',
+            'duration' => 'privacy:metadata:completion:duration',
+            'response' => 'privacy:metadata:completion:response',
             'timecreated' => 'privacy:metadata:completion:timecreated',
-        ];
-        $collection->add_database_table(
-            'cdelement_h5p_completion',
-            $completionmetadata,
-            'privacy:metadata:h5pcompletion'
-        );
-
+            'timemodified' => 'privacy:metadata:completion:timemodified',
+        ], 'privacy:metadata:h5pcompletion');
+        $collection->add_database_table('cdelement_h5p_xapistates', [
+            'userid' => 'privacy:metadata:xapistates:userid',
+            'stateid' => 'privacy:metadata:xapistates:stateid',
+            'statedata' => 'privacy:metadata:xapistates:statedata',
+            'registration' => 'privacy:metadata:xapistates:registration',
+            'timecreated' => 'privacy:metadata:xapistates:timecreated',
+            'timemodified' => 'privacy:metadata:xapistates:timemodified',
+        ], 'privacy:metadata:xapistates');
         return $collection;
     }
 
     /**
-     * Helper function to export completions.
+     * The SQL of the saved states of the H5P elements of an activity (registration cdelement_h5p-<instance id>).
      *
-     * The array of "completions" is actually the result returned by the SQL in export_user_data.
-     * It is more of a list of sessions. Which is why it needs to be grouped by context id.
-     *
-     * @param array $contentdesignerids Array of completions to export the logs for.
-     * @param stdclass $user User record object.
+     * @return string The join condition between {cdelement_h5p} h and {cdelement_h5p_xapistates} xs.
      */
-    public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
+    protected static function state_join(): string {
         global $DB;
-
-        [$insql, $inparams] = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
-        $sql = "SELECT ec.*, ecc.userid AS userid, ecc.completion AS completion,
-            ecc.timecreated AS timecompleted, ecc.success, ecc.score
-            FROM {cdelement_h5p} ec
-            INNER JOIN {cdelement_h5p_completion} ecc ON ecc.instance = ec.id AND ecc.userid = :userid
-            WHERE ec.contentdesignerid {$insql}
-            ORDER BY ec.id";
-
-        $params = [
-            'userid' => $user->id,
-        ];
-        $completions = $DB->get_records_sql($sql, $params + $inparams);
-        $data = [];
-        foreach ($completions as $h5pid => $completion) {
-            $data[$h5pid] = (object) [
-                'completed' => (($completion->completion == 1) ? get_string('yes') : get_string('no')),
-                'completedtime' => $completion->timecreated ? transform::datetime($completion->timecreated) : '-',
-                'title' => $completion->title,
-                'contentdesignerid' => $completion->contentdesignerid,
-                'success' => ($completion->success == 1) ? get_string('yes') : get_string('no'),
-                'score' => $completion->score,
-            ];
-        }
-        return $data;
+        return 'xs.registration = ' . $DB->sql_concat("'cdelement_h5p-'", 'h.id');
     }
 
     /**
-     * Get the list of users who have data within a context.
+     * Adds the contexts in which the user has results or saved states.
      *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     * @param contextlist $contextlist The list to add the contexts to.
+     * @param int $userid The user.
      */
-    public static function get_users_in_context(userlist $userlist) {
-        $context = $userlist->get_context();
+    public static function add_contexts_for_userid(contextlist $contextlist, int $userid): void {
+        $params = ['contextlevel' => CONTEXT_MODULE, 'modname' => 'contentdesigner', 'userid' => $userid];
+        $base = "SELECT c.id
+                   FROM {context} c
+                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                   JOIN {cdelement_h5p} h ON h.contentdesignerid = cm.instance";
+        $contextlist->add_from_sql(
+            $base . ' JOIN {cdelement_h5p_completion} hc ON hc.instance = h.id WHERE hc.userid = :userid',
+            $params
+        );
+        $contextlist->add_from_sql($base . ' JOIN {cdelement_h5p_xapistates} xs ON ' . self::state_join() .
+            ' WHERE xs.userid = :userid', $params);
+    }
 
-        if (!$context instanceof \context_module) {
+    /**
+     * Adds the users who have results or saved states in the context.
+     *
+     * @param userlist $userlist The userlist, with a module context.
+     */
+    public static function get_users_in_context(userlist $userlist): void {
+        if (!$instanceid = activity_provider::get_instanceid($userlist->get_context())) {
             return;
         }
-
-        $params = [
-            'instanceid'    => $context->instanceid,
-            'modulename'    => 'contentdesigner',
-        ];
-
-        // Discussion authors.
-        $sql = "SELECT ecc.userid
-        FROM {cdelement_h5p} ec
-        JOIN {cdelement_h5p_completion} ecc ON ecc.instance = ec.id
-        WHERE ec.contentdesignerid = :instanceid";
-        $userlist->add_from_sql('userid', $sql, $params);
+        $params = ['instanceid' => $instanceid];
+        $userlist->add_from_sql('userid', 'SELECT hc.userid FROM {cdelement_h5p_completion} hc
+            JOIN {cdelement_h5p} h ON h.id = hc.instance WHERE h.contentdesignerid = :instanceid', $params);
+        $userlist->add_from_sql('userid', 'SELECT xs.userid FROM {cdelement_h5p_xapistates} xs
+            JOIN {cdelement_h5p} h ON ' . self::state_join() . ' WHERE h.contentdesignerid = :instanceid', $params);
     }
 
     /**
-     * Delete multiple users within a single context.
+     * Exports the results and saved states of the user.
      *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     * @param approved_contextlist $contextlist The approved contexts and the user.
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
+    public static function export_element_user_data(approved_contextlist $contextlist): void {
         global $DB;
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if (!$instanceid = activity_provider::get_instanceid($context)) {
+                continue;
+            }
+            $params = ['instanceid' => $instanceid, 'userid' => $userid];
+            $results = $DB->get_records_sql('SELECT hc.*, h.title FROM {cdelement_h5p_completion} hc
+                JOIN {cdelement_h5p} h ON h.id = hc.instance
+                WHERE h.contentdesignerid = :instanceid AND hc.userid = :userid ORDER BY hc.id', $params);
+            $states = $DB->get_records_sql('SELECT xs.*, h.title FROM {cdelement_h5p_xapistates} xs
+                JOIN {cdelement_h5p} h ON ' . self::state_join() . '
+                WHERE h.contentdesignerid = :instanceid AND xs.userid = :userid ORDER BY xs.id', $params);
+            if (!$results && !$states) {
+                continue;
+            }
+            $data = (object) [
+                'results' => array_values(array_map(fn($result) => [
+                    'element' => format_string($result->title ?? '', true, ['context' => $context]),
+                    'attempt' => $result->cdattemptid,
+                    'completed' => transform::yesno($result->completion),
+                    'success' => transform::yesno($result->success),
+                    'score' => $result->score,
+                    'scoredata' => $result->scoredata,
+                    'duration' => $result->duration,
+                    'response' => $result->response,
+                    'timemodified' => transform::datetime($result->timemodified),
+                ], $results)),
+                'savedstates' => array_values(array_map(fn($state) => [
+                    'element' => format_string($state->title ?? '', true, ['context' => $context]),
+                    'stateid' => $state->stateid,
+                    'statedata' => $state->statedata,
+                    'timemodified' => transform::datetime($state->timemodified ?: $state->timecreated),
+                ], $states)),
+            ];
+            writer::with_context($context)->export_data([get_string('pluginname', 'cdelement_h5p')], $data);
+        }
+    }
 
-        $context = $userlist->get_context();
-        $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
-
-        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
-        $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $contentdesigner->id]);
-        $ids = array_column($list, 'id');
-        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
+    /**
+     * Deletes the results and saved states of the users in the activity of a context.
+     *
+     * @param int $instanceid The activity instance id.
+     * @param array $userids The users, empty for all.
+     */
+    protected static function delete_data(int $instanceid, array $userids = []): void {
+        global $DB;
+        $params = [$instanceid];
+        $userselect = '';
+        if ($userids) {
+            [$insql, $userparams] = $DB->get_in_or_equal($userids);
+            $userselect = " AND userid $insql";
+            $params = array_merge($params, $userparams);
+        }
         $DB->delete_records_select(
             'cdelement_h5p_completion',
-            "userid {$userinsql} AND instance $insql ",
-            $userinparams + $inparams
+            'instance IN (SELECT id FROM {cdelement_h5p} WHERE contentdesignerid = ?)' . $userselect,
+            $params
+        );
+        $registration = $DB->sql_concat("'cdelement_h5p-'", 'h.id');
+        $DB->delete_records_select(
+            'cdelement_h5p_xapistates',
+            "registration IN (SELECT $registration FROM {cdelement_h5p} h WHERE h.contentdesignerid = ?)" . $userselect,
+            $params
         );
     }
 
     /**
-     * Delete user completion data for multiple context.
+     * Deletes the data of all users in a context.
      *
-     * @param approved_contextlist $contextlist The approved context and user information to delete information for.
+     * @param \context_module $context The context.
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
-        global $DB;
-
-        if (empty($contextlist->count())) {
-            return;
-        }
-
-        $userid = $contextlist->get_user()->id;
-        foreach ($contextlist->get_contexts() as $context) {
-            $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
-            $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $instanceid]);
-            $ids = array_column($list, 'id');
-            [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select(
-                'cdelement_h5p_completion',
-                "userid=:userid AND instance $insql",
-                ['userid' => $userid] + $inparams
-            );
+    public static function delete_data_for_all_users_in_context(\context_module $context): void {
+        if ($instanceid = activity_provider::get_instanceid($context)) {
+            self::delete_data($instanceid);
         }
     }
 
     /**
-     * Delete all completion data for all users in the specified context.
+     * Deletes the data of the user in the contexts.
      *
-     * @param context $context Context to delete data from.
+     * @param approved_contextlist $contextlist The approved contexts and the user.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
-        global $DB;
-
-        if ($context->contextlevel != CONTEXT_MODULE) {
-            return;
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($instanceid = activity_provider::get_instanceid($context)) {
+                self::delete_data($instanceid, [$contextlist->get_user()->id]);
+            }
         }
+    }
 
-        $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
-        if (!$cm) {
-            return;
+    /**
+     * Deletes the data of the users in the context.
+     *
+     * @param approved_userlist $userlist The approved users and the context.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist): void {
+        $instanceid = activity_provider::get_instanceid($userlist->get_context());
+        if ($instanceid && $userlist->get_userids()) {
+            self::delete_data($instanceid, $userlist->get_userids());
         }
-        $list = $DB->get_records('cdelement_h5p', ['contentdesignerid' => $cm->instance]);
-        $ids = array_column($list, 'id');
-        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_h5p_completion', "instance $insql", $inparams);
     }
 }

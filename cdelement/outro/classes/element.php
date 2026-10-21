@@ -241,8 +241,11 @@ class element extends \mod_contentdesigner\elements {
         if (empty($text) || empty($url)) {
             return '';
         }
-        return html_writer::link($url, format_string($text, true, ['context' => $this->get_context()]),
-            ['class' => $primary ? 'btn btn-primary' : 'btn btn-secondary']);
+        return html_writer::link(
+            $url,
+            format_string($text, true, ['context' => $this->get_context()]),
+            ['class' => $primary ? 'btn btn-primary' : 'btn btn-secondary']
+        );
     }
 
     /**

@@ -77,8 +77,12 @@ class access {
      * @param bool $visibleonly Only a visible instance.
      * @return \stdClass The record of the element table.
      */
-    public static function get_element_instance(elements $element, int $instanceid, int $contentdesignerid,
-            bool $visibleonly = false): \stdClass {
+    public static function get_element_instance(
+        elements $element,
+        int $instanceid,
+        int $contentdesignerid,
+        bool $visibleonly = false
+    ): \stdClass {
         global $DB;
         $conditions = ['id' => $instanceid, 'contentdesignerid' => $contentdesignerid];
         if ($visibleonly) {
@@ -96,8 +100,12 @@ class access {
      */
     public static function get_chapter(int $chapterid, int $contentdesignerid): \stdClass {
         global $DB;
-        return $DB->get_record('cdelement_chapter', ['id' => $chapterid, 'contentdesignerid' => $contentdesignerid],
-            '*', MUST_EXIST);
+        return $DB->get_record(
+            'cdelement_chapter',
+            ['id' => $chapterid, 'contentdesignerid' => $contentdesignerid],
+            '*',
+            MUST_EXIST
+        );
     }
 
     /**
@@ -115,8 +123,11 @@ class access {
         }
         [$insql, $params] = $DB->get_in_or_equal($contentids, SQL_PARAMS_NAMED);
         $params['contentdesignerid'] = $contentdesignerid;
-        $count = $DB->count_records_select('contentdesigner_content',
-            "id $insql AND contentdesignerid = :contentdesignerid", $params);
+        $count = $DB->count_records_select(
+            'contentdesigner_content',
+            "id $insql AND contentdesignerid = :contentdesignerid",
+            $params
+        );
         return $count == count($contentids);
     }
 
@@ -130,8 +141,12 @@ class access {
      */
     public static function get_attempt(int $attemptid, int $contentdesignerid, int $userid): \stdClass {
         global $DB;
-        return $DB->get_record('contentdesigner_attempts',
-            ['id' => $attemptid, 'contentdesignerid' => $contentdesignerid, 'userid' => $userid], '*', MUST_EXIST);
+        return $DB->get_record(
+            'contentdesigner_attempts',
+            ['id' => $attemptid, 'contentdesignerid' => $contentdesignerid, 'userid' => $userid],
+            '*',
+            MUST_EXIST
+        );
     }
 
     /**

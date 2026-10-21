@@ -36,6 +36,8 @@ use mod_contentdesigner\content_display;
 #[\core\attribute\label('Allows plugins to take over the Content Designer activity page.')]
 #[\core\attribute\tags('mod_contentdesigner')]
 final class view_page implements \Psr\EventDispatcher\StoppableEventInterface {
+    use \core\hook\stoppable_trait;
+
     /** @var string|null The HTML of the page, set by a plugin. */
     private ?string $output = null;
 
@@ -66,6 +68,7 @@ final class view_page implements \Psr\EventDispatcher\StoppableEventInterface {
      */
     public function set_output(string $output): void {
         $this->output = $output;
+        $this->stop_propagation();
     }
 
     /**
@@ -75,14 +78,5 @@ final class view_page implements \Psr\EventDispatcher\StoppableEventInterface {
      */
     public function get_output(): ?string {
         return $this->output;
-    }
-
-    /**
-     * Stops the dispatch once a plugin has handled the action.
-     *
-     * @return bool
-     */
-    public function isPropagationStopped(): bool {
-        return $this->output !== null;
     }
 }

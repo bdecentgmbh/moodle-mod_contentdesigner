@@ -45,8 +45,8 @@ class backup_cdelement_h5p_subplugin extends backup_subplugin {
 
         $h5pcompletion = new backup_nested_element('elementh5p_completion');
         $h5pcompletionelement = new backup_nested_element('cdelement_h5p_completion', ['id'], [
-            'instance', 'userid', 'cdattemptid', 'completion', 'success', 'score', 'scoredata', 'response', 'timecreated',
-            'timemodified',
+            'instance', 'userid', 'cdattemptid', 'completion', 'success', 'score', 'duration', 'scoredata', 'response',
+            'timecreated', 'timemodified',
         ]);
 
         $h5pxapistate = new backup_nested_element('elementh5p_xapistates');

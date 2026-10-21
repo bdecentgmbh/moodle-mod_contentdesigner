@@ -52,8 +52,12 @@ function contentdesigner_add_instance($data, $mform = null) {
     $data->id = $DB->insert_record('contentdesigner', $data);
 
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $data->id,
-        $completiontimeexpected);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'contentdesigner',
+        $data->id,
+        $completiontimeexpected
+    );
 
     extensions::dispatch(new after_instance_saved($data, true));
     return $data->id;
@@ -75,8 +79,12 @@ function contentdesigner_update_instance($data, $mform) {
     $DB->update_record('contentdesigner', $data);
 
     $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
-    \core_completion\api::update_completion_date_event($data->coursemodule, 'contentdesigner', $data->id,
-        $completiontimeexpected);
+    \core_completion\api::update_completion_date_event(
+        $data->coursemodule,
+        'contentdesigner',
+        $data->id,
+        $completiontimeexpected
+    );
 
     extensions::dispatch(new after_instance_saved($data, false));
     return true;
@@ -194,8 +202,16 @@ function contentdesigner_grade_item_update($contentdesigner, $grades = null) {
         $grades = null;
     }
 
-    return grade_update('mod/contentdesigner', $contentdesigner->course, 'mod', 'contentdesigner', $contentdesigner->id, 0,
-        $grades, $params);
+    return grade_update(
+        'mod/contentdesigner',
+        $contentdesigner->course,
+        'mod',
+        'contentdesigner',
+        $contentdesigner->id,
+        0,
+        $grades,
+        $params
+    );
 }
 
 /**
@@ -208,8 +224,16 @@ function contentdesigner_grade_item_delete($contentdesigner) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
-    return grade_update('mod/contentdesigner', $contentdesigner->course, 'mod', 'contentdesigner', $contentdesigner->id, 0,
-        null, ['deleted' => 1]);
+    return grade_update(
+        'mod/contentdesigner',
+        $contentdesigner->course,
+        'mod',
+        'contentdesigner',
+        $contentdesigner->id,
+        0,
+        null,
+        ['deleted' => 1]
+    );
 }
 
 /**
@@ -470,8 +494,10 @@ function contentdesigner_output_fragment_move_chapter($args) {
     if ($chapters) {
         [$insql, $params] = $DB->get_in_or_equal($chapters, SQL_PARAMS_NAMED);
         $params['contentdesignerid'] = $cm->instance;
-        if ($DB->count_records_select('cdelement_chapter', "id $insql AND contentdesignerid = :contentdesignerid", $params)
-                != count(array_unique($chapters))) {
+        if (
+            $DB->count_records_select('cdelement_chapter', "id $insql AND contentdesignerid = :contentdesignerid", $params)
+                != count(array_unique($chapters))
+        ) {
             throw new moodle_exception('invalidrecord', 'error');
         }
     }
@@ -523,7 +549,7 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
     $DB->update_record($element->tablename(), (object) ['id' => $instanceid, 'title' => $title, 'timemodified' => time()]);
 
     $record = $DB->get_record($element->tablename(), ['id' => $instanceid], '*', MUST_EXIST);
-    return $element->title_editable($record);
+    return $element->get_title_editable($record);
 }
 
 /**
@@ -539,8 +565,13 @@ function contentdesigner_extend_settings_navigation(settings_navigation $setting
     }
     if (has_capability(access::EDIT, $cm->context)) {
         $url = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cm->id]);
-        $node->add(get_string('contenteditor', 'mod_contentdesigner'), $url, navigation_node::TYPE_SETTING, null,
-            'editorelement');
+        $node->add(
+            get_string('contenteditor', 'mod_contentdesigner'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            'editorelement'
+        );
     }
     extensions::dispatch(new extend_settings_navigation($node, $cm));
 }

@@ -591,8 +591,11 @@ abstract class elements {
                 $this->element_shortname() . 'description',
                 $instanceid
             );
-            $record->description = format_text($record->description, $record->descriptionformat ?? FORMAT_HTML,
-                ['context' => $this->context]);
+            $record->description = format_text(
+                $record->description,
+                $record->descriptionformat ?? FORMAT_HTML,
+                ['context' => $this->context]
+            );
         }
         return $record;
     }

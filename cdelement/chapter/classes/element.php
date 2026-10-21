@@ -195,8 +195,10 @@ class element extends \mod_contentdesigner\elements {
      */
     public function create_basic_instance($contentdesignerid, array $record = []) {
         global $DB;
-        $lastposition = (int) $DB->get_field_sql('SELECT MAX(position) FROM {cdelement_chapter} WHERE contentdesignerid = ?',
-            [$contentdesignerid]);
+        $lastposition = (int) $DB->get_field_sql(
+            'SELECT MAX(position) FROM {cdelement_chapter} WHERE contentdesignerid = ?',
+            [$contentdesignerid]
+        );
         $record += ['position' => $lastposition + 1];
         return parent::create_basic_instance($contentdesignerid, $record);
     }
@@ -673,7 +675,10 @@ class element extends \mod_contentdesigner\elements {
      */
     public function reset_userdata(int $contentdesignerid): void {
         global $DB;
-        $DB->delete_records_select('cdelement_chapter_completion',
-            'instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = ?)', [$contentdesignerid]);
+        $DB->delete_records_select(
+            'cdelement_chapter_completion',
+            'instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = ?)',
+            [$contentdesignerid]
+        );
     }
 }

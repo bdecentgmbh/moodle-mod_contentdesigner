@@ -26,6 +26,8 @@ namespace mod_contentdesigner\hook;
 #[\core\attribute\label('Allows plugins to render their button types in the outro of Content Designer.')]
 #[\core\attribute\tags('mod_contentdesigner', 'output')]
 final class outro_button implements \Psr\EventDispatcher\StoppableEventInterface {
+    use \core\hook\stoppable_trait;
+
     /** @var string|null The HTML of the button. */
     private ?string $html = null;
 
@@ -56,6 +58,7 @@ final class outro_button implements \Psr\EventDispatcher\StoppableEventInterface
      */
     public function set_html(string $html): void {
         $this->html = $html;
+        $this->stop_propagation();
     }
 
     /**
@@ -65,14 +68,5 @@ final class outro_button implements \Psr\EventDispatcher\StoppableEventInterface
      */
     public function get_html(): ?string {
         return $this->html;
-    }
-
-    /**
-     * Stops the dispatch once a plugin has rendered the button.
-     *
-     * @return bool
-     */
-    public function isPropagationStopped(): bool {
-        return $this->html !== null;
     }
 }

@@ -22,9 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
- * Define all the restore steps that will be used by the restore_contentdesigner_activity_task
- */
+use mod_contentdesigner\editor;
 
 /**
  * Structure step to restore contentdesigner activity.
@@ -35,19 +33,23 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
      */
     protected function define_structure() {
         $paths = [];
-
         $userinfo = $this->get_setting_value('userinfo');
 
-        // Restore path.
         $element = new restore_path_element('contentdesigner', '/activity/contentdesigner');
         $paths[] = $element;
 
-        // Restore elements.
-        $elements = new restore_path_element(
+        // The attempts first: the user data of the elements refers to them.
+        if ($userinfo) {
+            $paths[] = new restore_path_element(
+                'contentdesigner_attempts',
+                '/activity/contentdesigner/attempts/contentdesigner_attempts'
+            );
+        }
+
+        $paths[] = new restore_path_element(
             'contentdesigner_elements',
             '/activity/contentdesigner/elements/contentdesigner_elements'
         );
-        $paths[] = $elements;
 
         if ($userinfo) {
             $paths[] = new restore_path_element(
@@ -62,159 +64,148 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
             'contentdesigner_content',
             '/activity/contentdesigner/content/contentdesigner_content'
         );
-
-        // Restor general options of element instance.
         $paths[] = new restore_path_element(
             'contentdesigner_options',
             '/activity/contentdesigner/contentdesigneropitons/contentdesigner_options'
         );
 
-        $paths[] = new restore_path_element(
-            'contentdesigner_attempts',
-            '/activity/contentdesigner/attempts/contentdesigner_attempts'
-        );
-
-        // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
     /**
-     * Process activity contentdesigner restore.
-     * @param mixed $data restore contentdesigner table data.
+     * Restores the activity record.
+     *
+     * @param array $data The data of the activity.
      */
     protected function process_contentdesigner($data) {
         global $DB;
-
         $data = (object) $data;
-        $oldid = $data->id;
         $data->course = $this->get_courseid();
-        // Insert instance into Database.
         $newitemid = $DB->insert_record('contentdesigner', $data);
-        // Immediately after inserting "activity" record, call this.
         $this->apply_activity_instance($newitemid);
     }
 
     /**
-     * Process contentdesigner users records.
+     * Maps the elements of the backup to the elements installed on this site, by shortname. Elements that are not
+     * installed here are not restored.
      *
-     * @param object $data The data in object form
-     * @return void
+     * @param array $data The element record of the backup.
      */
     protected function process_contentdesigner_elements($data) {
         global $DB;
-
         $data = (object) $data;
-
-        // If already element inserted during the plugin installation then use the current element id.
-        $elementid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => $data->shortname]);
-        if (!$elementid) {
-            // If not inserted then create new one.
-            $elementid = $DB->insert_record('contentdesigner_elements', $data);
+        if (!in_array($data->shortname, editor::get_element_names(), true)) {
+            return;
         }
-        $this->set_mapping('elements', $data->id, $elementid);
+        $elementid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => $data->shortname]);
+        if ($elementid) {
+            $this->set_mapping('elements', $data->id, $elementid);
+        }
     }
 
     /**
-     * Process contentdesigner users records.
+     * The new instance id of an element instance of the backup, if the element and the instance were restored.
      *
-     * @param object $data The data in object form
-     * @return void
+     * @param int $oldelementid The element id in the backup.
+     * @param int $oldinstanceid The instance id in the backup.
+     * @return array [new element id, new instance id, element shortname], or [0, 0, ''] if not restored.
+     */
+    protected function map_instance(int $oldelementid, int $oldinstanceid): array {
+        global $DB;
+        $elementid = (int) $this->get_mappingid('elements', $oldelementid);
+        if (!$elementid) {
+            return [0, 0, ''];
+        }
+        $name = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $elementid]);
+        $mapping = ($name == 'chapter') ? 'chapterid' : $name . '_instanceid';
+        return [$elementid, (int) $this->get_mappingid($mapping, $oldinstanceid), $name];
+    }
+
+    /**
+     * Restores an element instance in a chapter.
+     *
+     * @param array $data The content record.
      */
     protected function process_contentdesigner_content($data) {
         global $DB;
-
         $data = (object) $data;
-
+        [$data->element, $data->instance] = $this->map_instance((int) $data->element, (int) $data->instance);
+        $data->chapter = (int) $this->get_mappingid('chapterid', $data->chapter);
+        if (!$data->element || !$data->instance || !$data->chapter) {
+            return;
+        }
         $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
-
-        $elementid = $this->get_mappingid('elements', $data->element);
-        $data->element = $elementid;
-        $elementname = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $data->element]);
-
-        // Update the new content and chapter instance.
-        $data->instance = $this->get_mappingid($elementname . "_instanceid", $data->instance);
-        $data->chapter = $this->get_mappingid("chapterid", $data->chapter);
-
         $data->timemodified = time();
-        // Insert the content with new chapter and instance.
         $contentid = $DB->insert_record('contentdesigner_content', $data);
-        $contents = $DB->get_field('cdelement_chapter', 'contents', ['id' => $data->chapter]);
-        $contents = explode(',', $contents);
-        array_push($contents, $contentid);
 
-        // Add the latest cotnent id in chapter.
-        $content = (object) ['id' => $data->chapter, 'contents' => implode(',', $contents)];
-        $DB->update_record('cdelement_chapter', $content);
+        // Add the content to the sequence of its chapter.
+        $contents = array_filter(explode(',', (string) $DB->get_field('cdelement_chapter', 'contents', ['id' => $data->chapter])));
+        $contents[] = $contentid;
+        $DB->set_field('cdelement_chapter', 'contents', implode(',', $contents), ['id' => $data->chapter]);
     }
 
     /**
-     * Process contentdesigner attempts records.
+     * Restores an attempt of a learner.
      *
-     * @param object $data The data in object form
-     * @return void
+     * @param array $data The attempt.
      */
     protected function process_contentdesigner_attempts($data) {
         global $DB;
-
         $data = (object) $data;
-
-        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        $oldid = $data->id;
         $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->timemodified = time();
-        // Insert the general options for the element instance.
-        $DB->insert_record('contentdesigner_attempts', $data);
+        if (!$data->userid) {
+            return;
+        }
+        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        $newid = $DB->insert_record('contentdesigner_attempts', $data);
+        $this->set_mapping('contentdesigner_attempt', $oldid, $newid);
     }
 
     /**
-     * Process contentdesigner general options records.
+     * Restores the general options of an element instance.
      *
-     * @param object $data The data in object form
-     * @return void
+     * @param array $data The options.
      */
     protected function process_contentdesigner_options($data) {
         global $DB;
-
         $data = (object) $data;
-
-        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
-
-        // Update the new content and chapter instance.
-        $elementid = $this->get_mappingid('elements', $data->element);
-        $data->element = $elementid;
-
-        $elementname = $DB->get_field('contentdesigner_elements', 'shortname', ['id' => $data->element]);
-        $data->instance = $this->get_mappingid($elementname . "_instanceid", $data->instance);
+        [$data->element, $data->instance] = $this->map_instance((int) $data->element, (int) $data->instance);
+        if (
+            !$data->element || !$data->instance
+                || $DB->record_exists('contentdesigner_options', ['element' => $data->element, 'instance' => $data->instance])
+        ) {
+            return;
+        }
         $data->timemodified = time();
-        // Insert the general options for the element instance.
         $DB->insert_record('contentdesigner_options', $data);
     }
 
     /**
-     * Process contentdesigner users completions.
+     * Restores the completion state of a learner.
      *
-     * @param object $data The data in object form
-     * @return void
+     * @param array $data The completion record.
      */
     protected function process_contentdesigner_completion($data) {
         global $DB;
-
         $data = (object) $data;
-
-        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
         $data->userid = $this->get_mappingid('user', $data->userid);
-
+        if (!$data->userid) {
+            return;
+        }
+        $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
         $DB->insert_record('contentdesigner_completion', $data);
-        // No need to save this mapping as far as nothing depend on it
-        // (child paths, file areas nor links decoder).
     }
 
     /**
-     * Update the files of editors after restore execution.
-     *
-     * @return void
+     * Restores the files of the activity and the descriptions of the elements.
      */
     protected function after_execute() {
-        // Add contentdesigner related files.
         $this->add_related_files('mod_contentdesigner', 'intro', null);
+        foreach (editor::get_element_names() as $name) {
+            if ($name != 'chapter') {
+                $this->add_related_files('mod_contentdesigner', $name . 'description', $name . '_instanceid');
+            }
+        }
     }
 }

@@ -43,7 +43,7 @@ class backup_cdelement_chapter_subplugin extends backup_subplugin {
 
         $chaptercompletion = new backup_nested_element('elementchapter_completion');
         $chaptercompletionelement = new backup_nested_element('cdelement_chapter_completion', ['id'], [
-            'instance', 'userid', 'completion', 'titlestatus', 'timecreated', 'timemodified',
+            'instance', 'userid', 'completion', 'timecreated', 'timemodified',
         ]);
 
         // Connect XML elements into the tree.

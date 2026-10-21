@@ -26,9 +26,9 @@ defined("MOODLE_INTERNAL") || die();
 
 $string['elementdescription'] = 'Add a new chapter to group elements';
 $string['pluginname'] = "Chapter";
-$string['privacy:chapter'] = 'Chapter';
 $string['privacy:metadata:chaptercompletion'] = 'Information about the user\'s chapter completion.';
 $string['privacy:metadata:completion:chapterid'] = 'Chapter instance id';
 $string['privacy:metadata:completion:completion'] = 'Completion Status';
-$string['privacy:metadata:completion:timecreated'] = 'Time completed the chapter';
+$string['privacy:metadata:completion:timecreated'] = 'When the chapter was completed for the first time';
+$string['privacy:metadata:completion:timemodified'] = 'When the completion was last changed';
 $string['privacy:metadata:completion:userid'] = 'User id';

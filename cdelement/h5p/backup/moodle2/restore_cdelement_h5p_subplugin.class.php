@@ -41,11 +41,16 @@ class restore_cdelement_h5p_subplugin extends restore_subplugin {
         $elepath = $this->get_pathfor('/cdelement_h5p');
         $paths[] = new restore_path_element($elename, $elepath);
 
+        // The results and saved states are not nested in the instances (see the backup), but follow them.
         $userinfo = $this->get_setting_value('userinfo');
         if ($userinfo) {
             $paths[] = new restore_path_element(
+                'cdelement_h5p_completion',
+                '/activity/contentdesigner/elementh5p_completion/cdelement_h5p_completion'
+            );
+            $paths[] = new restore_path_element(
                 'cdelement_h5p_xapistates',
-                '/activity/contentdesigner/cdelementh5p_xapistates/cdelement_h5p_xapistates'
+                '/activity/contentdesigner/elementh5p_xapistates/cdelement_h5p_xapistates'
             );
         }
 
@@ -72,19 +77,38 @@ class restore_cdelement_h5p_subplugin extends restore_subplugin {
     }
 
     /**
-     * Processes one cdelement_h5p element
-     * @param mixed $data
+     * Restores a result of a learner, in the restored attempt.
+     *
+     * @param array $data The result.
+     */
+    public function process_cdelement_h5p_completion($data) {
+        global $DB;
+        $data = (object) $data;
+        $data->instance = $this->get_mappingid('h5p_instanceid', $data->instance);
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->cdattemptid = $this->get_mappingid('contentdesigner_attempt', $data->cdattemptid);
+        if (!$data->instance || !$data->userid || !$data->cdattemptid) {
+            return;
+        }
+        $DB->insert_record('cdelement_h5p_completion', $data);
+    }
+
+    /**
+     * Restores a saved state of H5P content.
+     *
+     * @param array $data The state.
      */
     public function process_cdelement_h5p_xapistates($data) {
         global $DB;
-
         $data = (object) $data;
         $data->itemid = $this->task->get_contextid();
         $data->userid = $this->get_mappingid('user', $data->userid);
-        $h5pinstanceid = str_replace('cdelement_h5p-', '', $data->registration);
-        $data->registration = 'cdelement_h5p-' . $this->get_mappingid('h5p_instanceid', $h5pinstanceid);
+        $instanceid = $this->get_mappingid('h5p_instanceid', str_replace('cdelement_h5p-', '', (string) $data->registration));
+        if (!$data->userid || !$instanceid) {
+            return;
+        }
+        $data->registration = 'cdelement_h5p-' . $instanceid;
         $data->timemodified = time();
-
-        $newinstance = $DB->insert_record('cdelement_h5p_xapistates', $data);
+        $DB->insert_record('cdelement_h5p_xapistates', $data);
     }
 }

@@ -47,8 +47,14 @@ class attempts {
      */
     public static function get_latest(int $contentdesignerid, int $userid): ?\stdClass {
         global $DB;
-        $attempts = $DB->get_records('contentdesigner_attempts', ['contentdesignerid' => $contentdesignerid, 'userid' => $userid],
-            'attempt DESC, id DESC', '*', 0, 1);
+        $attempts = $DB->get_records(
+            'contentdesigner_attempts',
+            ['contentdesignerid' => $contentdesignerid, 'userid' => $userid],
+            'attempt DESC, id DESC',
+            '*',
+            0,
+            1
+        );
         return $attempts ? reset($attempts) : null;
     }
 

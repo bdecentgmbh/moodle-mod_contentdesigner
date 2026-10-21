@@ -14,20 +14,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Initializes event listeners and manages chapter completion and progress updates
- * for the content designer module. Handles user interactions such as completing
- * chapters and updating the progress bar. Supports both standard and popup formats.
- * Utilizes AJAX calls to update chapter completion status and refreshes content
- * accordingly. Ensures sticky progress bar behavior during scrolling.
+ * The editor of the content: adds, moves, shows, hides and deletes elements and chapters.
  *
- * @module cdelement_chapter/chapter
+ * @module mod_contentdesigner/editor
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
-    'core/fragment', 'core/templates', 'core/notification', 'core/loadingicon', 'core/modal'],
-    function($, ModalFactory, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Modal) {
+define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/templates', 'core/notification',
+    'core/loadingicon'],
+    function(Modal, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon) {
 
         var contextID;
 
@@ -222,7 +218,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          * @param {Function} onconfirm function to execute on confirm
          */
         var confirmDeleteElement = function(element, onconfirm) {
-            var elementTypename = 'cdelement_'.element;
+            var elementTypename = 'cdelement_' + element;
             Str.get_string('pluginname', elementTypename).done(function() {
                 var plugindata = {
                     element: element
@@ -249,24 +245,11 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
          */
         const buildAddElementModal = (position = "bottom", chapter = 0) => {
             var params = {cmid: cmID};
-            var promise;
-            if ((typeof Modal.registerModalType !== 'undefined')) {
-                var promise = Modal.create({
-                    type: ModalFactory.TYPE,
-                    title: Str.get_string('addelement', 'contentdesigner'),
-                    body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),
-                    large: false,
-                });
-            } else {
-                promise = ModalFactory.create({
-                    type: ModalFactory.TYPE,
-                    title: Str.get_string('addelement', 'contentdesigner'),
-                    body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),
-                    large: false,
-                });
-            }
-
-            promise.then(modal => {
+            Modal.create({
+                title: Str.get_string('addelement', 'contentdesigner'),
+                body: Fragment.loadFragment('mod_contentdesigner', 'get_elements_list', contextID, params),
+                large: false,
+            }).then(modal => {
                 modal.getRoot().on(ModalEvents.bodyRendered, function() {
                     modal.getRoot().get(0).querySelectorAll('.element-item').forEach((e) => {
                         e.addEventListener('click', function(e) {
@@ -277,7 +260,6 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                                     element: element,
                                     chapter: chapter,
                                     position: position,
-                                    sesskey: M.cfg.sesskey
                                 };
                                 const urlParams = new URLSearchParams(params);
                                 window.location = M.cfg.wwwroot + '/mod/contentdesigner/element.php?' + urlParams.toString();
@@ -287,7 +269,7 @@ define(['jquery', 'core/modal_factory', 'core/modal_events', 'core/str',
                 });
                 modal.show();
                 return modal;
-            });
+            }).catch(Notification.exception);
         };
 
         return {

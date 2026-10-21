@@ -14,186 +14,162 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy class for requesting user data.
- *
- * @package   cdelement_chapter
- * @copyright  2022 bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace cdelement_chapter\privacy;
 
 use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
-use core_privacy\local\request\approved_userlist;
-use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\writer;
+use mod_contentdesigner\privacy\provider as activity_provider;
 
 /**
- * Privacy class for requesting user data.
+ * Privacy provider of the chapter element: the chapters completed by the learners.
  *
- * @package   cdelement_chapter
+ * @package    cdelement_chapter
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
     \core_privacy\local\metadata\provider,
-        // This plugin is capable of determining which users have data within it.
-    \core_privacy\local\request\core_userlist_provider,
     \mod_contentdesigner\privacy\contentdesignerelements_provider {
     /**
-     * List of used data fields summary meta key.
+     * The personal data stored by the element.
      *
      * @param collection $collection
      * @return collection
      */
     public static function get_metadata(collection $collection): collection {
-
-        // Module Completion table fields meta summary.
-        $completionmetadata = [
+        $collection->add_database_table('cdelement_chapter_completion', [
             'instance' => 'privacy:metadata:completion:chapterid',
             'userid' => 'privacy:metadata:completion:userid',
             'completion' => 'privacy:metadata:completion:completion',
             'timecreated' => 'privacy:metadata:completion:timecreated',
-        ];
-        $collection->add_database_table(
-            'cdelement_chapter_completion',
-            $completionmetadata,
-            'privacy:metadata:chaptercompletion'
-        );
-
+            'timemodified' => 'privacy:metadata:completion:timemodified',
+        ], 'privacy:metadata:chaptercompletion');
         return $collection;
     }
 
     /**
-     * Helper function to export completions.
+     * Adds the contexts in which the user completed chapters.
      *
-     * The array of "completions" is actually the result returned by the SQL in export_user_data.
-     * It is more of a list of sessions. Which is why it needs to be grouped by context id.
-     *
-     * @param array $contentdesignerids Array of completions to export the logs for.
-     * @param stdclass $user User record object.
+     * @param contextlist $contextlist The list to add the contexts to.
+     * @param int $userid The user.
      */
-    public static function export_element_user_data(array $contentdesignerids, \stdclass $user) {
-        global $DB;
-
-        [$insql, $inparams] = $DB->get_in_or_equal($contentdesignerids, SQL_PARAMS_NAMED);
-        $sql = "SELECT ec.*, ecc.userid AS userid, ecc.completion AS completion, ecc.timecreated AS timecompleted
-            FROM {cdelement_chapter} ec
-            INNER JOIN {cdelement_chapter_completion} ecc ON ecc.instance = ec.id AND ecc.userid = :userid
-            WHERE ec.contentdesignerid {$insql}
-            ORDER BY ec.id";
-
-        $params = [
-            'userid' => $user->id,
-        ];
-        $completions = $DB->get_records_sql($sql, $params + $inparams);
-        $data = [];
-
-        foreach ($completions as $chapterid => $completion) {
-            $data[$chapterid] = (object) [
-                'completed' => (($completion->completion == 1) ? get_string('yes') : get_string('no')),
-                'completedtime' => $completion->timecreated ? transform::datetime($completion->timecreated) : '-',
-                'title' => $completion->title,
-                'contentdesignerid' => $completion->contentdesignerid,
-            ];
-        }
-        return $data;
+    public static function add_contexts_for_userid(contextlist $contextlist, int $userid): void {
+        $sql = "SELECT c.id
+                  FROM {context} c
+                  JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                  JOIN {cdelement_chapter} ch ON ch.contentdesignerid = cm.instance
+                  JOIN {cdelement_chapter_completion} cc ON cc.instance = ch.id
+                 WHERE cc.userid = :userid";
+        $contextlist->add_from_sql($sql, ['contextlevel' => CONTEXT_MODULE, 'modname' => 'contentdesigner', 'userid' => $userid]);
     }
 
     /**
-     * Get the list of users who have data within a context.
+     * Adds the users who completed chapters in the context.
      *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     * @param userlist $userlist The userlist, with a module context.
      */
-    public static function get_users_in_context(userlist $userlist) {
-        $context = $userlist->get_context();
-
-        if (!$context instanceof \context_module) {
+    public static function get_users_in_context(userlist $userlist): void {
+        if (!$instanceid = activity_provider::get_instanceid($userlist->get_context())) {
             return;
         }
-
-        $params = [
-            'instanceid' => $context->instanceid,
-        ];
-
-        // Discussion authors.
-        $sql = "SELECT ecc.userid
-        FROM {cdelement_chapter} ec
-        JOIN {cdelement_chapter_completion} ecc ON ecc.instance = ec.id
-        WHERE ec.contentdesignerid = :instanceid";
-        $userlist->add_from_sql('userid', $sql, $params);
+        $sql = "SELECT cc.userid
+                  FROM {cdelement_chapter_completion} cc
+                  JOIN {cdelement_chapter} ch ON ch.id = cc.instance
+                 WHERE ch.contentdesignerid = :instanceid";
+        $userlist->add_from_sql('userid', $sql, ['instanceid' => $instanceid]);
     }
 
     /**
-     * Delete multiple users within a single context.
+     * Exports the chapters the user completed.
      *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     * @param approved_contextlist $contextlist The approved contexts and the user.
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
+    public static function export_element_user_data(approved_contextlist $contextlist): void {
         global $DB;
-
-        $context = $userlist->get_context();
-        $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $cm->instance]);
-
-        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED, 'usr');
-        $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $contentdesigner->id]);
-        $ids = array_column($list, 'id');
-        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select(
-            'cdelement_chapter_completion',
-            "userid {$userinsql} AND instance $insql",
-            $userinparams + $inparams
-        );
-    }
-
-    /**
-     * Delete user completion data for multiple context.
-     *
-     * @param approved_contextlist $contextlist The approved context and user information to delete information for.
-     */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
-        global $DB;
-
-        if (empty($contextlist->count())) {
-            return;
-        }
-
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-            $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
-            $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $instanceid]);
-            $ids = array_column($list, 'id');
-            [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-            $DB->delete_records_select(
-                'cdelement_chapter_completion',
-                "userid=:userid AND instance $insql",
-                ['userid' => $userid] + $inparams
+            if (!$instanceid = activity_provider::get_instanceid($context)) {
+                continue;
+            }
+            $sql = "SELECT cc.id, ch.title, cc.completion, cc.timemodified
+                      FROM {cdelement_chapter_completion} cc
+                      JOIN {cdelement_chapter} ch ON ch.id = cc.instance
+                     WHERE ch.contentdesignerid = :instanceid AND cc.userid = :userid
+                  ORDER BY ch.position";
+            $records = $DB->get_records_sql($sql, ['instanceid' => $instanceid, 'userid' => $userid]);
+            if (!$records) {
+                continue;
+            }
+            $chapters = array_values(array_map(fn($record) => [
+                'chapter' => format_string($record->title, true, ['context' => $context]),
+                'completed' => transform::yesno($record->completion),
+                'timemodified' => transform::datetime($record->timemodified),
+            ], $records));
+            writer::with_context($context)->export_data(
+                [get_string('pluginname', 'cdelement_chapter')],
+                (object) ['chapters' => $chapters]
             );
         }
     }
 
     /**
-     * Delete all completion data for all users in the specified context.
+     * Deletes the chapter completions of all users in a context.
      *
-     * @param context $context Context to delete data from.
+     * @param \context_module $context The context.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
+    public static function delete_data_for_all_users_in_context(\context_module $context): void {
         global $DB;
+        if ($instanceid = activity_provider::get_instanceid($context)) {
+            $DB->delete_records_select(
+                'cdelement_chapter_completion',
+                'instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = ?)',
+                [$instanceid]
+            );
+        }
+    }
 
-        if ($context->contextlevel != CONTEXT_MODULE) {
+    /**
+     * Deletes the chapter completions of the user in the contexts.
+     *
+     * @param approved_contextlist $contextlist The approved contexts and the user.
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
+        global $DB;
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($instanceid = activity_provider::get_instanceid($context)) {
+                $DB->delete_records_select(
+                    'cdelement_chapter_completion',
+                    'userid = ? AND instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = ?)',
+                    [$userid, $instanceid]
+                );
+            }
+        }
+    }
+
+    /**
+     * Deletes the chapter completions of the users in the context.
+     *
+     * @param approved_userlist $userlist The approved users and the context.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist): void {
+        global $DB;
+        $instanceid = activity_provider::get_instanceid($userlist->get_context());
+        if (!$instanceid || !$userlist->get_userids()) {
             return;
         }
-
-        $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
-        if (!$cm) {
-            return;
-        }
-        $list = $DB->get_records('cdelement_chapter', ['contentdesignerid' => $cm->instance]);
-        $ids = array_column($list, 'id');
-        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'ch');
-        $DB->delete_records_select('cdelement_chapter_completion', "instance $insql", $inparams);
+        [$insql, $params] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        $params['instanceid'] = $instanceid;
+        $DB->delete_records_select(
+            'cdelement_chapter_completion',
+            "userid $insql AND instance IN (SELECT id FROM {cdelement_chapter} WHERE contentdesignerid = :instanceid)",
+            $params
+        );
     }
 }
