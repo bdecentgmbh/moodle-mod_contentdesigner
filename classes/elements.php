@@ -842,7 +842,7 @@ abstract class elements {
         $instance->entranceanimation = json_encode([
             'animation' => $instance->animation ?? '',
             'duration' => $instance->duration ?? '',
-            'delay' => !empty($instance->delay) ? (int) $instance->delay : '',
+            'delay' => !empty($instance->delay) ? (string) (int) $instance->delay : '',
         ]);
 
         $class[] = !empty($instance->hidedesktop) ? 'd-lg-none' : 'd-lg-block';
