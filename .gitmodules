@@ -1,0 +1,24 @@
+[submodule "cdelement/image"]
+	path = cdelement/image
+	url = git@github.com:bdecentgmbh/moodle-cdelement_image.git
+[submodule "cdelement/poll"]
+	path = cdelement/poll
+	url = git@github.com:bdecentgmbh/moodle-cdelement_poll.git
+[submodule "cdelement/question"]
+	path = cdelement/question
+	url = git@github.com:bdecentgmbh/moodle-cdelement_question.git
+[submodule "cdelement/rating"]
+	path = cdelement/rating
+	url = git@github.com:bdecentgmbh/moodle-cdelement_rating.git
+[submodule "cdelement/tableofcontents"]
+	path = cdelement/tableofcontents
+	url = git@github.com:bdecentgmbh/moodle-cdelement_tableofcontents.git
+[submodule "cdelement/videotime"]
+	path = cdelement/videotime
+	url = git@github.com:bdecentgmbh/moodle-cdelement_videotime.git
+[submodule "cdaddon/report"]
+	path = cdaddon/report
+	url = git@github.com:bdecentgmbh/moodle-cdaddon_report.git
+[submodule "cdaddon/pro"]
+	path = cdaddon/pro
+	url = git@github.com:bdecentgmbh/moodle-cdaddon_pro.git

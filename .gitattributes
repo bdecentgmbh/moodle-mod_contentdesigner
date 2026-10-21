@@ -1,0 +1,11 @@
+# The paid elements and addons are private submodules. Keep their empty placeholders out of source archives
+# (git archive, the zips of GitHub releases), where Moodle would report them as plugins with a missing
+# version.php.
+/cdelement/image export-ignore
+/cdelement/poll export-ignore
+/cdelement/question export-ignore
+/cdelement/rating export-ignore
+/cdelement/tableofcontents export-ignore
+/cdelement/videotime export-ignore
+/cdaddon/pro export-ignore
+/cdaddon/report export-ignore
