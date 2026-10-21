@@ -52,8 +52,9 @@ class elements extends \core_search\base_mod {
         foreach (editor::get_element_names() as $name) {
             $element = editor::get_element($name);
             $fields = array_map('trim', explode(',', (string) (array_values($element->search_area_list())[0] ?? '')));
-            $content = !empty($fields[0]) ? 'ee.' . $fields[0] : 'NULL';
-            $format = !empty($fields[1]) ? 'ee.' . $fields[1] : 'NULL';
+            // Typed placeholders: PostgreSQL derives the column types of the union from its first parts.
+            $content = !empty($fields[0]) ? 'ee.' . $fields[0] : "''";
+            $format = !empty($fields[1]) ? 'ee.' . $fields[1] : FORMAT_HTML;
             $parts[] = "SELECT co.id, co.instance, co.element, co.description, co.descriptionformat, co.timecreated,
                                co.timemodified, ce.shortname AS elementname, ee.title, $content AS content,
                                $format AS contentformat, c.id AS contentdesignerid, c.course
@@ -91,7 +92,7 @@ class elements extends \core_search\base_mod {
         $doc = \core_search\document_factory::instance($record->id, $this->componentname, $this->areaname);
         $title = !empty($record->title) ? $record->title : get_string('pluginname', 'cdelement_' . $record->elementname);
         $doc->set('title', content_to_text($title, false));
-        $doc->set('content', content_to_text((string) $record->content, $record->contentformat ?? FORMAT_HTML));
+        $doc->set('content', content_to_text((string) $record->content, $record->contentformat));
         $doc->set('description1', content_to_text((string) $record->description, $record->descriptionformat ?? FORMAT_HTML));
         $doc->set('contextid', $context->id);
         $doc->set('courseid', $record->course);
