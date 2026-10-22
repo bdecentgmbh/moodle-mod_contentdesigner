@@ -272,6 +272,8 @@ class general_element_form extends \moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        $element = \mod_contentdesigner\editor::get_element($this->_customdata['element'], $this->_customdata['cmid']);
+        $errors += $element->validation($data, $files);
         foreach (['margin', 'padding'] as $field) {
             if (isset($data[$field]) && !css::is_spacing($data[$field])) {
                 $errors[$field] = get_string('error:invalidspacing', 'mod_contentdesigner');

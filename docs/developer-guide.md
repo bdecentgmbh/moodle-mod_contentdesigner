@@ -41,6 +41,7 @@ and overrides what it needs:
 
 - `supports_content()`, `supports_multiple_instance()`, `supports_standard_elements()`, `supports_top_instance()`
   (with `get_editor_data()` and `render_module_topcontents()`), `supports_custom_form()`, `supports_reports()`.
+- `validation($data, $files)`: errors of the element's own settings in its form.
 - `prevent_nextelements($instance)`: whether the element hides the elements after it (mandatory elements).
 - `supports_grade()` with `get_mark()`, `get_max_mark()` and `pre_process_grade()` for graded attempts.
 - `delete_instance_data()`, `reset_userdata()`, `delete_attempt_data()`: delete the data of learners.
