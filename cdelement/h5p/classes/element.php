@@ -74,10 +74,7 @@ class element extends \mod_contentdesigner\elements {
      * @return string HTML fragment
      */
     public function icon($output) {
-        global $CFG;
-        return (file_exists($CFG->dirroot . '/mod/h5pactivity/pix/monologo.png'))
-            ? $output->pix_icon('monologo', '', 'mod_h5pactivity', ['class' => 'icon pluginicon'])
-            : $output->pix_icon('icon', '', 'mod_h5pactivity', ['class' => 'icon pluginicon']);
+        return $output->pix_icon('monologo', '', 'mod_h5pactivity', ['class' => 'icon pluginicon']);
     }
 
     /**

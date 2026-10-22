@@ -158,6 +158,17 @@ abstract class elements {
     abstract public function element_form(&$mform, $formobj);
 
     /**
+     * Validates the settings of the element in its form; the general settings are validated by the form.
+     *
+     * @param array $data The submitted data.
+     * @param array $files The submitted files.
+     * @return array Errors by form field.
+     */
+    public function validation(array $data, array $files): array {
+        return [];
+    }
+
+    /**
      * Render the view of the element instance which is displayed to the users.
      *
      * @param \stdClass $instance
@@ -252,7 +263,7 @@ abstract class elements {
      * @return string HTML fragment
      */
     public function icon($output) {
-        return $output->pix_icon('t/index_drawer', get_string('plugin'));
+        return $output->pix_icon('e/bullet_list', get_string('plugin'));
     }
 
     /**
