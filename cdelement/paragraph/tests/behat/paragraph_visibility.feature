@@ -66,7 +66,7 @@ Feature: Check content designer paragraph element settings
     And I should see "Demo content: Paragraph Title" in the ".search-results" "css_element"
     And I search for "example" using the header global search box
     And I should see "Demo content: Paragraph Title" in the ".search-results" "css_element"
-    And I should see "Example paragraph content" in the ".result-content" "css_element"
+    And I should see "Example paragraph content" in the ".search-results" "css_element"
     And I search for "paragraph" using the header global search box
     And I should see "Demo content: Paragraph Title" in the ".search-results" "css_element"
     Then I click on "Demo content: Paragraph Title" "link" in the ".search-results" "css_element"

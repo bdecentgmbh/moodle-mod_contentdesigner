@@ -42,7 +42,7 @@ Feature: Verify the content designer global search support in outro element
     And I should see "Demo content: Outro title" in the ".search-results" "css_element"
     And I search for "cd completed" using the header global search box
     And I should see "Demo content: Outro title" in the ".search-results" "css_element"
-    And I should see "This is demo outro content, CD completed successfully" in the ".result-content" "css_element"
+    And I should see "This is demo outro content, CD completed successfully" in the ".search-results" "css_element"
     Then I click on "Demo content: Outro title" "link" in the ".search-results" "css_element"
     And "#page-mod-contentdesigner-view" "css_element" should exist
     And I should see "Demo content" in the "#page-header" "css_element"

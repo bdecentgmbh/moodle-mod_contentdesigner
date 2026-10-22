@@ -79,12 +79,17 @@ class behat_mod_contentdesigner extends behat_base {
     }
 
     /**
-     * Scroll down page.
+     * Scrolls to the bottom of the page: the window and the scrolling page region of Boost.
      *
      * @When /^I scroll to the bottom of page$/
      */
     public function i_scroll_down_page() {
-        global $CFG;
-        $this->evaluate_script("window.scrollTo(0, document.body.scrollHeight);");
+        $this->evaluate_script(
+            "window.scrollTo(0, document.body.scrollHeight);
+            const page = document.querySelector('#page');
+            if (page) {
+                page.scrollTop = page.scrollHeight;
+            }"
+        );
     }
 }

@@ -73,7 +73,7 @@ Feature: Check content designer header element settings
     And I search for "Description" using the header global search box
     And I should see "Demo content: Heading Title" in the ".search-results" "css_element"
     And I search for "Testing the Heading" using the header global search box
-    And I should see "Testing the Heading" in the ".result-content" "css_element"
+    And I should see "Testing the Heading" in the ".search-results" "css_element"
     And I am on the "Demo content" "contentdesigner activity" page
     Then I edit "heading" cdelement "Heading Title" with the following fields to these values:
       | Heading text    | Updated heading       |
@@ -85,7 +85,7 @@ Feature: Check content designer header element settings
     And I search for "Description 2" using the header global search box
     And I should see "Demo content: Heading Title 2" in the ".search-results" "css_element"
     And I search for "Updated" using the header global search box
-    And I should see "Updated heading" in the ".result-content" "css_element"
+    And I should see "Updated heading" in the ".search-results" "css_element"
     Then I click on "Demo content: Heading Title 2" "link" in the ".search-results" "css_element"
     And "#page-mod-contentdesigner-view" "css_element" should exist
     And I should see "Demo content" in the "#page-header" "css_element"
