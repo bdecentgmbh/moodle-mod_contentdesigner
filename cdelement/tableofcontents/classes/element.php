@@ -289,6 +289,8 @@ class element extends \mod_contentdesigner\elements {
         }
 
         $instancedata = $element->get_instance($instance);
+        // The element box shows the title as HTML.
+        $instancedata->title = format_string($instancedata->title ?? '', true, ['context' => $this->get_context()]);
         $editurl = new \moodle_url('/mod/contentdesigner/element.php', [
             'cmid' => $this->cm->id,
             'element' => $element->shortname,

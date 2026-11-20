@@ -413,13 +413,11 @@ class element extends \mod_contentdesigner\elements {
                 $buttonurl = $render->activity_navigation($this->cm->instance, $context)->nextlink->url ?? "javascript:void(0);";
                 break;
             case self::OUTRO_BUTTON_CUSTOM:
-                if ($type == 'primary') {
-                    $buttontext = !empty($data->primarytext) ? $data->primarytext : '';
-                    $buttonurl = new moodle_url(!empty($data->primaryurl) ? $data->primaryurl : '');
-                } else if ($type == 'secondary') {
-                    $buttontext = !empty($data->secondarytext) ? $data->secondarytext : '';
-                    $buttonurl = new moodle_url(!empty($data->secondaryurl) ? $data->secondaryurl : '');
-                }
+                // The URL is validated again, as backups may contain anything; without a valid URL there is no button.
+                $field = ($type == 'primary') ? 'primary' : 'secondary';
+                $buttontext = !empty($data->{$field . 'text'}) ? $data->{$field . 'text'} : '';
+                $url = clean_param((string) ($data->{$field . 'url'} ?? ''), PARAM_URL);
+                $buttonurl = $url ? new moodle_url($url) : '';
                 break;
             case self::OUTRO_BUTTON_BACKTOCOURSE:
                 $buttontext = get_string('outro:btnbacktocourse', 'mod_contentdesigner');

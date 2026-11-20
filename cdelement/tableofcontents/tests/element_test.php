@@ -70,5 +70,11 @@ final class element_test extends \advanced_testcase {
         // A second table of contents is not created.
         $element->get_editor_data();
         $this->assertEquals(1, $DB->count_records('cdelement_tableofcontents', ['contentdesignerid' => $cd->id]));
+
+        // The editor shows the title formatted, without HTML.
+        $DB->set_field('cdelement_tableofcontents', 'title', 'Toc <img src=x onerror=alert(1)>', ['id' => $instance->id]);
+        $html = $element->get_editor_data();
+        $this->assertStringContainsString('Toc', $html);
+        $this->assertStringNotContainsString('<img', $html);
     }
 }
