@@ -215,9 +215,13 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
          * @param {Object} statement
          * @param {int} instance
          * @param {int} cdattemptid
-         * @returns {Object}
+         * @returns {Object|null} The promises, null if the result is not stored.
          */
         const storeUserResponse = (statement, instance, cdattemptid) => {
+            // Guests view the content without a stored attempt, their results are not saved.
+            if (!cdattemptid) {
+                return null;
+            }
 
             var params = {
                 cmid: Elements.contentDesignerData().cmid,

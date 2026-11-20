@@ -171,6 +171,7 @@
           }
         },
         "prevent": false,
+        "guestnotice": "",
         "outrohidden": false,
         "pagenav": {
             "page": 1,
@@ -188,6 +189,9 @@
 <div class="contentdesigner-content limitedwidth{{#pagenav}} contentdesigner-paged{{/pagenav}}">
     <div class="contentdesigner-wrapper"{{#pagenav}} data-page="{{page}}"{{/pagenav}}>
         {{{cmdetails}}}
+        {{#guestnotice}}
+        <div class="alert alert-info contentdesigner-guestnotice">{{guestnotice}}</div>
+        {{/guestnotice}}
         <div class="content">
             <div class="contentdesigner-progress">{{{progressbar}}}</div>
             <ul class="course-content-list">

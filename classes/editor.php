@@ -142,6 +142,8 @@ class editor {
             'chapters' => $pages ? $this->get_page_chapters($pages) : $this->chapter->get_chapters_data(true, true, $chapterafter),
             'outro' => $this->render_module_outro(),
             'cmdetails' => $this->cm_details(),
+            // Guests share one account, their progress is not saved.
+            'guestnotice' => isguestuser() ? get_string('guestnoprogress', 'mod_contentdesigner') : '',
         ];
         // Top instance contents, on the first page of paged activities.
         if (!$pages || $pages->current == 1) {

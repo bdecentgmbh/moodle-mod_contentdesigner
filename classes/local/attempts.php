@@ -30,12 +30,37 @@ class attempts {
     /**
      * The latest attempt of a user, created if the user has none.
      *
+     * Guests share one user account and cannot save progress: they get an attempt that is not stored (id 0), see
+     * {@see self::guest_attempt()}.
+     *
      * @param int $contentdesignerid The activity instance id.
      * @param int $userid The user.
      * @return \stdClass The record of contentdesigner_attempts.
      */
     public static function get_current(int $contentdesignerid, int $userid): \stdClass {
+        if (isguestuser($userid)) {
+            return self::guest_attempt($contentdesignerid, $userid);
+        }
         return self::get_latest($contentdesignerid, $userid) ?: self::create($contentdesignerid, $userid, true);
+    }
+
+    /**
+     * The attempt that guests view the content in. It is not stored (id 0), so nothing can be saved in it.
+     *
+     * @param int $contentdesignerid The activity instance id.
+     * @param int $userid The guest user.
+     * @return \stdClass An attempt record that is not stored.
+     */
+    public static function guest_attempt(int $contentdesignerid, int $userid): \stdClass {
+        return (object) [
+            'id' => 0,
+            'contentdesignerid' => $contentdesignerid,
+            'userid' => $userid,
+            'attempt' => 1,
+            'grade' => 0,
+            'timestart' => 0,
+            'timefinish' => 0,
+        ];
     }
 
     /**
@@ -74,7 +99,7 @@ class attempts {
     }
 
     /**
-     * Creates the next attempt of a user.
+     * Creates the next attempt of a user. Guests cannot make attempts.
      *
      * @param int $contentdesignerid The activity instance id.
      * @param int $userid The user.
@@ -83,6 +108,10 @@ class attempts {
      */
     public static function create(int $contentdesignerid, int $userid, bool $onlyfirst = false): \stdClass {
         global $DB;
+
+        if (isguestuser($userid)) {
+            throw new \moodle_exception('guestnoprogress', 'mod_contentdesigner');
+        }
 
         // Parallel requests (several tabs, refreshed fragments) must not create two attempts with the same number.
         $lockfactory = \core\lock\lock_config::get_lock_factory('mod_contentdesigner');

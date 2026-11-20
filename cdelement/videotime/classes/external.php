@@ -155,7 +155,8 @@ class external extends external_api {
         $instance = access::get_element_instance($element, $params['instanceid'], $cm->instance, true);
 
         $completed = (bool) $element->is_videotime_completed($instance, $USER->id);
-        if ($completed) {
+        // Guests cannot save progress, so addons are not told about it.
+        if ($completed && !isguestuser()) {
             $element->progress_updated($USER->id);
         }
         return $completed;

@@ -69,6 +69,18 @@ class access {
     }
 
     /**
+     * Refuses guests: they share one user account, so they cannot save progress (attempts, chapter completions,
+     * answers). Web services and other requests that store the progress of the current user call this.
+     *
+     * @throws \moodle_exception For the guest user and for users who are not logged in.
+     */
+    public static function require_not_guest(): void {
+        if (!isloggedin() || isguestuser()) {
+            throw new \moodle_exception('guestnoprogress', 'mod_contentdesigner');
+        }
+    }
+
+    /**
      * An element instance of the activity.
      *
      * @param elements $element The element.

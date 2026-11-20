@@ -67,6 +67,7 @@ $string['error:invalidbackground'] = 'Enter a colour (e.g. #e66465, rgb(230, 100
 $string['error:invalidspacing'] = 'Enter one to four CSS lengths, e.g. 10px or 0 1rem 5% auto.';
 $string['fadein'] = 'Fade in';
 $string['generaltitle'] = 'General settings';
+$string['guestnoprogress'] = 'Guests cannot save their progress. Log in to complete the chapters and elements.';
 $string['h5pnumber'] = 'H5P {$a}';
 $string['headingtext'] = 'Heading text';
 $string['headingtext_help'] = 'Enter the main text for your heading. This will be prominently displayed to guide users through the content or section.';

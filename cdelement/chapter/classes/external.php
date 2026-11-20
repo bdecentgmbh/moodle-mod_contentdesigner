@@ -49,7 +49,7 @@ class external extends external_api {
     }
 
     /**
-     * Marks a chapter of the activity as completed by the current user.
+     * Marks a chapter of the activity as completed by the current user. Guests cannot save progress.
      *
      * @param int $cmid Coursemodule id.
      * @param int $chapter Chapter id.
@@ -64,6 +64,7 @@ class external extends external_api {
         );
 
         [, $cm] = access::from_cmid($params['cmid'], access::VIEW);
+        access::require_not_guest();
         $chapter = access::get_chapter($params['chapter'], $cm->instance);
         if (!$chapter->visible) {
             throw new \moodle_exception('invalidrecord', 'error');

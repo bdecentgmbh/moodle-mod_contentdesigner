@@ -326,7 +326,8 @@ class element extends \mod_contentdesigner\elements {
                     'count' => count($contents),
                     'prevent' => $prevent,
                     'chapterprevent' => $chapterprevent,
-                    'chaptercta' => ($render) ?: false,
+                    // Guests cannot save progress, so they get no button to complete the chapter.
+                    'chaptercta' => $render && !isguestuser(),
                     'completion' => isset($completion->completion) && $completion->completion ? true : false,
                     'completionmode' => !$automatic,
                     'autocompletion' => $automatic,

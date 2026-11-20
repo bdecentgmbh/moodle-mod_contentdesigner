@@ -67,7 +67,8 @@ class external extends external_api {
     }
 
     /**
-     * Store the result of the current user in an H5P element, in an unfinished attempt of the user.
+     * Store the result of the current user in an H5P element, in an unfinished attempt of the user. Guests cannot
+     * store results.
      *
      * @param int $cmid Course module id.
      * @param int $instanceid Instance id of the H5P.
@@ -83,6 +84,7 @@ class external extends external_api {
             ['cmid' => $cmid, 'instanceid' => $instanceid, 'cdattemptid' => $cdattemptid, 'result' => $result]
         );
         [, $cm] = access::from_cmid($params['cmid'], access::VIEW);
+        access::require_not_guest();
         $element = editor::get_element('h5p', $cm->id);
         $instance = access::get_element_instance($element, $params['instanceid'], $cm->instance, true);
         $attempt = access::get_attempt($params['cdattemptid'], $cm->instance, $USER->id);

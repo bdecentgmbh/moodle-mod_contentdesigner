@@ -65,6 +65,12 @@ links are declared in the static `define_decode_contents()` of the restore class
 fragments, `from_cmid()` for web services). Every id from a request is loaded through the activity that was checked
 (`get_element_instance()`, `get_chapter()`, `get_attempt()`, `contents_belong_to()`).
 
+Guests may view the content (`mod/contentdesigner:view` is allowed for the guest role), but all guests share one
+user account, so they cannot save progress: they view the content in an attempt that is not stored
+(`local\attempts::guest_attempt()`, id 0), get no button to complete chapters, and web services that store progress
+refuse them with `access::require_not_guest()`. Elements and addons that store progress of the current user call it
+as well.
+
 ## Hooks
 
 Addons extend the activity through these hooks in `mod_contentdesigner\hook` (callbacks in the addon's `db/hooks.php`):
