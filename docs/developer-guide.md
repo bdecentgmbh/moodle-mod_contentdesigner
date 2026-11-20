@@ -14,8 +14,8 @@ How Content Designer is built, for people changing or extending it.
 | `cdelement_*` | `mod/contentdesigner/cdelement/*` | Elements (subplugin type `cdelement`) |
 | `cdaddon_*` | `mod/contentdesigner/cdaddon/*` | Addons (subplugin type `cdaddon`), extending the activity through hooks |
 
-Free elements: chapter, heading, paragraph, richtext, h5p, outro. The paid elements (image, poll, question, rating,
-tableofcontents, videotime) and addons (report, pro) live in private repositories, referenced as git submodules;
+Free elements: chapter, heading, paragraph, richtext, callout, image, tableofcontents, videotime, h5p, outro. The paid
+elements (poll, question, rating, panels) and addons (report, pro) live in private repositories, referenced as git submodules;
 `.gitignore` keeps any other code under `cdelement/` and `cdaddon/` out of this repository. The bundle with all of them
 is published from the private repository `moodle-mod_contentdesigner_pro`.
 
@@ -92,9 +92,19 @@ Addons extend the activity through these hooks in `mod_contentdesigner\hook` (ca
 
 The data generator has helpers for content: `create_chapter()`, `create_element()`, `create_options()` and
 `create_attempt()`. Tests that depend on addons redirect the hooks (`redirectHook()`) so that they pass with and
-without the addons installed. CI runs on pull requests for Moodle 4.5 to 5.3 (`.github/workflows/moodle-plugin-ci.yml`).
+without the addons installed. CI runs on pull requests, on pushes to `main` and by hand, for Moodle 5.2 and 5.3, with and without Video Time
+(`.github/workflows/moodle-plugin-ci.yml`).
+
+An element that depends on an optional plugin overrides `is_available()`: while it returns false the element is not
+offered in the editor and cannot be added or saved, and its instances should render a notice (see
+`cdelement_videotime`).
 
 ## Releases
 
-Tags `vX.Y-rN`. After a release, the workflow `stable-branches.yml` builds the `MOODLE_xxx_STABLE` branches (without
-the submodules) for git deployments, and the publish workflow of `moodle-mod_contentdesigner_pro` builds the bundle.
+Tags `vX.Y-rN`, with a section `## <release> (<version>)` in `CHANGES.md` (`## <release> R<n> (<version>)` from R2
+on). Publishing a GitHub release runs `release.yml`: it attaches the ZIP of the free plugin (without the submodules)
+and sends it to the shop of bdecent.de; a pre-release goes to staging.bdecent.de only. The Moodle Marketplace step is
+off until the plugin is listed there. Then the workflow `stable-branches.yml` (started by hand with the tag) builds the
+`MOODLE_502_STABLE` and `MOODLE_503_STABLE` branches for git deployments, and the publish workflow of
+`moodle-mod_contentdesigner_pro` builds the bundle with the paid elements and addons. The availability condition is
+released from its own repository with the same tag.

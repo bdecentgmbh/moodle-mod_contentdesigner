@@ -39,12 +39,16 @@ and the outro at the end.
 | Chapter | Groups elements. Settings: title, whether learners see the title, visibility, Learning Tools (bookmarks and notes, when the Learning Tools plugin is installed). |
 | Heading | A main heading (h2) or sub heading (h3), optionally as a link, with its alignment. |
 | Paragraph | Plain text with its alignment. |
-| Rich text | Text with formatting, images and media, written in the editor. |
+| Rich text | Text with formatting, images and media, written in the editor. Embedded media (iframes) are kept only if you may trust content (`moodle/site:trustcontent`, usually editing teachers and managers). |
+| Callout | A coloured box for information, a tip, a warning or eight more types, with an optional title and rich text. |
+| Image | One image or a slideshow of several images, with a caption and optionally a lightbox. |
+| Table of contents | The chapters of the activity with the progress of the learner; learners jump to a chapter from it. |
+| Video Time | A video of a Video Time activity (needs the Video Time plugin). Set it as **Mandatory** to hide the elements after it until the learner completed the video. |
 | Interactive content (H5P) | An H5P package. Set it as **Mandatory** to hide the elements after it until the learner completed it. |
 | Outro | The end of the content: an image, a text and up to two buttons (custom link, next activity, back to the course or the section). |
 
-The paid elements and addons of the Content Designer bundle add more elements (for example images, polls, questions,
-ratings, a table of contents, Video Time videos) and more settings.
+The paid elements and addons of the Content Designer bundle add more elements (polls, questions, ratings, panels in
+tabs or an accordion) and more settings.
 
 ## General settings of elements
 

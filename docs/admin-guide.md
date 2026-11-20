@@ -13,19 +13,21 @@ installing and configuring it, the permissions, and what happens with backups, c
 
 ## Requirements and installation
 
-- Moodle 4.5, 5.1, 5.2 or 5.3.
+- Moodle 5.2 or 5.3.
 - Optional: [Learning Tools](https://moodle.org/plugins/local_learningtools) for bookmarks and notes on chapters.
+- Optional: [Video Time](https://moodle.org/plugins/mod_videotime) for the Video Time element. Without it the element
+  is not offered, and existing Video Time elements show a notice instead of the video.
 
 Install it like any other activity module into `mod/contentdesigner`, then visit *Site administration ▸
 Notifications*. To deploy from git, use the `MOODLE_xxx_STABLE` branch of your Moodle version of
-`bdecentgmbh/moodle-mod_contentdesigner` (for example `MOODLE_405_STABLE`); `main` references the paid elements and
+`bdecentgmbh/moodle-mod_contentdesigner` (for example `MOODLE_503_STABLE`); `main` references the paid elements and
 addons as git submodules.
 
 ## The Content Designer bundle
 
-The free plugin contains the activity with the elements chapter, heading, paragraph, rich text, H5P and outro. The paid
-Content Designer bundle adds elements (image, poll, question, rating, table of contents, Video Time) and addons: the
-activity report and the pro features (navigation method, graded attempts, completion rules, automatic chapter
+The free plugin contains the activity with the elements chapter, heading, paragraph, rich text, callout, image, table
+of contents, Video Time, H5P and outro. The paid Content Designer bundle adds elements (poll, question, rating,
+panels) and addons: the activity report and the pro features (navigation method, graded attempts, completion rules, automatic chapter
 completion, saved H5P state). Install the bundle instead of the free plugin; it contains the free plugin.
 
 ### Upgrading from Content Designer 1.x
@@ -35,6 +37,10 @@ completion, saved H5P state). Install the bundle instead of the free plugin; it 
   bundle repository instead of its `main`) and run the upgrade. The paid elements keep their data; the addon
   `cdaddon_pro` takes over the settings and data of the pro features, which stay in the tables of the activity.
   Nothing has to be uninstalled.
+- The elements image, table of contents and Video Time were paid in 1.x and are part of the free plugin from 2.0 on.
+  Their data stays.
+- Rich text is now cleaned (scripts, iframes and other unsafe markup are removed) unless its author has the capability
+  `moodle/site:trustcontent`. Rich text saved before 2.0 is shown as before until it is edited.
 
 ## Settings
 

@@ -1,18 +1,30 @@
 # Changelog
 
-## 2.0 (2026-10-21)
+## 2.0 (2026112000)
 
-Supports Moodle 4.5 to 5.3; requires Moodle 4.5.
+Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
 
 - One code base for the free plugin and the paid bundle: the free plugin contains the core of the former pro
-  edition, including its fixes and global search. The paid features are separate subplugins: the elements image,
-  poll, question, rating, table of contents and Video Time, and the addons `cdaddon_report` (activity report) and
-  `cdaddon_pro` (free navigation, graded attempts, completion rules, automatic chapter completion, saved H5P states).
+  edition, including its fixes and global search. The elements image, table of contents and Video Time, formerly
+  paid, are now free. The paid features are separate subplugins in private repositories: the elements poll,
+  question, rating and panels, and the addons `cdaddon_report` (activity report) and `cdaddon_pro` (free navigation,
+  graded attempts, completion rules, automatic chapter completion, saved H5P states).
+- New element callout (free): a coloured box for information, tips, warnings and eight more types.
+- New element panels (paid): tabs or an accordion; a mandatory panels element hides the next elements until every
+  panel was opened.
+- Paged display (setting "Display mode"): every chapter on its own page with Previous and Next buttons, under the
+  same conditions as the scrolling display (chapter completion, mandatory elements); learners continue on the page
+  where their progress in the attempt stops, a new attempt starts on the first page, the outro is on the last page.
+- The Video Time element no longer requires Video Time: without it the element is not offered and existing
+  elements show a notice.
 - Addons extend the activity through hooks (`classes/hook`); the settings and data of the pro features stay in the
   tables of the activity, so upgrading from the pro edition 1.x keeps them.
 - Security: every element, chapter, content and attempt id of a request is loaded through the activity whose access
-  was checked, in pages, fragments, web services, the in-place title editing and the file serving; element settings
-  accept CSS lengths, colours and gradients only; the H5P web services accept only the own unfinished attempt.
+  was checked, in pages, fragments, web services, the in-place title editing and the file serving; files of hidden
+  elements and chapters are served to editors only; element settings accept CSS lengths, colours and gradients only;
+  the H5P web services accept only the own unfinished attempt. Rich text, callouts and panels are cleaned unless
+  their author may trust content (`moodle/site:trustcontent`); rich text saved before 2.0 stays trusted until it is
+  edited.
 - Privacy: elements export and delete the data of learners through an extended interface
   (`contentdesignerelements_provider`), with user lists; the activity covers attempts and completion states.
 - Backup and restore include the attempts with the data of the elements and the general settings of all elements,
@@ -20,12 +32,10 @@ Supports Moodle 4.5 to 5.3; requires Moodle 4.5.
 - Course reset deletes the progress of learners; deleting an activity or an element deletes the data of learners in
   it.
 - Global search indexes visible elements only and checks access without extra tables.
-- Paged display (setting "Display mode"): every chapter on its own page with Previous and Next buttons, under the
-  same conditions as the scrolling display (chapter completion, mandatory elements); learners continue on the page
-  where their progress in the attempt stops, a new attempt starts on the first page, the outro is on the last page.
+- Accessibility: the element picker of the editor works with the keyboard; element icons have names.
 - The editor uses `core/modal`, required by Moodle 5.2 and later.
-- Documentation for the Documentation Center (`docs/`); tests and CI for Moodle 4.5 to 5.3; stable branches for
-  deployments from git.
+- Documentation for the Documentation Center (`docs/`); tests and CI for Moodle 5.2 and 5.3, with and without
+  Video Time; stable branches for deployments from git; release workflow.
 
 ## 1.6 and earlier
 
