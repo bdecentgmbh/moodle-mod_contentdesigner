@@ -309,6 +309,22 @@ final class chapter_completion_test extends \advanced_testcase {
     }
 
     /**
+     * The chapter title is formatted for learners: filters run in the module context and "&" is escaped once.
+     */
+    public function test_core_chapter_title(): void {
+        global $DB;
+        $this->without_addons(true);
+        $this->create_activity();
+        $DB->set_field('cdelement_chapter', 'title', 'Q&A <b>bold</b>', ['id' => $this->chapters[1]->id]);
+        $DB->set_field('cdelement_chapter', 'titlestatus', 1, ['id' => $this->chapters[1]->id]);
+        $this->setUser($this->student);
+        [$course, $cm] = get_course_and_cm_from_cmid($this->cd->cmid);
+
+        $html = (new editor($cm, $course, attempts::get_current($this->cd->id, $this->student->id)))->render_elements();
+        $this->assertStringContainsString('<h4>Q&amp;A bold</h4>', $html);
+    }
+
+    /**
      * Pro: with sequential navigation the mandatory element prevents the completion, with free navigation it does not.
      */
     public function test_pro_navigation(): void {

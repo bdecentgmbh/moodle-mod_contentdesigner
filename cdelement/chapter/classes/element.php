@@ -291,7 +291,7 @@ class element extends \mod_contentdesigner\elements {
                 if ($before && $chapterafter == $chapterid) {
                     $chapterreached = true;
                 }
-                $chapter->chaptertitle = $chapter->title;
+                $chapter->chaptertitle = format_string($chapter->title, true, ['context' => $this->context]);
                 $chapter->title = $before ? $chapter->title : ($this->title_editable($chapter) ?: $this->info()->name);
 
                 [$prevent, $contents, $learningtools] = $this->generate_chapter_content(
