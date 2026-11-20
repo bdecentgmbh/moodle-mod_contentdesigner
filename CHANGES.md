@@ -25,6 +25,18 @@ Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
   the H5P web services accept only the own unfinished attempt. Rich text, callouts and panels are cleaned unless
   their author may trust content (`moodle/site:trustcontent`); rich text saved before 2.0 stays trusted until it is
   edited.
+- Security: learners can complete only the chapters they reached, after the mandatory elements before and in them
+  (sequential navigation); the chapters after a chapter are loaded only if the learner can get past it.
+- Guests view the content without saving progress (no attempts, chapter completions or H5P results); a notice
+  asks them to log in.
+- The editor saves deleting, moving and hiding elements and moving chapters through write web services.
+- Outro buttons with a URL that is not valid are not shown; the editor shows the titles of the outro and the
+  table of contents without HTML.
+- Chapter titles are formatted for learners (filters, multi-language content).
+- The chapter and the outro cannot be uninstalled; uninstalling another element deletes its contents, settings and
+  files in all activities. Deleting an element deletes the files of all its areas.
+- Global search indexes an element again after it is shown or renamed in the editor.
+- The unused site setting for a default background image of elements is removed.
 - Privacy: elements export and delete the data of learners through an extended interface
   (`contentdesignerelements_provider`), with user lists; the activity covers attempts and completion states.
 - Backup and restore include the attempts with the data of the elements and the general settings of all elements,
