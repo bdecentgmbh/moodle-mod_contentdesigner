@@ -1,13 +1,17 @@
 name: Moodle Plugin CI
 
-# Runs on pull requests only.
+# Runs on every push to main and on every pull request (feature branches are tested through their pull request
+# only). The release workflow (release.yml) waits for the run on the tagged commit, which on main is a merge commit.
 #
 # Scope: the free mod_contentdesigner with its free elements. The paid elements and addons under cdelement/ and
 # cdaddon/ are private git submodules; they are NOT checked out here (submodules: false) and each of them runs its own
 # CI against mod_contentdesigner. Uninitialised submodules leave empty directories behind, which Moodle would treat as
 # broken plugins, so they are removed before the install step.
 on:
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
