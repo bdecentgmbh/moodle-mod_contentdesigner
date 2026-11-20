@@ -109,6 +109,13 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
                     if (!document.querySelector(chapterSelector) && !document.querySelector(elementSelector)) {
                         filterChapter.push(chapter);
                     } else {
+                        // Chapters are completed automatically only once their mandatory elements are completed.
+                        var chapterInDocument = document.querySelector(chapterSelector);
+                        if (chapterInDocument !== null && chapter.dataset.autocompletion) {
+                            chapterInDocument.dataset.autocompletion = chapter.dataset.autocompletion;
+                        } else if (chapterInDocument !== null) {
+                            delete chapterInDocument.dataset.autocompletion;
+                        }
                         var elements = chapter.querySelectorAll('.element-item') ?? [];
                         elements.forEach((element) => {
                             var content = element.querySelector('.element-content');
@@ -189,6 +196,10 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
             promise.done((html, js) => {
                 var fakeDiv = document.createElement('div');
                 fakeDiv.innerHTML = html;
+                // Nothing is returned when the learner cannot get past the chapter.
+                if (fakeDiv.querySelector('.course-content-list') === null) {
+                    return;
+                }
                 var chapters = fakeDiv.querySelector('.course-content-list').children;
                 var filterChapter = [];
                 chapters.forEach((chapter) => {

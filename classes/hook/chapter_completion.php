@@ -19,9 +19,10 @@ namespace mod_contentdesigner\hook;
 /**
  * Lets plugins complete a chapter automatically instead of by the learner's "Mark as done" button.
  *
- * Dispatched for every chapter that is shown to a learner. A chapter completed automatically gets no button and
- * the attribute data-autocompletion="1"; the plugin completes it from its own JavaScript through the web service
- * cdelement_chapter_update_completion.
+ * Dispatched for every chapter that is shown to a learner. A chapter completed automatically gets no button and,
+ * once no mandatory element in it is incomplete, the attribute data-autocompletion="1"; the plugin completes it from
+ * its own JavaScript through the web service cdelement_chapter_update_completion. The web service refuses chapters
+ * that the learner cannot complete yet (not reached, incomplete mandatory elements with sequential navigation).
  *
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>

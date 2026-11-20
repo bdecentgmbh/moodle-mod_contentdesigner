@@ -30,6 +30,7 @@ use mod_contentdesigner\hook\user_grades;
 use mod_contentdesigner\local\access;
 use mod_contentdesigner\local\attempts;
 use mod_contentdesigner\local\extensions;
+use mod_contentdesigner\local\pages;
 
 /**
  * Chapter element shortname.
@@ -430,22 +431,32 @@ function contentdesigner_output_fragment_load_elements($args) {
 }
 
 /**
- * Fragment: the chapters after a completed chapter, for the learner.
+ * Fragment: the chapters after a completed chapter, for the learner (scrolling display).
+ *
+ * The chapters that the learner can reach are computed from the start of the content, so the chapters after the
+ * given one are returned only if the learner can get past it. Paged activities load their pages instead.
  *
  * @param array $args The fragment arguments, with the validated module context, the chapter and the attempt id.
- * @return string|bool
+ * @return string The HTML of the content with the chapters after the given chapter, empty if there are none.
  */
 function contentdesigner_output_fragment_load_next_chapters($args) {
-    global $USER;
+    global $DB, $USER;
     [$course, $cm] = access::from_context($args['context'], access::VIEW);
     $chapter = access::get_chapter((int) $args['chapter'], $cm->instance);
+    $instance = $DB->get_record('contentdesigner', ['id' => $cm->instance], '*', MUST_EXIST);
+    if (pages::is_paged($instance)) {
+        return '';
+    }
     $attempt = attempts::get_for_render($cm->instance, $USER->id, (int) ($args['attemptid'] ?? 0));
 
     $editor = new editor($cm, $course, $attempt);
-    if ($editor->chapter->is_chaptercompleted($chapter->id)) {
-        return $editor->render_elements($chapter->id);
+    // The learner gets past the chapter if the content shows it and it does not hide the content after it.
+    foreach ($editor->chapter->get_chapters_data(true, true, false, false) as $data) {
+        if ($data['instancedata']->id == $chapter->id && !$data['prevent'] && !$data['chapterprevent']) {
+            return $editor->render_elements($chapter->id);
+        }
     }
-    return false;
+    return '';
 }
 
 /**

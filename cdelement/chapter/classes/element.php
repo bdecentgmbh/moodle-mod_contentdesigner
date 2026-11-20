@@ -269,7 +269,8 @@ class element extends \mod_contentdesigner\elements {
      *
      * @param bool $visible Load only visible elements.
      * @param bool $render Return the elements with rendered html.
-     * @param bool $chapterafter It is need to load the chapters after the given chapter.
+     * @param int|bool $chapterafter Only the chapters after the given chapter. The chapters up to it are checked from
+     *     the start all the same: when the learner cannot get past the given chapter, no chapter is returned.
      * @param bool $html With $render, whether to render the HTML of the elements, or only to check which chapters and
      *     elements the learner can reach (paged display).
      * @return array
@@ -283,19 +284,30 @@ class element extends \mod_contentdesigner\elements {
         $condition = ['contentdesignerid' => $this->cm->instance];
         $condition += $visible ? ['visible' => 1] : [];
         if ($chapters = $DB->get_records('cdelement_chapter', $condition, 'position ASC')) {
-            $chapterreached = false;
+            // With $chapterafter, the chapters up to the given one are checked but not returned.
+            $chapterreached = !$chapterafter;
             foreach ($chapters as $chapterid => $chapter) {
-                // Find the chapter is reached, checks only chapterafter enabled.
-                if ($chapterafter && !$chapterreached) {
-                    // Set the chapter reached to load the chapters from next chapter.
-                    $chapterreached = ($chapterafter == $chapterid);
-                    continue;
+                $before = !$chapterreached;
+                if ($before && $chapterafter == $chapterid) {
+                    $chapterreached = true;
                 }
                 $chapter->chaptertitle = $chapter->title;
-                $chapter->title = $this->title_editable($chapter) ?: $this->info()->name;
+                $chapter->title = $before ? $chapter->title : ($this->title_editable($chapter) ?: $this->info()->name);
 
-                [$prevent, $contents, $learningtools] = $this->generate_chapter_content($chapter, $visible, $render, $html);
+                [$prevent, $contents, $learningtools] = $this->generate_chapter_content(
+                    $chapter,
+                    $visible,
+                    $render,
+                    $html && !$before
+                );
                 if ($visible && empty($contents) && !$chapter->titlestatus) {
+                    continue;
+                }
+                if ($before) {
+                    // The learner gets past this chapter only if it does not hide the chapters after it.
+                    if ($render && ($prevent || $this->prevent_nextelements($chapter))) {
+                        return [];
+                    }
                     continue;
                 }
 
@@ -344,6 +356,26 @@ class element extends \mod_contentdesigner\elements {
             }
         }
         return $list;
+    }
+
+    /**
+     * Whether the current user may mark a chapter as completed: the chapter is shown to the user, the user can reach
+     * it (the chapters before it are completed and, with sequential navigation, their mandatory elements as well),
+     * and, with sequential navigation, no mandatory element of the chapter is incomplete in the attempt.
+     *
+     * The same rules decide which chapters the content shows ({@see get_chapters_data()}) and which pages a learner
+     * can open ({@see \mod_contentdesigner\local\pages}).
+     *
+     * @param int $chapterid The chapter id.
+     * @return bool
+     */
+    public function can_complete(int $chapterid): bool {
+        foreach ($this->get_chapters_data(true, true, false, false) as $data) {
+            if ($data['instancedata']->id == $chapterid) {
+                return !$data['prevent'];
+            }
+        }
+        return false;
     }
 
     /**

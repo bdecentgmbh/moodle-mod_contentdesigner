@@ -229,7 +229,7 @@
                 {{#chapters}}
                     <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
                       data-id="{{instancedata.id}}" data-elementshortname="chapter"
-                      {{#autocompletion}}data-autocompletion="1"{{/autocompletion}}>
+                      {{#autocompletion}}{{^prevent}}data-autocompletion="1"{{/prevent}}{{/autocompletion}}>
                         {{#instancedata.titlestatus}}
                             <div class="chapter-title" data-chapter="{{instancedata.id}}">
                                 <h4>{{instancedata.chaptertitle}}</h4>

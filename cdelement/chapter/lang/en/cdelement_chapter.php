@@ -24,6 +24,7 @@
 
 defined("MOODLE_INTERNAL") || die();
 
+$string['chapternotreached'] = 'Complete the chapters and the required elements before this chapter first.';
 $string['elementdescription'] = 'Add a new chapter to group elements';
 $string['pluginname'] = "Chapter";
 $string['privacy:metadata:chaptercompletion'] = 'Information about the user\'s chapter completion.';

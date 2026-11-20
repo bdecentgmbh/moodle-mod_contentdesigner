@@ -29,6 +29,7 @@ use core_external\external_function_parameters;
 use core_external\external_value;
 use mod_contentdesigner\editor;
 use mod_contentdesigner\local\access;
+use mod_contentdesigner\local\attempts;
 
 /**
  * Chapter external service methods.
@@ -49,7 +50,10 @@ class external extends external_api {
     }
 
     /**
-     * Marks a chapter of the activity as completed by the current user. Guests cannot save progress.
+     * Marks a chapter of the activity as completed by the current user.
+     *
+     * The chapter must be one that the content shows to the user: the user reached it and, with sequential
+     * navigation, completed its mandatory elements. Guests cannot save progress.
      *
      * @param int $cmid Coursemodule id.
      * @param int $chapter Chapter id.
@@ -68,6 +72,11 @@ class external extends external_api {
         $chapter = access::get_chapter($params['chapter'], $cm->instance);
         if (!$chapter->visible) {
             throw new \moodle_exception('invalidrecord', 'error');
+        }
+        // Only a chapter that the learner can reach, and whose mandatory elements are completed in the attempt.
+        $attempt = attempts::get_current($cm->instance, $USER->id);
+        if (!editor::get_element('chapter', $cm->id, $attempt)->can_complete($chapter->id)) {
+            throw new \moodle_exception('chapternotreached', 'cdelement_chapter');
         }
 
         $record = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter->id, 'userid' => $USER->id]);
