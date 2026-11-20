@@ -84,9 +84,6 @@ class general_element_form extends \moodleform {
         $mform->addElement('hidden', 'chapterid', $this->_customdata['chapterid']);
         $mform->setType('chapterid', PARAM_INT);
 
-        $mform->addElement('hidden', 'sesskey', sesskey());
-        $mform->setType('sesskey', PARAM_ALPHANUMEXT);
-
         if (
             ($this->_customdata['element'] == "chapter") && ($record = $DB->get_record(
                 'cdelement_chapter',
