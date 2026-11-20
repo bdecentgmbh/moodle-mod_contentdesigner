@@ -30,7 +30,6 @@ use mod_contentdesigner\editor;
 use mod_contentdesigner\hook\chapter_completion;
 use mod_contentdesigner\hook\content_navigation;
 use mod_contentdesigner\local\extensions;
-use moodle_exception;
 
 require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
 
@@ -226,7 +225,9 @@ class element extends \mod_contentdesigner\elements {
             $data->position = $lastelement ? $lastelement + 1 : 1;
             return $DB->insert_record($this->tablename, $data);
         } else {
-            $data->timecreated = time();
+            // The creation time is kept.
+            unset($data->timecreated);
+            $data->timemodified = time();
             $data->id = $data->instanceid;
             $data->titlestatus = $data->titlestatus ?? 0;
             if ($data->chapterid) {
@@ -460,11 +461,15 @@ class element extends \mod_contentdesigner\elements {
                     'userid' => $USER->id,
                 ]);
 
-                $learningtools['notescount'] = $DB->count_records('ltool_note_data', [
-                    'itemtype' => 'chapter',
-                    'itemid' => $chapter->id,
-                    'userid' => $USER->id,
-                ]);
+                // Learning Tools may be installed without its note tool.
+                $dbman = $DB->get_manager();
+                if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
+                    $learningtools['notescount'] = $DB->count_records('ltool_note_data', [
+                        'itemtype' => 'chapter',
+                        'itemid' => $chapter->id,
+                        'userid' => $USER->id,
+                    ]);
+                }
             }
         }
 
@@ -593,8 +598,8 @@ class element extends \mod_contentdesigner\elements {
 
         $instance = $this->get_instance($chapterid);
         $instance->contents = $contents;
+        $transaction = $DB->start_delegated_transaction();
         try {
-            $transaction = $DB->start_delegated_transaction();
             if (!empty($contents)) {
                 $list = explode(',', $contents);
                 $position = 1;
@@ -610,11 +615,12 @@ class element extends \mod_contentdesigner\elements {
             }
             // Update the chapter contents in cdelement_chapter table.
             $this->update_chapter_contents($chapterid);
+            $result = $DB->update_record('cdelement_chapter', $instance);
             $transaction->allow_commit();
-        } catch (moodle_exception $ex) {
-            $transaction->rollback($ex);
+        } catch (\Throwable $e) {
+            $transaction->rollback($e);
         }
-        return $DB->update_record('cdelement_chapter', $instance);
+        return $result;
     }
 
     /**
@@ -626,8 +632,8 @@ class element extends \mod_contentdesigner\elements {
     public function move_chapter($chapters) {
         global $DB;
 
+        $transaction = $DB->start_delegated_transaction();
         try {
-            $transaction = $DB->start_delegated_transaction();
             if (!empty($chapters)) {
                 $list = explode(',', $chapters);
                 $position = 1;
@@ -636,15 +642,15 @@ class element extends \mod_contentdesigner\elements {
                         'id' => $item,
                         'position' => $position,
                     ];
-                    $status = $DB->update_record('cdelement_chapter', $record);
+                    $DB->update_record('cdelement_chapter', $record);
                     $position += 1;
                 }
             }
             $transaction->allow_commit();
-            return true;
-        } catch (moodle_exception $ex) {
-            $transaction->rollback($ex);
+        } catch (\Throwable $e) {
+            $transaction->rollback($e);
         }
+        return true;
     }
 
     /**
