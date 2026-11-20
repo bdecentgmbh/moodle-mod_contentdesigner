@@ -73,6 +73,13 @@ user account, so they cannot save progress: they view the content in an attempt 
 refuse them with `access::require_not_guest()`. Elements and addons that store progress of the current user call it
 as well.
 
+The gating (chapters not completed, mandatory elements, pages) is checked by the content, the paged display, the
+fragments and the chapter completion. File serving (`contentdesigner_pluginfile()`) and global search check only
+that the element and its chapter are visible, not whether the learner reached them; H5P packages are served by
+core_h5p, which checks the availability of the activity only. Files and texts of content that a learner has not
+reached yet are therefore not secret: content that must stay secret belongs in a separate activity with access
+restrictions.
+
 ## Hooks
 
 Addons extend the activity through these hooks in `mod_contentdesigner\hook` (callbacks in the addon's `db/hooks.php`):
