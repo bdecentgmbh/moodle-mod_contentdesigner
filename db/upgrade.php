@@ -515,5 +515,13 @@ function xmldb_contentdesigner_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026112001, 'contentdesigner');
     }
 
+    if ($oldversion < 2026112002) {
+        // The site default background image of the elements was never used, its setting is removed.
+        unset_config('bgimage', 'mod_contentdesigner');
+        get_file_storage()->delete_area_files(context_system::instance()->id, 'mod_contentdesigner', 'elementbg');
+
+        upgrade_mod_savepoint(true, 2026112002, 'contentdesigner');
+    }
+
     return true;
 }

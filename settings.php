@@ -76,13 +76,6 @@ if ($ADMIN->fulltree) {
         ''
     ));
 
-    $elementsettings->add(new admin_setting_configstoredfile(
-        'mod_contentdesigner/bgimage',
-        get_string('elementbgimage', 'mod_contentdesigner'),
-        get_string('elementbgimage_help', 'mod_contentdesigner'),
-        'elementbg'
-    ));
-
     $animationtype = [
         0 => get_string('none'),
         'fadeIn' => get_string('fadein', 'mod_contentdesigner'),
