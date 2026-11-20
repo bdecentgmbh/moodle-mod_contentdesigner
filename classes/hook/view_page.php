@@ -29,6 +29,11 @@ use mod_contentdesigner\content_display;
  * Actions: '' (the page itself), 'summary' (the overview of the attempts), 'makeattempt', 'continueattempt' and
  * 'finishattempt' (with an attempt id), or any action of a plugin.
  *
+ * The action comes from the request parameter action of a GET or POST request, and the activity checks no session
+ * key for it. A plugin must call require_sesskey() itself for every action that changes data (e.g. starting or
+ * finishing an attempt), and must refuse guests there (they cannot save progress, see
+ * {@see \mod_contentdesigner\local\access::require_not_guest()}).
+ *
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
