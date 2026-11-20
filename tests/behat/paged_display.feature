@@ -144,7 +144,7 @@ Feature: Paged display of Content Designer activities
     And I should see "Page 2 of 3"
     And I click on "Next page" "link"
     And I should see "Page 3 of 3"
-    And the "Next page" "button" should not exist
+    And "Next page" "button" should not exist
 
   Scenario: Mandatory elements keep the next page closed until they are completed in the attempt
     Given the following "activities" exist:
