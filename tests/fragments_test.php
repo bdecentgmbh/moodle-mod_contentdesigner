@@ -27,14 +27,14 @@ require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\external\delete_element
- * @covers     \mod_contentdesigner\external\move_element
- * @covers     \mod_contentdesigner\external\move_chapter
- * @covers     \mod_contentdesigner\external\update_visibility
- * @covers     ::contentdesigner_output_fragment_editor_content
- * @covers     ::contentdesigner_output_fragment_load_elements
- * @covers     ::mod_contentdesigner_inplace_editable
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\external\delete_element::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\external\move_element::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\external\move_chapter::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\external\update_visibility::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_output_fragment_editor_content')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_output_fragment_load_elements')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('mod_contentdesigner_inplace_editable')]
 final class fragments_test extends \advanced_testcase {
     /** @var \stdClass The course. */
     private \stdClass $course;

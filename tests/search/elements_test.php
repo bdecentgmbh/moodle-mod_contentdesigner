@@ -24,9 +24,9 @@ use core_search\manager;
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\search\elements
- * @covers     \mod_contentdesigner\elements
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\search\elements::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\elements::class)]
 final class elements_test extends \advanced_testcase {
     /** @var \stdClass The course. */
     private \stdClass $course;
