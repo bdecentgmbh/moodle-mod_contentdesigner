@@ -3,10 +3,12 @@
 # cdelement/ or cdaddon/ is ignored, so paid code can never be committed to this repository by accident:
 # list a new free element here when you add it.
 /cdelement/*/
+!/cdelement/callout/
 !/cdelement/chapter/
 !/cdelement/h5p/
 !/cdelement/heading/
 !/cdelement/outro/
+!/cdelement/panels/
 !/cdelement/paragraph/
 !/cdelement/richtext/
 !/cdelement/image/

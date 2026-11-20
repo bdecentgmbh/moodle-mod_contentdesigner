@@ -13,3 +13,6 @@
 [submodule "cdaddon/pro"]
 	path = cdaddon/pro
 	url = git@github.com:bdecentgmbh/moodle-cdaddon_pro.git
+[submodule "cdelement/panels"]
+	path = cdelement/panels
+	url = git@github.com:bdecentgmbh/moodle-cdelement_panels.git
