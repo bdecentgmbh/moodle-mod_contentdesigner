@@ -780,6 +780,8 @@ abstract class elements {
     /**
      * Delete an element instance with its general options, files and the data of its users.
      *
+     * The files of the instance in the areas of mod_contentdesigner are deleted here: the background image, the
+     * description and the areas of {@see areafiles()} (item id: the instance id).
      * Elements with own data override {@see delete_instance_data()}.
      *
      * @param int $instanceid
@@ -797,9 +799,14 @@ abstract class elements {
             $DB->delete_records('contentdesigner_content', ['element' => $this->elementid, 'instance' => $instanceid]);
             $DB->delete_records('contentdesigner_options', ['element' => $this->elementid, 'instance' => $instanceid]);
             if ($this->context) {
+                // The general areas of the element and its own areas in mod_contentdesigner ({@see areafiles()}).
+                $areas = [$this->shortname . 'elementbg', $this->shortname . 'description'];
+                foreach (method_exists($this, 'areafiles') ? $this->areafiles() : [] as $area) {
+                    $areas[] = 'cdelement_' . $this->shortname . '_' . $area;
+                }
                 $fs = get_file_storage();
-                foreach (['elementbg', 'description'] as $area) {
-                    $fs->delete_area_files($this->context->id, 'mod_contentdesigner', $this->shortname . $area, $instanceid);
+                foreach ($areas as $area) {
+                    $fs->delete_area_files($this->context->id, 'mod_contentdesigner', $area, $instanceid);
                 }
             }
             $transaction->allow_commit();
