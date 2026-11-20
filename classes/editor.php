@@ -294,7 +294,7 @@ class editor {
             $li[] = html_writer::tag(
                 'li',
                 $info->icon . $name . $description,
-                ['data-element' => $info->shortname, 'class' => 'element-item']
+                ['data-element' => $info->shortname, 'class' => 'element-item', 'role' => 'button', 'tabindex' => '0']
             );
         }
 

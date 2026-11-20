@@ -111,8 +111,9 @@
     data-visibility="{{instancedata.visible}}"
 >
     <div class="element-box">
-        <div class="element-icon">
-            <span>{{{info.icon}}}</span>
+        <div class="element-icon" title="{{info.name}}">
+            <span aria-hidden="true">{{{info.icon}}}</span>
+            <span class="visually-hidden">{{info.name}}</span>
         </div>
         <div class="element-title">
             {{{instancedata.title}}}

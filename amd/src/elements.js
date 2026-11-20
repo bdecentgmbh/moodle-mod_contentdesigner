@@ -111,7 +111,11 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
                     } else {
                         var elements = chapter.querySelectorAll('.element-item') ?? [];
                         elements.forEach((element) => {
-                            var dataset = element.children[0].dataset;
+                            var content = element.querySelector('.element-content');
+                            if (!content) {
+                                return;
+                            }
+                            var dataset = content.dataset;
                             var selector = 'li.element-item .element-content[data-instanceid="' + dataset.instanceid + '"]';
                             selector += '[data-elementshortname="' + dataset.elementshortname + '"]';
                             var elementindocument = document.querySelector(selector);

@@ -251,18 +251,23 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                 large: false,
             }).then(modal => {
                 modal.getRoot().on(ModalEvents.bodyRendered, function() {
-                    modal.getRoot().get(0).querySelectorAll('.element-item').forEach((e) => {
-                        e.addEventListener('click', function(e) {
-                            if (e.target.closest('.element-item')) {
-                                var element = e.currentTarget.dataset.element;
-                                var params = {
-                                    cmid: cmID,
-                                    element: element,
-                                    chapter: chapter,
-                                    position: position,
-                                };
-                                const urlParams = new URLSearchParams(params);
-                                window.location = M.cfg.wwwroot + '/mod/contentdesigner/element.php?' + urlParams.toString();
+                    // Opens the form to add the chosen element.
+                    const addElement = (item) => {
+                        const urlParams = new URLSearchParams({
+                            cmid: cmID,
+                            element: item.dataset.element,
+                            chapter: chapter,
+                            position: position,
+                        });
+                        window.location = M.cfg.wwwroot + '/mod/contentdesigner/element.php?' + urlParams.toString();
+                    };
+                    modal.getRoot().get(0).querySelectorAll('.element-item').forEach((item) => {
+                        item.addEventListener('click', (e) => addElement(e.currentTarget));
+                        // The items are buttons for the keyboard too.
+                        item.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                addElement(e.currentTarget);
                             }
                         });
                     });
