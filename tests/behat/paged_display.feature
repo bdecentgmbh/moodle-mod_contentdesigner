@@ -33,6 +33,7 @@ Feature: Paged display of Content Designer activities
     Then I should see "Text of Practice"
     And I should not see "Page 1 of 2"
     And I am on the "Paged content" "activity editing" page
+    And I expand all fieldsets
     And the field "Display mode" matches value "Scroll"
     And I set the field "Display mode" to "Pages"
     And I press "Save and display"
