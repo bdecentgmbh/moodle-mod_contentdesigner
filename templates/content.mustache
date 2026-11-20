@@ -310,7 +310,7 @@
                                 <i class="fa fa-pencil-square-o"></i>
                                 {{#str}}strnotes, mod_contentdesigner{{/str}}
                                   {{#learningtools.notescount}}
-                                    <span class="badge badge-light">({{learningtools.notescount}})</span>
+                                    <span class="badge text-bg-light">({{learningtools.notescount}})</span>
                                   {{/learningtools.notescount}}
                                 </button>
                               {{/hasnotecapability}}
@@ -323,7 +323,7 @@
                           {{#count}}
                               {{#completion}}
                                 {{#completionmode}}
-                                  <button class="btn btn-success btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                  <button class="btn btn-success w-100 text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
                                       {{#pix}} e/tick, core {{/pix}}
                                       {{#str}} completion_manual:done, course {{/str}}
                                   </button>
@@ -331,7 +331,7 @@
                               {{/completion}}
                               {{^completion}}
                                 {{#completionmode}}
-                                <button class="btn btn-outline-secondary btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                <button class="btn btn-outline-secondary w-100 text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
                                     {{#str}} completion_manual:markdone, course {{/str}}
                                 </button>
                                 {{/completionmode}}
@@ -343,8 +343,8 @@
                     </li>
 
                     {{#prevent}}
-                    <div class="label label-warning">
-                        <span>{{#pix}} i/caution, core {{/pix}}</span><label>{{#str}} completeprevelement, mod_contentdesigner {{/str}}</label>
+                    <div class="alert alert-warning contentdesigner-warning">
+                        <span>{{#pix}} i/caution, core {{/pix}}</span><span>{{#str}} completeprevelement, mod_contentdesigner {{/str}}</span>
                     </div>
                     {{/prevent}}
                 {{/chapters}}

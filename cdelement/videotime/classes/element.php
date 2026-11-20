@@ -308,7 +308,7 @@ class element extends \mod_contentdesigner\elements {
         if ($self) {
             $string = get_string('selfenroltoaccess', 'cdelement_videotime');
             $courseurl = new moodle_url('/enrol/index.php', ['id' => $courseid]);
-            $string .= html_writer::link($courseurl, get_string('enrolme', 'enrol_self'), ['class' => 'btn btn-primary ml-4']);
+            $string .= html_writer::link($courseurl, get_string('enrolme', 'enrol_self'), ['class' => 'btn btn-primary ms-4']);
         } else {
             $string = get_string('fallbackmessage', 'cdelement_videotime');
         }

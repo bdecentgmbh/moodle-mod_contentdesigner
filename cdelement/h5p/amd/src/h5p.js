@@ -183,8 +183,8 @@ define(['jquery', 'mod_contentdesigner/elements', 'core/ajax', 'core/notificatio
          * Remove the warning from response.
          */
         const removeWarning = () => {
-            if (Elements.courseContent().querySelector('.label.label-warning') !== null) {
-                Elements.courseContent().querySelector('.label.label-warning').remove();
+            if (Elements.courseContent().querySelector('.contentdesigner-warning') !== null) {
+                Elements.courseContent().querySelector('.contentdesigner-warning').remove();
             }
         };
 

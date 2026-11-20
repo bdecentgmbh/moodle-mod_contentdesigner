@@ -180,8 +180,8 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
          * Remove the warning from response.
          */
         const removeWarning = () => {
-            if (courseContent() !== null && courseContent().querySelector('.label.label-warning') !== null) {
-                courseContent().querySelector('.label.label-warning').remove();
+            if (courseContent() !== null && courseContent().querySelector('.contentdesigner-warning') !== null) {
+                courseContent().querySelector('.contentdesigner-warning').remove();
             }
         };
 
