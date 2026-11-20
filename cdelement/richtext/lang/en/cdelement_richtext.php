@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined("MOODLE_INTERNAL") || die();
-
 $string['elementdescription'] = 'Add content using the Moodle editor (atto/tinymce)';
 $string['pluginname'] = "Rich text";
 $string['privacy:metadata'] = 'The richtext only displays the richtext content and does not store any user data.';

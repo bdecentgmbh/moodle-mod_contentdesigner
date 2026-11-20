@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined("MOODLE_INTERNAL") || die();
-
 $string['chapternotreached'] = 'Complete the chapters and the required elements before this chapter first.';
 $string['elementdescription'] = 'Add a new chapter to group elements';
 $string['pluginname'] = "Chapter";

@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 $string['calloutcontent'] = 'Callout content';
 $string['calloutcontent_help'] = 'The text of the callout box.';
 $string['callouttitle'] = 'Callout title';

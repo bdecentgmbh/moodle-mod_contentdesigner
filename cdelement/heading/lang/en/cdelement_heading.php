@@ -22,8 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined("MOODLE_INTERNAL") || die();
-
 $string['elementdescription'] = 'Add a heading';
 $string['pluginname'] = "Heading";
 $string['privacy:metadata'] = 'The heading only displays the heading element content and does not store any user data.';

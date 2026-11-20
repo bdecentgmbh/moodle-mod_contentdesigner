@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined("MOODLE_INTERNAL") || die();
-
 $string['caption'] = 'Caption';
 $string['caption_help'] = 'Add a caption for the image. This text will be displayed below the image, providing context or additional information about the image content.';
 $string['contentimages'] = 'Images';

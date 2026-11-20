@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined("MOODLE_INTERNAL") || die();
-
 $string['elementdescription'] = 'Embed videotime instance';
 $string['fallbackmessage'] = 'You don\'t have access to view this content. Please contact your teacher to request access if you\'re unable to proceed.';
 $string['invalidvideotime'] = 'You cannot embed this Video Time activity.';

@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined("MOODLE_INTERNAL") || die();
-
 $string['actiontstatus'] = 'Call to action';
 $string['actiontstatus_help'] = 'This setting enables a Call to Action button that dynamically guides users based on their progress:<br>
 <b>Start</b> Now directs to the first chapter if no chapters are completed.<br>
