@@ -22,15 +22,16 @@ global $CFG;
 require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 
 /**
- * Tests of the access checks of the fragments and the in-place editing of titles (lib.php).
+ * Tests of the access checks of the fragments, the web services of the editor and the in-place editing of titles.
  *
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     ::contentdesigner_output_fragment_edit_element
- * @covers     ::contentdesigner_output_fragment_move_element
- * @covers     ::contentdesigner_output_fragment_move_chapter
- * @covers     ::contentdesigner_output_fragment_update_visibility
+ * @covers     \mod_contentdesigner\external\delete_element
+ * @covers     \mod_contentdesigner\external\move_element
+ * @covers     \mod_contentdesigner\external\move_chapter
+ * @covers     \mod_contentdesigner\external\update_visibility
+ * @covers     ::contentdesigner_output_fragment_editor_content
  * @covers     ::contentdesigner_output_fragment_load_elements
  * @covers     ::mod_contentdesigner_inplace_editable
  */
@@ -84,32 +85,28 @@ final class fragments_test extends \advanced_testcase {
     }
 
     /**
-     * Teachers cannot delete or hide elements of another activity through their own activity.
+     * Teachers cannot delete, hide or move elements of another activity through their own activity.
      */
     public function test_elements_of_other_activity(): void {
         global $DB;
         $this->setUser($this->teacher);
-        $headingid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => 'heading']);
 
         try {
-            contentdesigner_output_fragment_edit_element($this->args(['elementid' => $headingid,
-                'instanceid' => $this->otherheading->id, 'action' => 'delete']));
+            external\delete_element::execute($this->cd->cmid, 'heading', $this->otherheading->id);
             $this->fail('Deleting an element of another activity must fail.');
         } catch (\dml_missing_record_exception $e) {
             $this->assertTrue($DB->record_exists('cdelement_heading', ['id' => $this->otherheading->id]));
         }
 
         try {
-            contentdesigner_output_fragment_update_visibility($this->args(['element' => 'heading',
-                'instance' => $this->otherheading->id, 'status' => 'false']));
+            external\update_visibility::execute($this->cd->cmid, 'heading', $this->otherheading->id, false);
             $this->fail('Hiding an element of another activity must fail.');
         } catch (\dml_missing_record_exception $e) {
             $this->assertEquals(1, $DB->get_field('cdelement_heading', 'visible', ['id' => $this->otherheading->id]));
         }
 
         try {
-            contentdesigner_output_fragment_move_element($this->args(['chapterid' => $this->otherchapter->id,
-                'contents' => (string) $this->otherheading->contentid]));
+            external\move_element::execute($this->cd->cmid, $this->otherchapter->id, (string) $this->otherheading->contentid);
             $this->fail('Moving an element into a chapter of another activity must fail.');
         } catch (\dml_missing_record_exception $e) {
             $this->assertEquals(
@@ -118,46 +115,110 @@ final class fragments_test extends \advanced_testcase {
             );
         }
 
+        // Elements of another activity cannot be moved into a chapter of the own activity.
+        $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
+        $chapter = $gen->create_chapter($this->cd);
+        try {
+            external\move_element::execute($this->cd->cmid, $chapter->id, (string) $this->otherheading->contentid);
+            $this->fail('Moving an element of another activity must fail.');
+        } catch (\moodle_exception $e) {
+            $this->assertEquals('invalidrecord', $e->errorcode);
+        }
+
+        // The teacher cannot use the activity of another course at all.
+        try {
+            external\delete_element::execute($this->othercd->cmid, 'heading', $this->otherheading->id);
+            $this->fail('Teachers of another course must not delete the element.');
+        } catch (\moodle_exception $e) {
+            $this->assertTrue($DB->record_exists('cdelement_heading', ['id' => $this->otherheading->id]));
+        }
+
         $this->expectException(\moodle_exception::class);
-        contentdesigner_output_fragment_move_chapter($this->args(['chapters' => (string) $this->otherchapter->id]));
+        external\move_chapter::execute($this->cd->cmid, (string) $this->otherchapter->id);
     }
 
     /**
-     * Teachers manage the elements of their activity; the visibility status of the editor is a string.
+     * Teachers manage the elements of their activity through the web services; the editor renders the content again
+     * with a fragment.
      */
     public function test_edit_own_elements(): void {
         global $DB;
         $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
-        $chapter = $gen->create_chapter($this->cd);
+        $chapter = $gen->create_chapter($this->cd, ['title' => 'First']);
+        $second = $gen->create_chapter($this->cd, ['title' => 'Second']);
         $heading = $gen->create_element($this->cd, 'heading', ['heading' => 'Mine'], $chapter);
+        $paragraph = $gen->create_element($this->cd, 'paragraph', ['content' => 'Text'], $chapter);
         $this->setUser($this->teacher);
 
-        contentdesigner_output_fragment_update_visibility($this->args(['element' => 'heading', 'instance' => $heading->id,
-            'status' => 'false']));
+        $this->assertTrue(external\update_visibility::execute($this->cd->cmid, 'heading', $heading->id, false));
         $this->assertEquals(0, $DB->get_field('cdelement_heading', 'visible', ['id' => $heading->id]));
-        contentdesigner_output_fragment_update_visibility($this->args(['element' => 'heading', 'instance' => $heading->id,
-            'status' => 'true']));
+        $this->assertTrue(external\update_visibility::execute($this->cd->cmid, 'heading', $heading->id, true));
         $this->assertEquals(1, $DB->get_field('cdelement_heading', 'visible', ['id' => $heading->id]));
 
-        $headingid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => 'heading']);
-        contentdesigner_output_fragment_edit_element($this->args(['elementid' => $headingid, 'instanceid' => $heading->id,
-            'action' => 'delete']));
+        // Elements are moved into the second chapter, in the given order.
+        $contents = $paragraph->contentid . ',' . $heading->contentid;
+        $this->assertTrue(external\move_element::execute($this->cd->cmid, $second->id, $contents));
+        $this->assertEquals($second->id, $DB->get_field('contentdesigner_content', 'chapter', ['id' => $heading->contentid]));
+        $this->assertEquals(2, $DB->get_field('contentdesigner_content', 'position', ['id' => $heading->contentid]));
+        $this->assertEquals(1, $DB->get_field('contentdesigner_content', 'position', ['id' => $paragraph->contentid]));
+
+        $this->assertTrue(external\move_chapter::execute($this->cd->cmid, $second->id . ',' . $chapter->id));
+        $this->assertEquals(1, $DB->get_field('cdelement_chapter', 'position', ['id' => $second->id]));
+        $this->assertEquals(2, $DB->get_field('cdelement_chapter', 'position', ['id' => $chapter->id]));
+
+        $html = contentdesigner_output_fragment_editor_content($this->args([]));
+        $this->assertLessThan(strpos($html, 'First'), strpos($html, 'Second'));
+
+        $this->assertTrue(external\delete_element::execute($this->cd->cmid, 'heading', $heading->id));
         $this->assertFalse($DB->record_exists('cdelement_heading', ['id' => $heading->id]));
         $this->assertFalse($DB->record_exists('contentdesigner_content', ['id' => $heading->contentid]));
+
+        // Deleting a chapter deletes its elements.
+        $this->assertTrue(external\delete_element::execute($this->cd->cmid, 'chapter', $second->id));
+        $this->assertFalse($DB->record_exists('cdelement_chapter', ['id' => $second->id]));
+        $this->assertFalse($DB->record_exists('cdelement_paragraph', ['id' => $paragraph->id]));
     }
 
     /**
-     * Students cannot use the fragments of the editor.
+     * The web services of the editor are write functions; the old fragments that changed data are gone.
+     */
+    public function test_services_are_write_functions(): void {
+        $names = ['delete_element', 'move_chapter', 'move_element', 'update_visibility'];
+        foreach ($names as $name) {
+            $info = \core_external\external_api::external_function_info('mod_contentdesigner_' . $name);
+            $this->assertEquals('write', $info->type);
+            $this->assertTrue($info->allowed_from_ajax);
+            $this->assertFalse(function_exists('contentdesigner_output_fragment_' . $name));
+        }
+        $this->assertFalse(function_exists('contentdesigner_output_fragment_edit_element'));
+    }
+
+    /**
+     * Students cannot use the web services and the fragments of the editor.
      */
     public function test_student_cannot_edit(): void {
+        global $DB;
         $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
         $chapter = $gen->create_chapter($this->cd);
         $heading = $gen->create_element($this->cd, 'heading', ['heading' => 'Mine'], $chapter);
         $this->setUser($this->student);
 
-        $this->expectException(\required_capability_exception::class);
-        contentdesigner_output_fragment_update_visibility($this->args(['element' => 'heading', 'instance' => $heading->id,
-            'status' => 'false']));
+        $calls = [
+            fn() => external\update_visibility::execute($this->cd->cmid, 'heading', $heading->id, false),
+            fn() => external\delete_element::execute($this->cd->cmid, 'heading', $heading->id),
+            fn() => external\move_element::execute($this->cd->cmid, $chapter->id, (string) $heading->contentid),
+            fn() => external\move_chapter::execute($this->cd->cmid, (string) $chapter->id),
+            fn() => contentdesigner_output_fragment_editor_content($this->args([])),
+        ];
+        foreach ($calls as $call) {
+            try {
+                $call();
+                $this->fail('Students must not edit the content.');
+            } catch (\required_capability_exception $e) {
+                $this->assertEquals('nopermissions', $e->errorcode);
+            }
+        }
+        $this->assertEquals(1, $DB->get_field('cdelement_heading', 'visible', ['id' => $heading->id]));
     }
 
     /**

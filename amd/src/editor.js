@@ -22,8 +22,8 @@
  */
 
 define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/templates', 'core/notification',
-    'core/loadingicon'],
-    function(Modal, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon) {
+    'core/loadingicon', 'core/ajax'],
+    function(Modal, ModalEvents, Str, Fragment, Templates, Notification, LoadingIcon, Ajax) {
 
         var contextID;
 
@@ -50,13 +50,12 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                 if (elementAction && elementAction != undefined
                     && moduleElement && moduleElement != undefined) {
                     var action = elementAction.getAttribute('data-action');
-                    var elementId = moduleElement.getAttribute('data-elementid');
                     var element = moduleElement.getAttribute('data-elementshortname');
                     var instanceId = moduleElement.getAttribute('data-instanceid');
                     if (action === 'delete') {
                         // Deleting requires confirmation.
                         confirmDeleteElement(element, function() {
-                            editElement(moduleElement, elementId, instanceId, action);
+                            deleteElement(moduleElement, element, instanceId);
                         });
                     }
 
@@ -93,15 +92,14 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                 items.forEach((item) => {
                     contents.push(item.dataset.id);
                 });
-                let params = {
-                    chapters: contents.join(','),
-                    cmid: cmID
-                };
-                promise = Fragment.loadFragment('mod_contentdesigner', 'move_chapter', contextID, params).done((html, js) => {
-                    Templates.replaceNode('.contentdesigner-content', html, js);
-                }).fail(Notification.exception);
+                promise = Ajax.call([{
+                    methodname: 'mod_contentdesigner_move_chapter',
+                    args: {cmid: cmID, chapters: contents.join(',')}
+                }])[0].then(renderContent).catch(Notification.exception);
                 LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
             } else {
+                // The chapters whose elements changed, saved in one request.
+                var requests = [];
 
                 let chapter = moduleElement.closest('.chapters-content');
                 let item = moduleElement.parentNode;
@@ -116,7 +114,7 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                             append = true;
                         }
                         if (append && previousChapter.childNodes[1] != undefined) {
-                            updateChapterElements(previousChapter.childNodes[1]);
+                            requests.push(chapterElementsRequest(previousChapter.childNodes[1]));
                         }
                     } else {
                         item.parentNode.insertBefore(item, item.previousElementSibling);
@@ -132,7 +130,7 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                             prepend = true;
                         }
                         if (prepend && nextChapter.childNodes[1] != undefined) {
-                            updateChapterElements(nextChapter.childNodes[1]);
+                            requests.push(chapterElementsRequest(nextChapter.childNodes[1]));
                         }
 
                     } else {
@@ -140,37 +138,47 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                     }
                 }
 
-                promise = updateChapterElements(chapter);
+                requests.push(chapterElementsRequest(chapter));
+                promise = Promise.all(Ajax.call(requests)).then(renderContent).catch(Notification.exception);
                 LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
             }
         };
 
-        const updateChapterElements = (chapter) => {
+        /**
+         * Renders the content of the editor again, after a change was saved.
+         *
+         * @returns {Promise}
+         */
+        const renderContent = () => {
+            return Fragment.loadFragment('mod_contentdesigner', 'editor_content', contextID, {cmid: cmID})
+                .then((html, js) => Templates.replaceNode('.contentdesigner-content', html, js));
+        };
+
+        /**
+         * The request that saves the elements of a chapter in their order.
+         *
+         * @param {HTMLElement} chapter The chapter in the editor.
+         * @returns {Object} The request for core/ajax.
+         */
+        const chapterElementsRequest = (chapter) => {
             let contents = [];
             var items = chapter.querySelectorAll('li.element-item > div.element-item');
             items.forEach((item) => {
                 contents.push(item.dataset.contentid);
             });
-            let params = {
-                contents: contents.join(','),
-                chapterid: chapter.dataset.id,
-                cmid: cmID
+            return {
+                methodname: 'mod_contentdesigner_move_element',
+                args: {cmid: cmID, chapterid: chapter.dataset.id, contents: contents.join(',')}
             };
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'move_element', contextID, params);
-            promise.done((html, js) => {
-                Templates.replaceNode('.contentdesigner-content', html, js);
-            });
-
-            return promise;
         };
 
         var updateStatus = (moduleElement) => {
             let statusElement = moduleElement.querySelector('[data-action="status"] > i');
             var params = {
+                cmid: cmID,
                 element: moduleElement.dataset.elementshortname,
-                instance: moduleElement.dataset.instanceid,
-                status: moduleElement.dataset.visibility == true ? false : true,
-                cmid: cmID
+                instanceid: moduleElement.dataset.instanceid,
+                visible: moduleElement.dataset.visibility == true ? false : true,
             };
 
             if (moduleElement.dataset.visibility == true) {
@@ -183,32 +191,29 @@ define(['core/modal', 'core/modal_events', 'core/str', 'core/fragment', 'core/te
                 moduleElement.dataset.visibility = true;
             }
 
-            var promise = Fragment.loadFragment('mod_contentdesigner', 'update_visibility', contextID, params).then(() => {
-                return true;
-            });
+            var promise = Ajax.call([{
+                methodname: 'mod_contentdesigner_update_visibility',
+                args: params
+            }])[0].catch(Notification.exception);
             LoadingIcon.addIconToContainerRemoveOnCompletion(loaderItem, promise);
         };
 
 
         /**
-         * Performs an action on a element (moving, deleting, duplicating, hiding, etc.)
+         * Deletes an element (a chapter with its elements) and removes it from the editor.
          *
-         * @param {JQuery} moduleElement activity element we perform action on
-         * @param {Number} elementId
+         * @param {HTMLElement} moduleElement The element in the editor.
+         * @param {String} element Shortname of the element.
          * @param {Number} instanceId
-         * @param {String} action Action of the current clicked element.
          */
-        var editElement = function(moduleElement, elementId, instanceId, action) {
-            var args = {
-                cmid: cmID,
-                action: action,
-                elementid: elementId,
-                instanceid: instanceId,
-            };
-            Fragment.loadFragment('mod_contentdesigner', 'edit_element', contextID, args).then((html) => {
-                moduleElement.parentNode.replaceWith(html);
-                return;
-            }).fail(Notification.exception);
+        var deleteElement = function(moduleElement, element, instanceId) {
+            Ajax.call([{
+                methodname: 'mod_contentdesigner_delete_element',
+                args: {cmid: cmID, element: element, instanceid: instanceId}
+            }])[0].then(() => {
+                moduleElement.parentNode.remove();
+                return true;
+            }).catch(Notification.exception);
         };
 
         /**

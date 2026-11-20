@@ -62,7 +62,9 @@ links are declared in the static `define_decode_contents()` of the restore class
 ## Access checks
 
 `mod_contentdesigner\local\access` resolves the activity of a request and checks the capability (`from_context()` for
-fragments, `from_cmid()` for web services). Every id from a request is loaded through the activity that was checked
+fragments, `from_cmid()` for web services). Fragments only render; changes go through write web services, e.g. the
+editor's `mod_contentdesigner_delete_element`, `_move_element`, `_move_chapter` and `_update_visibility`
+(`db/services.php`), after which the editor renders the content again with the fragment `editor_content`. Every id from a request is loaded through the activity that was checked
 (`get_element_instance()`, `get_chapter()`, `get_attempt()`, `contents_belong_to()`).
 
 Guests may view the content (`mod/contentdesigner:view` is allowed for the guest role), but all guests share one

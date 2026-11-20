@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0 (2026112000)
+## 2.0 (2026112002)
 
 Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
 

@@ -460,76 +460,14 @@ function contentdesigner_output_fragment_load_next_chapters($args) {
 }
 
 /**
- * Fragment: deletes an element instance in the editor.
+ * Fragment: the content of the editor, rendered again after a change (see the web services in db/services.php).
  *
  * @param array $args The fragment arguments, with the validated module context.
  * @return string
  */
-function contentdesigner_output_fragment_edit_element($args) {
-    [, $cm] = access::from_context($args['context'], access::EDIT);
-    $element = access::get_element($args['elementid'], $cm->id);
-    $instance = access::get_element_instance($element, (int) $args['instanceid'], $cm->instance);
-    if (($args['action'] ?? '') == 'delete') {
-        $element->delete_element($instance->id);
-    }
-    return '';
-}
-
-/**
- * Fragment: moves elements within or between chapters in the editor.
- *
- * @param array $args The fragment arguments, with the validated module context, the chapter and its contents.
- * @return string
- */
-function contentdesigner_output_fragment_move_element($args) {
+function contentdesigner_output_fragment_editor_content($args) {
     [$course, $cm] = access::from_context($args['context'], access::EDIT);
-    $chapter = access::get_chapter((int) $args['chapterid'], $cm->instance);
-    $contents = clean_param($args['contents'] ?? '', PARAM_SEQUENCE);
-    if (!access::contents_belong_to(explode(',', $contents), $cm->instance)) {
-        throw new moodle_exception('invalidrecord', 'error');
-    }
-    $editor = new editor($cm, $course);
-    $editor->chapter->update_postion($chapter->id, $contents);
-    return $editor->display();
-}
-
-/**
- * Fragment: moves chapters in the editor.
- *
- * @param array $args The fragment arguments, with the validated module context and the chapters in their order.
- * @return string
- */
-function contentdesigner_output_fragment_move_chapter($args) {
-    global $DB;
-    [$course, $cm] = access::from_context($args['context'], access::EDIT);
-    $chapters = array_filter(explode(',', clean_param($args['chapters'] ?? '', PARAM_SEQUENCE)));
-    if ($chapters) {
-        [$insql, $params] = $DB->get_in_or_equal($chapters, SQL_PARAMS_NAMED);
-        $params['contentdesignerid'] = $cm->instance;
-        if (
-            $DB->count_records_select('cdelement_chapter', "id $insql AND contentdesignerid = :contentdesignerid", $params)
-                != count(array_unique($chapters))
-        ) {
-            throw new moodle_exception('invalidrecord', 'error');
-        }
-    }
-    $editor = new editor($cm, $course);
-    $editor->chapter->move_chapter(implode(',', $chapters));
-    return $editor->display();
-}
-
-/**
- * Fragment: shows or hides an element instance in the editor.
- *
- * @param array $args The fragment arguments, with the validated module context, the element, instance and status.
- * @return string
- */
-function contentdesigner_output_fragment_update_visibility($args) {
-    [, $cm] = access::from_context($args['context'], access::EDIT);
-    $element = access::get_element($args['element'], $cm->id);
-    $instance = access::get_element_instance($element, (int) $args['instance'], $cm->instance);
-    $element->update_visibility($instance->id, clean_param($args['status'] ?? 0, PARAM_BOOL) ? 1 : 0);
-    return '';
+    return (new editor($cm, $course))->display();
 }
 
 /**

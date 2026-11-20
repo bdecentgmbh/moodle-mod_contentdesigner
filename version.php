@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_contentdesigner';
-$plugin->version = 2026112001;
+$plugin->version = 2026112002;
 $plugin->release = '2.0';
 $plugin->requires = 2026042000; // Moodle 5.2.
 $plugin->supported = [502, 503];
