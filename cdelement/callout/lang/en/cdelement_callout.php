@@ -27,6 +27,9 @@ $string['calloutcontent_help'] = 'The text of the callout box.';
 $string['callouttitle'] = 'Callout title';
 $string['callouttitle_help'] = 'Optional heading shown inside the callout box. Leave it empty to show only the content.';
 $string['callouttype'] = 'Callout type';
+$string['callouttype_danger'] = 'Danger';
+$string['callouttype_definition'] = 'Definition';
+$string['callouttype_example'] = 'Example';
 $string['callouttype_help'] = 'The style of the callout box. Each type has its own colour and icon to signal its purpose to learners:
 
 * Information, Tip, Warning, Danger and Success for notes on the content.
@@ -36,9 +39,6 @@ $string['callouttype_help'] = 'The style of the callout box. Each type has its o
 * Expert quote for quotations and testimonials.
 * Example for worked examples.
 * Key takeaway for the single most important point of a section.';
-$string['callouttype_danger'] = 'Danger';
-$string['callouttype_definition'] = 'Definition';
-$string['callouttype_example'] = 'Example';
 $string['callouttype_info'] = 'Information';
 $string['callouttype_keytakeaway'] = 'Key takeaway';
 $string['callouttype_quote'] = 'Expert quote';
