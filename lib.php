@@ -619,8 +619,20 @@ function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $f
     }
 
     $itemid = (int) array_shift($args);
-    if (!$DB->record_exists($element->tablename(), ['id' => $itemid, 'contentdesignerid' => $cm->instance])) {
+    $instance = $DB->get_record($element->tablename(), ['id' => $itemid, 'contentdesignerid' => $cm->instance]);
+    if (!$instance) {
         return false;
+    }
+    // Files of hidden elements, and of elements in hidden chapters, are served to editors of the content only.
+    if (!has_capability(access::EDIT, $context)) {
+        if (isset($instance->visible) && !$instance->visible) {
+            return false;
+        }
+        $chapterid = $DB->get_field('contentdesigner_content', 'chapter', ['element' => $element->elementid,
+            'instance' => $itemid]);
+        if ($chapterid && !$DB->record_exists('cdelement_chapter', ['id' => $chapterid, 'visible' => 1])) {
+            return false;
+        }
     }
 
     $filename = array_pop($args);
