@@ -843,11 +843,29 @@ abstract class elements {
      */
     public function update_visibility($instanceid, $visibility) {
         global $DB;
-        return $DB->update_record($this->tablename(), (object) [
+        $result = $DB->update_record($this->tablename(), (object) [
             'id' => $instanceid,
             'visible' => $visibility ? 1 : 0,
             'timemodified' => time(),
         ]);
+        $this->touch_options($instanceid);
+        return $result;
+    }
+
+    /**
+     * Marks the general options of an instance as modified, so that global search indexes the instance again (its
+     * documents are the general options).
+     *
+     * @param int $instanceid Element instance id.
+     */
+    public function touch_options(int $instanceid): void {
+        global $DB;
+        $DB->set_field(
+            'contentdesigner_options',
+            'timemodified',
+            time(),
+            ['element' => $this->elementid, 'instance' => $instanceid]
+        );
     }
 
     /**

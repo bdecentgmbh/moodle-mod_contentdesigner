@@ -497,6 +497,7 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
     $element = editor::get_element($elementname, $cm->id);
     $title = clean_param($itemvalue, PARAM_TEXT);
     $DB->update_record($element->tablename(), (object) ['id' => $instanceid, 'title' => $title, 'timemodified' => time()]);
+    $element->touch_options((int) $instanceid);
 
     $record = $DB->get_record($element->tablename(), ['id' => $instanceid], '*', MUST_EXIST);
     return $element->get_title_editable($record);

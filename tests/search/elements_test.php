@@ -25,6 +25,7 @@ use core_search\manager;
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \mod_contentdesigner\search\elements
+ * @covers     \mod_contentdesigner\elements
  */
 final class elements_test extends \advanced_testcase {
     /** @var \stdClass The course. */
@@ -122,6 +123,33 @@ final class elements_test extends \advanced_testcase {
         $context = \context_module::instance($this->cd->cmid);
         $this->assertEquals($context->id, $documents['heading:Welcome']->get('contextid'));
         $this->assertEquals($this->course->id, $documents['heading:Welcome']->get('courseid'));
+    }
+
+    /**
+     * Showing a hidden element and renaming an element in the editor index them again (delta indexing).
+     */
+    public function test_modified_elements_are_indexed_again(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
+        $DB->set_field('contentdesigner_options', 'timemodified', time() - 1000, []);
+        $since = time() - 10;
+        $area = new elements();
+        $titles = function () use ($area, $since) {
+            $titles = [];
+            foreach ($area->get_document_recordset($since) as $record) {
+                $titles[] = $record->title;
+            }
+            return $titles;
+        };
+        $this->assertSame([], $titles());
+
+        $this->setAdminUser();
+        $paragraph = \mod_contentdesigner\editor::get_element('paragraph', $this->cd->cmid);
+        $paragraph->update_visibility($this->elements['hidden']->id, 1);
+        mod_contentdesigner_inplace_editable('instance_title[heading][' . $this->elements['heading']->id . ']', 0, 'Renamed');
+        $result = $titles();
+        sort($result);
+        $this->assertSame(['Hidden', 'Renamed'], $result);
     }
 
     /**
