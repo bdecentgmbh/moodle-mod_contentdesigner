@@ -52,6 +52,12 @@ class elements extends \core_search\base_mod {
         foreach (editor::get_element_names() as $name) {
             $element = editor::get_element($name);
             $fields = array_map('trim', explode(',', (string) (array_values($element->search_area_list())[0] ?? '')));
+            // An element whose table lacks a column would break the query of all elements, it is skipped.
+            $columns = $element->is_table_exists() ? $DB->get_columns('cdelement_' . $name) : [];
+            $required = array_merge(['id', 'title', 'visible', 'contentdesignerid'], array_filter(array_slice($fields, 0, 2)));
+            if (array_diff($required, array_keys($columns))) {
+                continue;
+            }
             // Typed placeholders: PostgreSQL derives the column types of the union from its first parts.
             $content = !empty($fields[0]) ? 'ee.' . $fields[0] : "''";
             $format = !empty($fields[1]) ? 'ee.' . $fields[1] : FORMAT_HTML;
