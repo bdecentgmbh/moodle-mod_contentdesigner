@@ -37,32 +37,25 @@ jobs:
       fail-fast: false
       matrix:
         # The supported Moodle releases, each with its lowest and highest PHP version on alternating databases.
-        # Learning Tools (optional integration of the chapters) has one branch for 4.x and one for 5.x.
+        # The Video Time element has no hard dependency on mod_videotime: one job per release runs with Video Time,
+        # the others without it, so both cases are tested.
         include:
-          - php: '8.1'
-            moodle-branch: 'MOODLE_405_STABLE'
-            database: 'pgsql'
-            learningtools: 'MOODLE_400_STABLE'
-          - php: '8.3'
-            moodle-branch: 'MOODLE_405_STABLE'
-            database: 'mariadb'
-            learningtools: 'MOODLE_400_STABLE'
           - php: '8.2'
-            moodle-branch: 'MOODLE_501_STABLE'
+            moodle-branch: 'MOODLE_502_STABLE'
             database: 'mariadb'
-            learningtools: 'main'
+            videotime: ''
           - php: '8.4'
             moodle-branch: 'MOODLE_502_STABLE'
             database: 'pgsql'
-            learningtools: 'main'
+            videotime: 'master'
           - php: '8.3'
             moodle-branch: 'MOODLE_503_STABLE'
             database: 'mariadb'
-            learningtools: 'main'
+            videotime: 'dev'
           - php: '8.4'
             moodle-branch: 'MOODLE_503_STABLE'
             database: 'pgsql'
-            learningtools: 'main'
+            videotime: ''
 
     steps:
       - name: Check out repository code
@@ -91,7 +84,10 @@ jobs:
 
       - name: Install moodle-plugin-ci
         run: |
-          moodle-plugin-ci add-plugin --clone https://github.com/bdecentgmbh/moodle-local_learningtools.git --branch ${{ matrix.learningtools }}
+          moodle-plugin-ci add-plugin --clone https://github.com/bdecentgmbh/moodle-local_learningtools.git --branch main
+          if [ -n "${{ matrix.videotime }}" ]; then
+            moodle-plugin-ci add-plugin --clone https://github.com/bdecentgmbh/moodle-mod_videotime.git --branch ${{ matrix.videotime }}
+          fi
           moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
           DB: ${{ matrix.database }}
@@ -139,7 +135,11 @@ jobs:
       - name: Behat features
         id: behat
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci behat --profile chrome
+        # format_popups (optional image display) is not installed here; the Video Time scenarios need mod_videotime.
+        run: |
+          TAGS='~@format_popups'
+          [ -n "${{ matrix.videotime }}" ] || TAGS="$TAGS&&~@mod_videotime"
+          moodle-plugin-ci behat --profile chrome --tags="$TAGS"
 
       - name: Upload Behat faildump
         if: ${{ failure() && steps.behat.outcome == 'failure' }}

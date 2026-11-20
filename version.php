@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_contentdesigner';
-$plugin->version = 2026102100;
+$plugin->version = 2026112000;
 $plugin->release = '2.0';
-$plugin->requires = 2024100700; // Moodle 4.5.
-$plugin->supported = [405, 503];
+$plugin->requires = 2026042000; // Moodle 5.2.
+$plugin->supported = [502, 503];
 $plugin->maturity = MATURITY_STABLE;

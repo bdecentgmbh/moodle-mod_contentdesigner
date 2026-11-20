@@ -215,11 +215,7 @@ final class hooks_test extends \advanced_testcase {
         $DB->insert_record('contentdesigner_completion', ['contentdesignerid' => $cd->id, 'userid' => $user->id,
             'completion' => 1, 'mandatorycompletion' => 0, 'starttime' => time(), 'timecreated' => time()]);
 
-        if (method_exists(\core_courseformat\local\cmactions::class, 'delete')) {
-            \core_courseformat\formatactions::cm($course)->delete($cd->cmid); // Moodle 5.2 and later.
-        } else {
-            course_delete_module($cd->cmid);
-        }
+        \core_courseformat\formatactions::cm($course)->delete($cd->cmid);
         $this->assertSame([$cd->id], $deleted);
         foreach (['cdelement_heading', 'cdelement_paragraph', 'cdelement_outro', 'cdelement_chapter'] as $table) {
             $this->assertEquals(0, $DB->count_records($table, ['contentdesignerid' => $cd->id]), $table);

@@ -6,7 +6,7 @@
 # Environment:
 #   SOURCE_DIR   mod_contentdesigner checkout of the tag, without submodules (required)
 #   SOURCE_REF   the tag (required)
-#   BRANCHES     space-separated stable branches, e.g. "MOODLE_405_STABLE MOODLE_503_STABLE" (required)
+#   BRANCHES     space-separated stable branches, e.g. "MOODLE_502_STABLE MOODLE_503_STABLE" (required)
 #   TARGET_URL   git URL used to clone and push this repository (required)
 #   ACTOR        name for the commits
 
