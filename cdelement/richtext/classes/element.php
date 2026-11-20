@@ -117,7 +117,8 @@ class element extends \mod_contentdesigner\elements {
             'cdelement_richtext_content',
             $data->instance
         );
-        $content = format_text($content, $data->contentformat, ['context' => $context->id, 'trusted' => true, 'noclean' => true]);
+        // Shown without cleaning only if the author could trust content (moodle/site:trustcontent) when saving it.
+        $content = format_text($content, $data->contentformat, ['context' => $context, 'noclean' => !empty($data->contenttrust)]);
         return html_writer::div(html_writer::div($content, 'richtext-content'), 'richtet-content-block');
     }
 
@@ -132,12 +133,13 @@ class element extends \mod_contentdesigner\elements {
         $formdata = clone $data;
         $formdata->contentformat = $formdata->content_editor['format'];
         $formdata->content = $formdata->content_editor['text'];
+        $formdata->contenttrust = (int) self::can_trust_content($this->get_context());
         $formdata->timemodified = time();
         if ($formdata->instanceid == false) {
             $formdata->timecreated = time();
             return $DB->insert_record($this->tablename, $formdata);
         } else {
-            $formdata->timecreated = time();
+            unset($formdata->timecreated);
             $formdata->id = $formdata->instanceid;
             if ($DB->update_record($this->tablename, $formdata)) {
                 return $formdata->id;
@@ -214,10 +216,19 @@ class element extends \mod_contentdesigner\elements {
             'maxbytes' => $CFG->maxbytes,
             'accepted_types' => '*',
             'context' => $context,
-            'trust' => true,
-            'noclean' => true,
+            'noclean' => self::can_trust_content($context),
             'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
+    }
+
+    /**
+     * Whether the current user may save rich text that is shown without cleaning.
+     *
+     * @param \context $context The context of the activity.
+     * @return bool
+     */
+    public static function can_trust_content(\context $context): bool {
+        return has_capability('moodle/site:trustcontent', $context);
     }
 
     /**

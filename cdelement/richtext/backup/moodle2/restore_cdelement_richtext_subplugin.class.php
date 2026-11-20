@@ -55,6 +55,10 @@ class restore_cdelement_richtext_subplugin extends restore_subplugin {
 
         $oldinstance = $data->id;
         $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        // Trust is not taken from the backup: the content is shown without cleaning only if the restoring user may
+        // trust content.
+        $context = \context::instance_by_id($this->task->get_contextid());
+        $data->contenttrust = (int) \cdelement_richtext\element::can_trust_content($context);
 
         $newinstance = $DB->insert_record('cdelement_richtext', $data);
         $this->set_mapping('richtext_instanceid', $oldinstance, $newinstance, true);

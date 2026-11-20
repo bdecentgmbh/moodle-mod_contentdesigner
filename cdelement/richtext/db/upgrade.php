@@ -52,5 +52,17 @@ function xmldb_cdelement_richtext_upgrade($oldversion, $rename = false) {
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_richtext', 'cdelement_richtext', ['content']);
     }
+
+    if ($oldversion < 2026112001) {
+        // The content is now cleaned unless its author could trust content. Content saved before this version was
+        // shown without cleaning; it keeps that until it is edited, so existing embeds keep working.
+        $table = new xmldb_table('cdelement_richtext');
+        $field = new xmldb_field('contenttrust', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'contentformat');
+        if ($dbman->table_exists($table) && !$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+            $DB->set_field('cdelement_richtext', 'contenttrust', 1);
+        }
+        upgrade_plugin_savepoint(true, 2026112001, 'cdelement', 'richtext');
+    }
     return true;
 }
