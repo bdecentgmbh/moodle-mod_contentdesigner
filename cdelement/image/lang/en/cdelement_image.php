@@ -1,0 +1,36 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Element plugin "Image" - string file.
+ *
+ * @package    cdelement_image
+ * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+ defined("MOODLE_INTERNAL") || die();
+
+$string['caption'] = 'Caption';
+$string['caption_help'] = 'Add a caption for the image. This text will be displayed below the image, providing context or additional information about the image content.';
+$string['contentimages'] = 'Images';
+$string['contentimages_help'] = 'This section allows you to display images within the content. Multiple images can be added.';
+$string['elementdescription'] = 'Add a Image';
+$string['lightbox'] = 'Show in lightbox';
+$string['lightbox_help'] = 'If enabled, the image will be displayed in a light box when clicked, allowing users to view it in a larger format without leaving the page.';
+$string['pluginname'] = 'Image';
+$string['privacy:metadata'] = 'The Image only displays the image as content and does not store any user data.';
+$string['slide'] = 'Slide {no}';
