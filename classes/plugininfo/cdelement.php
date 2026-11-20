@@ -44,15 +44,66 @@ class cdelement extends \core\plugininfo\base {
         return true;
     }
 
+    /** @var string[] Elements that every activity needs: the editor and the content always use them. */
+    public const REQUIRED = ['chapter', 'outro'];
+
     /**
-     * Should there be a way to uninstall the plugin via the administration UI.
-     *
-     * By default uninstallation is not allowed, plugin developers must enable it explicitly!
+     * Whether the element can be uninstalled: all elements except the chapter and the outro.
      *
      * @return bool
      */
     public function is_uninstall_allowed() {
-        return true;
+        return !in_array($this->name, self::REQUIRED, true);
+    }
+
+    /**
+     * Deletes what the activities keep of the element before it is uninstalled: its places in the chapters, its
+     * general options, its files in the file areas of mod_contentdesigner and its entry in contentdesigner_elements.
+     * Core drops the tables of the element and deletes the files of its own component afterwards.
+     */
+    public function uninstall_cleanup() {
+        global $DB;
+
+        $elementid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => $this->name]);
+        if ($elementid) {
+            // Files of the element stored in mod_contentdesigner: background image, description and own areas.
+            $areas = [$this->name . 'elementbg', $this->name . 'description'];
+            $class = 'cdelement_' . $this->name . '\\element';
+            if (class_exists($class) && method_exists($class, 'areafiles')) {
+                foreach ((new $class(0))->areafiles() as $area) {
+                    $areas[] = 'cdelement_' . $this->name . '_' . $area;
+                }
+            }
+            [$insql, $params] = $DB->get_in_or_equal($areas, SQL_PARAMS_NAMED);
+            $contextids = $DB->get_fieldset_select(
+                'files',
+                'DISTINCT contextid',
+                "component = 'mod_contentdesigner' AND filearea $insql",
+                $params
+            );
+            $fs = get_file_storage();
+            foreach ($contextids as $contextid) {
+                foreach ($areas as $area) {
+                    $fs->delete_area_files($contextid, 'mod_contentdesigner', $area);
+                }
+            }
+
+            // The element leaves the chapters, which keep the order of their remaining contents.
+            $chapterids = $DB->get_fieldset_select('contentdesigner_content', 'DISTINCT chapter', 'element = ?', [$elementid]);
+            $DB->delete_records('contentdesigner_content', ['element' => $elementid]);
+            $DB->delete_records('contentdesigner_options', ['element' => $elementid]);
+            if ($DB->get_manager()->table_exists('cdelement_chapter')) {
+                foreach (array_filter($chapterids) as $chapterid) {
+                    $contents = $DB->get_fieldset_sql(
+                        'SELECT id FROM {contentdesigner_content} WHERE chapter = ? ORDER BY position ASC, id ASC',
+                        [$chapterid]
+                    );
+                    $DB->set_field('cdelement_chapter', 'contents', implode(',', $contents), ['id' => $chapterid]);
+                }
+            }
+            $DB->delete_records('contentdesigner_elements', ['id' => $elementid]);
+        }
+        parent::uninstall_cleanup();
     }
 
     /**
