@@ -44,6 +44,12 @@ $string['contenteditor'] = 'Content editor';
 $string['createnewelement'] = 'Create new element - Content Designer';
 $string['deletechecktype'] = 'Are you sure that you want to delete this {$a->element} element?';
 $string['disabled'] = 'Disabled';
+$string['displayhead'] = 'Display';
+$string['displaymode'] = 'Display mode';
+$string['displaymode_help'] = '<b>Scroll (default):</b> All chapters are shown on one page, one below the other.<br>
+<b>Pages:</b> Every chapter is shown on its own page, with the buttons Previous page and Next page. Learners reach the next page under the same conditions as the next chapter in the scrolling display: they complete the chapter and its mandatory elements. When learners return, they continue on the page where their progress stops; a new attempt starts on the first page. The outro is shown on the last page.';
+$string['displaymode_pages'] = 'Pages';
+$string['displaymode_scroll'] = 'Scroll';
 $string['elementbgimage'] = 'Background image';
 $string['elementbgimage_help'] = 'Set a background image for the element. You can upload an image or provide a URL to an image. The image will be displayed behind the content of the element.';
 $string['elementcreate'] = 'Create element';
@@ -100,14 +106,18 @@ $string['modulename_help'] = '<p>The Content Designer activity enables teachers 
 <p>For detailed setup instructions and feature guides, please visit the <a href="https://intercom.help/bdecent/en/collections/14008404-content-designer" target="_blank" rel="noopener">Content Designer documentation</a>. We are constantly improving the plugin, so please let us know if you have any <a href="mailto:support@bdecent.de">feedback for us</a>!</p>';
 $string['modulenameplural'] = 'Content Designers';
 $string['newvalue'] = 'New value for';
+$string['nextpage'] = 'Next page';
 $string['outro:btnbacktocourse'] = 'Back to course';
 $string['outro:btnbacktosection'] = 'Back to section';
 $string['outro:btncustom'] = 'Custom';
 $string['outro:btnnext'] = 'Next';
 $string['padding'] = 'Padding';
 $string['padding_help'] = 'Padding controls the space inside the element, between the content and its borders. Set a single value to apply the same padding on all sides of the element.<br><b>Example:</b> 10px (This will apply a 10px padding on all four sides: top, right, bottom, and left).';
+$string['pagenavigation'] = 'Pages of the content';
+$string['pageof'] = 'Page {$a->page} of {$a->pages}';
 $string['pluginadministration'] = 'Content designer administration';
 $string['pluginname'] = 'Content Designer';
+$string['previouspage'] = 'Previous page';
 $string['primarybutton'] = 'Primary button';
 $string['primarybutton_help'] = '<b>Primary Button</b><br>
 <b>Disabled:</b> The primary button is hidden by default.<br>

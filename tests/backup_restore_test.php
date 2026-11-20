@@ -83,7 +83,10 @@ final class backup_restore_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
-        $cd = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $course->id]);
+        $cd = $this->getDataGenerator()->create_module(
+            'contentdesigner',
+            ['course' => $course->id, 'displaymode' => \mod_contentdesigner\local\pages::DISPLAY_PAGES]
+        );
         $chapter = $gen->create_chapter($cd, ['title' => 'First']);
         $gen->create_element($cd, 'heading', ['heading' => 'Hello'], $chapter);
         $h5p = $gen->create_element($cd, 'h5p', ['mandatory' => 1, 'maxscore' => '1'], $chapter);
@@ -144,6 +147,7 @@ final class backup_restore_test extends \advanced_testcase {
 
         $newcourseid = $this->duplicate_course($course, false);
         $newcd = $DB->get_record('contentdesigner', ['course' => $newcourseid], '*', MUST_EXIST);
+        $this->assertEquals(\mod_contentdesigner\local\pages::DISPLAY_PAGES, $newcd->displaymode);
         $this->assertEquals(2, $DB->count_records('contentdesigner_content', ['contentdesignerid' => $newcd->id]));
         $this->assertEquals(0, $DB->count_records('contentdesigner_attempts', ['contentdesignerid' => $newcd->id]));
         $h5p = $DB->get_record('cdelement_h5p', ['contentdesignerid' => $newcd->id], '*', MUST_EXIST);

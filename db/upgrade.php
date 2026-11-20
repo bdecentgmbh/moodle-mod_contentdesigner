@@ -504,5 +504,16 @@ function xmldb_contentdesigner_upgrade($oldversion) {
         }
     }
 
+    if ($oldversion < 2026112001) {
+        // Display mode of the activity: all chapters on one page (0, default) or every chapter on its own page (1).
+        $table = new xmldb_table('contentdesigner');
+        $field = new xmldb_field('displaymode', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'attemptsallowed');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026112001, 'contentdesigner');
+    }
+
     return true;
 }

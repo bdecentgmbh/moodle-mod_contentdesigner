@@ -141,18 +141,22 @@ class content_display {
     /**
      * Renders the content in an attempt of the learner.
      *
+     * In activities with the paged display, the page comes from the request parameter page; without it, the learner
+     * continues where the progress in the attempt stops.
+     *
      * @param \stdClass $attempt The attempt, which must belong to the current user and the activity.
      * @param bool $noheader Whether to display the header or not
+     * @param int|null $page The page of a paged activity, null for the request parameter page.
      * @return string The HTML of the page.
      */
-    public function render_attempt(\stdClass $attempt, bool $noheader = false): string {
+    public function render_attempt(\stdClass $attempt, bool $noheader = false, ?int $page = null): string {
         global $OUTPUT;
 
         $content = $noheader ? '' : $OUTPUT->header();
 
         $editor = new editor($this->cm, $this->course, $attempt);
         $editor->initiate_js();
-        $content .= $editor->render_elements();
+        $content .= $editor->render_elements(false, $page ?? optional_param('page', 0, PARAM_INT));
 
         if (!$noheader) {
             $content .= $OUTPUT->footer();

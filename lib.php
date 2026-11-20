@@ -415,7 +415,8 @@ function contentdesigner_output_fragment_get_elements_list($args) {
 /**
  * Fragment: the content of the activity for the learner, when the content is refreshed.
  *
- * @param array $args The fragment arguments, with the validated module context and the attempt id.
+ * @param array $args The fragment arguments, with the validated module context, the attempt id and the page shown
+ *     (paged display).
  * @return string
  */
 function contentdesigner_output_fragment_load_elements($args) {
@@ -425,7 +426,7 @@ function contentdesigner_output_fragment_load_elements($args) {
 
     $editor = new editor($cm, $course, $attempt);
     $editor->initiate_js();
-    return $editor->render_elements();
+    return $editor->render_elements(false, (int) ($args['page'] ?? 0));
 }
 
 /**

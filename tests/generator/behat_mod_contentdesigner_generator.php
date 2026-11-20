@@ -27,6 +27,19 @@
  *
  * Elements without chapter (the outro) leave the column empty. The other columns are fields of the element table.
  *
+ * Progress of learners:
+ *   And the following "mod_contentdesigner > attempts" exist:
+ *     | contentdesigner | user     | timestart      |
+ *     | Activity name   | student1 | ##2 days ago## |
+ *   And the following "mod_contentdesigner > chapter completions" exist:
+ *     | contentdesigner | chapter      | user     | timemodified  |
+ *     | Activity name   | Introduction | student1 | ##1 day ago## |
+ *   And the following "mod_contentdesigner > h5p completions" exist:
+ *     | contentdesigner | h5p          | user     | attempt |
+ *     | Activity name   | Exercise     | student1 | 1       |
+ *
+ * Attempts are numbered per user; H5P completions belong to an attempt (the latest one without the column attempt).
+ *
  * @package    mod_contentdesigner
  * @category   test
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
@@ -49,6 +62,24 @@ class behat_mod_contentdesigner_generator extends behat_generator_base {
                 'singular' => 'element',
                 'datagenerator' => 'element',
                 'required' => ['contentdesigner', 'element'],
+            ],
+            'attempts' => [
+                'singular' => 'attempt',
+                'datagenerator' => 'attempt',
+                'required' => ['contentdesigner', 'user'],
+                'switchids' => ['user' => 'userid'],
+            ],
+            'chapter completions' => [
+                'singular' => 'chapter completion',
+                'datagenerator' => 'chapter_completion',
+                'required' => ['contentdesigner', 'chapter', 'user'],
+                'switchids' => ['user' => 'userid'],
+            ],
+            'h5p completions' => [
+                'singular' => 'h5p completion',
+                'datagenerator' => 'h5p_completion',
+                'required' => ['contentdesigner', 'h5p', 'user'],
+                'switchids' => ['user' => 'userid'],
             ],
         ];
     }
@@ -85,6 +116,57 @@ class behat_mod_contentdesigner_generator extends behat_generator_base {
         $element = $data['element'];
         unset($data['contentdesigner'], $data['chapter'], $data['element']);
         $this->componentdatagenerator->create_element($instance, $element, $data, $chapter);
+    }
+
+    /**
+     * Creates an attempt of a learner.
+     *
+     * @param array $data
+     */
+    protected function process_attempt(array $data): void {
+        $instance = $this->get_contentdesigner($data['contentdesigner']);
+        $userid = $data['userid'];
+        unset($data['contentdesigner'], $data['userid']);
+        $this->componentdatagenerator->create_attempt($instance, $userid, $data);
+    }
+
+    /**
+     * Completes a chapter for a learner.
+     *
+     * @param array $data
+     */
+    protected function process_chapter_completion(array $data): void {
+        global $DB;
+        $instance = $this->get_contentdesigner($data['contentdesigner']);
+        $chapter = $DB->get_record(
+            'cdelement_chapter',
+            ['contentdesignerid' => $instance->id, 'title' => $data['chapter']],
+            '*',
+            MUST_EXIST
+        );
+        $this->componentdatagenerator->create_chapter_completion(
+            $chapter,
+            $data['userid'],
+            isset($data['timemodified']) ? (int) $data['timemodified'] : null
+        );
+    }
+
+    /**
+     * Completes an H5P element for a learner, in an attempt.
+     *
+     * @param array $data
+     */
+    protected function process_h5p_completion(array $data): void {
+        global $DB;
+        $instance = $this->get_contentdesigner($data['contentdesigner']);
+        $h5p = $DB->get_record('cdelement_h5p', ['contentdesignerid' => $instance->id, 'title' => $data['h5p']], '*', MUST_EXIST);
+        $conditions = ['contentdesignerid' => $instance->id, 'userid' => $data['userid']];
+        if (!empty($data['attempt'])) {
+            $attempt = $DB->get_record('contentdesigner_attempts', $conditions + ['attempt' => $data['attempt']], '*', MUST_EXIST);
+        } else {
+            $attempt = \mod_contentdesigner\local\attempts::get_latest($instance->id, $data['userid']);
+        }
+        $this->componentdatagenerator->create_h5p_completion($h5p, $attempt);
     }
 
     /**

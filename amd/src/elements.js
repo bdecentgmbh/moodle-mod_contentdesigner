@@ -77,10 +77,21 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
 
         const contentWrapper = () => document.querySelector(SELECTORS.contentWrapper);
 
+        /**
+         * The page shown in the paged display, 0 in the scrolling display.
+         *
+         * @returns {int}
+         */
+        const currentPage = () => {
+            var wrapper = contentWrapper();
+            return wrapper && wrapper.dataset.page ? parseInt(wrapper.dataset.page) : 0;
+        };
+
         const refreshContent = () => {
             var params = {
                 cmid: contentDesignerData().cmid,
                 attemptid: contentDesignerData().attemptid,
+                page: currentPage(),
             };
             var promise = Fragment.loadFragment('mod_contentdesigner', 'load_elements', contentDesignerData().contextid, params);
             promise.done((html, js) => {
@@ -134,6 +145,12 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
                 });
 
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
+
+                // Paged display: the Next button may be enabled now.
+                var pageNav = fakeDiv.querySelector('.contentdesigner-pagenav');
+                if (pageNav !== null && document.querySelector('.contentdesigner-pagenav') !== null) {
+                    Templates.replaceNode('.contentdesigner-pagenav', pageNav, '');
+                }
                 animateElements();
                 contentWrapper().dispatchEvent(new CustomEvent('elementupdate')); // Dispatch the element update event.
             }

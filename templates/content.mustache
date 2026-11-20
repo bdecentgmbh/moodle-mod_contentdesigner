@@ -170,11 +170,23 @@
             "description": ""
           }
         },
-        "prevent": false
+        "prevent": false,
+        "outrohidden": false,
+        "pagenav": {
+            "page": 1,
+            "pages": 2,
+            "pageof": "Page 1 of 2",
+            "hasprevious": false,
+            "previousurl": "",
+            "hasnext": true,
+            "cangonext": true,
+            "nexturl": "https://example.com/mod/contentdesigner/view.php?id=1&page=2",
+            "chapterurls": "{}"
+        }
     }
 }}
-<div class="contentdesigner-content limitedwidth">
-    <div class="contentdesigner-wrapper">
+<div class="contentdesigner-content limitedwidth{{#pagenav}} contentdesigner-paged{{/pagenav}}">
+    <div class="contentdesigner-wrapper"{{#pagenav}} data-page="{{page}}"{{/pagenav}}>
         {{{cmdetails}}}
         <div class="content">
             <div class="contentdesigner-progress">{{{progressbar}}}</div>
@@ -333,6 +345,7 @@
                     {{/prevent}}
                 {{/chapters}}
 
+                {{^outrohidden}}
                 {{^chapterprevent}}
                 {{^prevent}}
                 <li class="element-item "
@@ -369,7 +382,29 @@
                 {{/extracontent}}
                 {{/prevent}}
                 {{/chapterprevent}}
+                {{/outrohidden}}
             </ul>
+            {{#pagenav}}
+            <nav class="contentdesigner-pagenav d-flex align-items-center justify-content-between mt-4"
+                aria-label="{{#str}} pagenavigation, mod_contentdesigner {{/str}}" data-chapterurls="{{chapterurls}}">
+                <div class="contentdesigner-pagenav-previous">
+                    {{#hasprevious}}
+                    <a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}} previouspage, mod_contentdesigner {{/str}}</a>
+                    {{/hasprevious}}
+                </div>
+                <div class="contentdesigner-pagenav-position text-muted">{{pageof}}</div>
+                <div class="contentdesigner-pagenav-next">
+                    {{#hasnext}}
+                    {{#cangonext}}
+                    <a class="btn btn-primary" href="{{nexturl}}">{{#str}} nextpage, mod_contentdesigner {{/str}}</a>
+                    {{/cangonext}}
+                    {{^cangonext}}
+                    <button type="button" class="btn btn-primary" disabled>{{#str}} nextpage, mod_contentdesigner {{/str}}</button>
+                    {{/cangonext}}
+                    {{/hasnext}}
+                </div>
+            </nav>
+            {{/pagenav}}
         </div>
     </div>
 </div>

@@ -32,6 +32,7 @@ use moodle_url;
 use mod_contentdesigner\hook\extend_content;
 use mod_contentdesigner\local\access;
 use mod_contentdesigner\local\extensions;
+use mod_contentdesigner\local\pages;
 
 /**
  * Mod contnet designer editor class.
@@ -118,26 +119,39 @@ class editor {
 
     /**
      * Render the module elements for student view.
+     *
+     * Activities with the paged display show only the chapter of one page ({@see local\pages}).
+     *
      * @param int $chapterafter Load the chapters after the given chapter.
+     * @param int $page The page of a paged activity, 0 to continue where the progress of the learner stops.
      * @return string HTML of the elements.
      */
-    public function render_elements($chapterafter = false) {
-        global $OUTPUT, $DB;
+    public function render_elements($chapterafter = false, int $page = 0) {
+        global $OUTPUT, $DB, $PAGE;
+
+        $contentdesigner = $DB->get_record('contentdesigner', ['id' => $this->cm->instance], '*', MUST_EXIST);
+        $pages = null;
+        if (!$chapterafter && pages::is_paged($contentdesigner)) {
+            $pages = new pages(\cm_info::create($this->cm), $this->chapter, $this->attempt, $page);
+        }
+
         $data = [
             'cm' => $this->cm,
             'course' => $this->course,
             'progressbar' => $this->chapter->build_progress(),
-            'chapters' => $this->chapter->get_chapters_data(true, true, $chapterafter),
+            'chapters' => $pages ? $this->get_page_chapters($pages) : $this->chapter->get_chapters_data(true, true, $chapterafter),
             'outro' => $this->render_module_outro(),
             'cmdetails' => $this->cm_details(),
         ];
-        // Top instance contents.
-        foreach (self::get_element_names() as $plugin) {
-            $elementobj = self::get_element($plugin, $this->cm->id, $this->attempt);
-            if ($elementobj->supports_top_instance()) {
-                $data += [
-                    'topinstance' => $elementobj->render_module_topcontents(),
-                ];
+        // Top instance contents, on the first page of paged activities.
+        if (!$pages || $pages->current == 1) {
+            foreach (self::get_element_names() as $plugin) {
+                $elementobj = self::get_element($plugin, $this->cm->id, $this->attempt);
+                if ($elementobj->supports_top_instance()) {
+                    $data += [
+                        'topinstance' => $elementobj->render_module_topcontents(),
+                    ];
+                }
             }
         }
 
@@ -147,13 +161,39 @@ class editor {
             $data['chapterprevent'] = $end['chapterprevent'] ? true : false;
         }
 
+        if ($pages) {
+            // The outro is on the last page, when the learner can reach the end.
+            $data['outrohidden'] = !$pages->is_last() || !$pages->is_end_reachable();
+            $data['pagenav'] = $pages->export_navigation();
+            $PAGE->requires->js_call_amd('mod_contentdesigner/pages', 'init', []);
+        }
+
         // Addons may add to the content, below the outro.
         if ($this->attempt) {
-            $contentdesigner = $DB->get_record('contentdesigner', ['id' => $this->cm->instance], '*', MUST_EXIST);
             $hook = extensions::dispatch(new extend_content($this->cm, $contentdesigner, $this->attempt));
             $data['extracontent'] = $hook->get_html();
         }
         return $OUTPUT->render_from_template('mod_contentdesigner/content', $data);
+    }
+
+    /**
+     * The chapter of the page shown, with the HTML of its elements, for the paged display.
+     *
+     * @param pages $pages The pages of the activity.
+     * @return array The chapter data, as from chapter::get_chapters_data(), in a list (empty without chapters).
+     */
+    protected function get_page_chapters(pages $pages): array {
+        $index = $pages->current - 1;
+        $reached = array_values($pages->reached);
+        if (!isset($reached[$index])) {
+            return [];
+        }
+        $data = $reached[$index];
+        [$prevent, $contents] = $this->chapter->generate_chapter_content($data['instancedata'], true, true);
+        $data['prevent'] = $prevent;
+        $data['contents'] = $contents;
+        $data['count'] = count($contents);
+        return [$data];
     }
 
     /**

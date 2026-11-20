@@ -174,4 +174,55 @@ class mod_contentdesigner_generator extends testing_module_generator {
         $record->id = $DB->insert_record('contentdesigner_attempts', $record);
         return $record;
     }
+
+    /**
+     * Completes a chapter for a user, like the learner does with the button (again, if the chapter is completed).
+     *
+     * @param stdClass $chapter The chapter.
+     * @param int $userid The user.
+     * @param int|null $time The time of the completion, null for now.
+     * @return stdClass The record of cdelement_chapter_completion.
+     */
+    public function create_chapter_completion(stdClass $chapter, int $userid, ?int $time = null): stdClass {
+        global $DB;
+        $time = $time ?? time();
+        $record = (object) [
+            'instance' => $chapter->id,
+            'userid' => $userid,
+            'completion' => 1,
+            'timecreated' => $time,
+            'timemodified' => $time,
+        ];
+        $existing = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter->id, 'userid' => $userid]);
+        if ($existing) {
+            $record->id = $existing->id;
+            $record->timecreated = $existing->timecreated;
+            $DB->update_record('cdelement_chapter_completion', $record);
+        } else {
+            $record->id = $DB->insert_record('cdelement_chapter_completion', $record);
+        }
+        return $record;
+    }
+
+    /**
+     * Completes an H5P element in an attempt.
+     *
+     * @param stdClass $h5p The H5P element instance.
+     * @param stdClass $attempt The attempt, of the user who completes the element.
+     * @return stdClass The record of cdelement_h5p_completion.
+     */
+    public function create_h5p_completion(stdClass $h5p, stdClass $attempt): stdClass {
+        global $DB;
+        $record = (object) [
+            'instance' => $h5p->id,
+            'userid' => $attempt->userid,
+            'cdattemptid' => $attempt->id,
+            'completion' => 1,
+            'success' => 1,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+        $record->id = $DB->insert_record('cdelement_h5p_completion', $record);
+        return $record;
+    }
 }

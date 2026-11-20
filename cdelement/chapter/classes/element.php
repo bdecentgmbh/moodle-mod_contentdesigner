@@ -270,9 +270,11 @@ class element extends \mod_contentdesigner\elements {
      * @param bool $visible Load only visible elements.
      * @param bool $render Return the elements with rendered html.
      * @param bool $chapterafter It is need to load the chapters after the given chapter.
+     * @param bool $html With $render, whether to render the HTML of the elements, or only to check which chapters and
+     *     elements the learner can reach (paged display).
      * @return array
      */
-    public function get_chapters_data($visible = false, $render = false, $chapterafter = false) {
+    public function get_chapters_data($visible = false, $render = false, $chapterafter = false, $html = true) {
         global $DB, $USER;
         if (empty($this->cm)) {
             throw new \moodle_exception('invalidcoursemodule', 'error');
@@ -292,7 +294,7 @@ class element extends \mod_contentdesigner\elements {
                 $chapter->chaptertitle = $chapter->title;
                 $chapter->title = $this->title_editable($chapter) ?: $this->info()->name;
 
-                [$prevent, $contents, $learningtools] = $this->generate_chapter_content($chapter, $visible, $render);
+                [$prevent, $contents, $learningtools] = $this->generate_chapter_content($chapter, $visible, $render, $html);
                 if ($visible && empty($contents) && !$chapter->titlestatus) {
                     continue;
                 }
@@ -379,9 +381,11 @@ class element extends \mod_contentdesigner\elements {
      * @param stdclass $chapter
      * @param bool $visible Fetch only visible elements.
      * @param bool $render Render the element instance to student view.
+     * @param bool $html With $render, whether to render the HTML of the elements, or only to check which elements the
+     *     learner can reach.
      * @return array
      */
-    public function generate_chapter_content($chapter, $visible = false, $render = false) {
+    public function generate_chapter_content($chapter, $visible = false, $render = false, $html = true) {
         global $DB, $USER, $PAGE;
         $list = [];
         $prevent = false;
@@ -463,7 +467,7 @@ class element extends \mod_contentdesigner\elements {
                 $instance->replaceonrefresh = $element->supports_replace_onrefresh();
 
                 // Use Mutation of instance in render function of element to add element classes.
-                $contenthtml = ($render) ? $element->render_element($instance) : '';
+                $contenthtml = ($render && $html) ? $element->render_element($instance) : '';
                 $editurl = new \moodle_url('/mod/contentdesigner/element.php', [
                     'cmid' => $this->cmid,
                     'element' => $element->shortname,

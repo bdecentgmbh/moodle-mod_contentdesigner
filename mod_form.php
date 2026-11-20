@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 use mod_contentdesigner\hook\extend_mod_form;
 use mod_contentdesigner\hook\mod_form_validation;
 use mod_contentdesigner\local\extensions;
+use mod_contentdesigner\local\pages;
 
 /**
  * Content designer module form.
@@ -56,6 +57,12 @@ class mod_contentdesigner_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         $this->standard_intro_elements();
+
+        // Display: all chapters on one page or every chapter on its own page.
+        $mform->addElement('header', 'displayhead', get_string('displayhead', 'mod_contentdesigner'));
+        $mform->addElement('select', 'displaymode', get_string('displaymode', 'mod_contentdesigner'), pages::get_display_options());
+        $mform->addHelpButton('displaymode', 'displaymode', 'mod_contentdesigner');
+        $mform->setDefault('displaymode', pages::DISPLAY_SCROLL);
 
         // Addons add their settings, for example the navigation and the grading of attempts.
         $instance = $this->_instance ? $DB->get_record('contentdesigner', ['id' => $this->_instance]) : null;

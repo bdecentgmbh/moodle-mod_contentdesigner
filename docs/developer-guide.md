@@ -24,6 +24,10 @@ is published from the private repository `moodle-mod_contentdesigner_pro`.
 - `contentdesigner`: the activity, including the settings of the pro features (`navigation`, `completionendreach`,
   `completionmandatory`, `enablegrading`, `autostartattempts`, `grade`, `grademethod`, `attemptsallowed`). The core
   stores them; only the addon `cdaddon_pro` uses them.
+- `contentdesigner.displaymode`: all chapters on one page (0) or every chapter on its own page (1, paged display,
+  `local\pages`). The pages follow the gating of the scrolling display (chapter completion, mandatory elements, hook
+  `content_navigation`); the page links continue the attempt shown (`action=continueattempt`), so addons that manage
+  attempts keep showing the content.
 - `contentdesigner_elements`: the installed element types (shortname → id).
 - `cdelement_<shortname>`: the instances of an element, each with `contentdesignerid`, `title`, `visible`.
 - `contentdesigner_content`: the elements in chapters (`element`, `instance`, `chapter`, `position`); the chapter keeps

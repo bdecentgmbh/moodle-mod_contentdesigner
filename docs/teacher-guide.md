@@ -9,7 +9,13 @@ chapter; a progress bar shows how far they are.
 1. Turn editing on in your course.
 2. Choose *Add an activity or resource* and pick **Content Designer**.
 3. Enter a **Name** and, optionally, a **Description**.
-4. Set the completion conditions under **Completion conditions** and save.
+4. Under **Display**, choose the **Display mode**: **Scroll** (default) shows all chapters on one page, **Pages** shows
+   every chapter on its own page with the buttons *Previous page* and *Next page*.
+5. Set the completion conditions under **Completion conditions** and save.
+
+With **Pages**, learners reach the next page under the same conditions as the next chapter when scrolling: they
+complete the chapter (*Mark as done*) and its mandatory elements. When they return, they continue on the page where
+their progress stops; a new attempt starts on the first page. The outro is shown on the last page.
 
 Addons may add more settings to this form, for example the navigation method or grading.
 

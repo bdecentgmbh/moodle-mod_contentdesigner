@@ -20,6 +20,9 @@ Supports Moodle 4.5 to 5.3; requires Moodle 4.5.
 - Course reset deletes the progress of learners; deleting an activity or an element deletes the data of learners in
   it.
 - Global search indexes visible elements only and checks access without extra tables.
+- Paged display (setting "Display mode"): every chapter on its own page with Previous and Next buttons, under the
+  same conditions as the scrolling display (chapter completion, mandatory elements); learners continue on the page
+  where their progress in the attempt stops, a new attempt starts on the first page, the outro is on the last page.
 - The editor uses `core/modal`, required by Moodle 5.2 and later.
 - Documentation for the Documentation Center (`docs/`); tests and CI for Moodle 4.5 to 5.3; stable branches for
   deployments from git.

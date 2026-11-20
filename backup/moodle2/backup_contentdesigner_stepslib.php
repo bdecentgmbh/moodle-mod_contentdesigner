@@ -36,7 +36,7 @@ class backup_contentdesigner_activity_structure_step extends backup_activity_str
         // Define each element separated - table fields.
         $contentdesigner = new backup_nested_element('contentdesigner', ['id'], [
             'course', 'name', 'intro', 'introformat', 'completionendreach', 'navigation', 'completionmandatory', 'timecreated',
-            'timemodified', 'enablegrading', 'autostartattempts', 'grade', 'grademethod', 'attemptsallowed']);
+            'timemodified', 'enablegrading', 'autostartattempts', 'grade', 'grademethod', 'attemptsallowed', 'displaymode']);
 
         // The attempts come first: the user data of the elements refers to them, so they are mapped on restore before.
         $attempts = new backup_nested_element('attempts');
