@@ -24,17 +24,16 @@
 
 namespace mod_contentdesigner\output;
 
-use core_renderer;
 use moodle_url;
 
 /**
- * Contentdesigner render to create custom navigation of previous and next modules.
+ * Renderer of the activity: the navigation to the previous and next activities, for the outro button "Next".
  */
-class renderer extends core_renderer {
+class renderer extends \plugin_renderer_base {
     /**
-     * Activity navigation to fetch the next and previous modules.
+     * Activity navigation to fetch the next and previous modules of an activity.
      *
-     * * Removed the verification condition of theme is uses the course index.
+     * Unlike the navigation of core, it does not depend on whether the theme uses the course index.
      *
      * @copyright Modified version of moodle core output\activity_navigation by 2009 Tim Hunt
      * @param int $contentdesigner
@@ -54,9 +53,11 @@ class renderer extends core_renderer {
 
         if ($contentdesigner) {
             [$course, $cm] = get_course_and_cm_from_instance($contentdesigner, 'contentdesigner');
-        } else {
+        } else if ($this->page->cm) {
             $course = $this->page->cm->get_course();
             $cm = $this->page->cm;
+        } else {
+            return '';
         }
 
         // If the activity is in stealth mode, show no links.
@@ -78,7 +79,7 @@ class renderer extends core_renderer {
             $mods[$module->id] = $module;
 
             // No need to add the current module to the list for the activity dropdown menu.
-            if ($module->id == $this->page->cm->id) {
+            if ($module->id == $cm->id) {
                 continue;
             }
             // Module name.
@@ -104,7 +105,7 @@ class renderer extends core_renderer {
         $modids = array_keys($mods);
 
         // Get the position in the array of the course module we are viewing.
-        $position = array_search($this->page->cm->id, $modids);
+        $position = array_search($cm->id, $modids);
 
         $prevmod = null;
         $nextmod = null;
