@@ -2,9 +2,14 @@
 <libraries>
     <library>
         <location>amd/src/anime.js</location>
-        <name>Anime js</name>
+        <name>anime.js</name>
+        <description>JavaScript animation engine, used for the entrance animations and scrolling effects of elements.</description>
         <version>3.2.1</version>
         <license>MIT</license>
         <licenseversion></licenseversion>
+        <repository>https://github.com/juliangarnier/anime</repository>
+        <copyrights>
+            <copyright>2020 Julian Garnier</copyright>
+        </copyrights>
     </library>
 </libraries>
