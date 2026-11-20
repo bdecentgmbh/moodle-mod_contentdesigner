@@ -257,6 +257,17 @@ abstract class elements {
     }
 
     /**
+     * Whether the element can be used on this site. Elements that depend on an optional plugin return false while that
+     * plugin is missing or disabled: they are not offered in the editor and cannot be added, but their existing
+     * instances, backups and user data are kept.
+     *
+     * @return bool
+     */
+    public function is_available(): bool {
+        return true;
+    }
+
+    /**
      * Icon of the element.
      *
      * @param \renderer_base $output

@@ -244,7 +244,7 @@ class editor {
         $li = [];
         foreach (self::get_element_names() as $plugin) {
             $elementobj = self::get_element($plugin, $cmid);
-            if (!$elementobj->supports_multiple_instance()) {
+            if (!$elementobj->supports_multiple_instance() || !$elementobj->is_available()) {
                 continue;
             }
             $info = $elementobj->info();

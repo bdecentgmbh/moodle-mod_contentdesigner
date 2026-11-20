@@ -40,6 +40,9 @@ require_capability('mod/contentdesigner:viewcontenteditor', $context);
 
 // Only installed elements, and only instances and chapters of this activity.
 $elementobj = \mod_contentdesigner\local\access::get_element($element, $cm->id);
+if (!$elementobj->is_available()) {
+    throw new moodle_exception('elementnotavailable', 'mod_contentdesigner');
+}
 if ($id) {
     $elementrecord = \mod_contentdesigner\local\access::get_element_instance($elementobj, $id, $cm->instance);
     $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);

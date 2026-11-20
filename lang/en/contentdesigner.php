@@ -49,6 +49,7 @@ $string['elementbgimage_help'] = 'Set a background image for the element. You ca
 $string['elementcreate'] = 'Create element';
 $string['elementdescription'] = 'Description';
 $string['elementdescription_help'] = 'The description is shown at the top of the element, providing additional context or instructions for users.';
+$string['elementnotavailable'] = 'This element is not available on this site, because a plugin it needs is missing or disabled.';
 $string['elementnotfound'] = 'The element does not exist or is not installed.';
 $string['elementsettings'] = '{$a} element settings';
 $string['elementstrgeneralsettings'] = 'Element general settings';
