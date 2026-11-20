@@ -98,28 +98,68 @@ class attempts {
         return self::get_current($contentdesignerid, $userid);
     }
 
+    /** @var string Component of the lock under which attempts are created, see {@see self::lock_resource()}. */
+    public const LOCK_COMPONENT = 'mod_contentdesigner';
+
+    /**
+     * The resource of the lock under which the attempts of a user in an activity are created. Plugins that check
+     * conditions before an attempt is created pass them to {@see self::create()} instead of taking an own lock.
+     *
+     * @param int $contentdesignerid The activity instance id.
+     * @param int $userid The user.
+     * @return string
+     */
+    public static function lock_resource(int $contentdesignerid, int $userid): string {
+        return "attempt_{$contentdesignerid}_{$userid}";
+    }
+
     /**
      * Creates the next attempt of a user. Guests cannot make attempts.
+     *
+     * The attempts of a user in an activity are created under one lock, so parallel requests (several tabs,
+     * refreshed fragments, double clicks) cannot create two attempts with the same number, nor pass the checks of a
+     * plugin twice. The lock is required: if it cannot be obtained, no attempt is created.
      *
      * @param int $contentdesignerid The activity instance id.
      * @param int $userid The user.
      * @param bool $onlyfirst Create the attempt only if the user has none yet, otherwise return the latest one.
+     * @param callable|null $check Runs under the lock before the attempt is created, with the attempts of the user
+     *     (records of contentdesigner_attempts, oldest first). It may return an existing attempt to use instead of a
+     *     new one (e.g. an unfinished attempt), null to create the attempt, or throw to refuse it (e.g. a limit).
      * @return \stdClass The record of contentdesigner_attempts.
+     * @throws \moodle_exception locktimeout if the lock cannot be obtained.
      */
-    public static function create(int $contentdesignerid, int $userid, bool $onlyfirst = false): \stdClass {
+    public static function create(
+        int $contentdesignerid,
+        int $userid,
+        bool $onlyfirst = false,
+        ?callable $check = null
+    ): \stdClass {
         global $DB;
 
         if (isguestuser($userid)) {
             throw new \moodle_exception('guestnoprogress', 'mod_contentdesigner');
         }
 
-        // Parallel requests (several tabs, refreshed fragments) must not create two attempts with the same number.
-        $lockfactory = \core\lock\lock_config::get_lock_factory('mod_contentdesigner');
-        $lock = $lockfactory->get_lock("attempt_{$contentdesignerid}_{$userid}", 10);
+        $lockfactory = \core\lock\lock_config::get_lock_factory(self::LOCK_COMPONENT);
+        $lock = $lockfactory->get_lock(self::lock_resource($contentdesignerid, $userid), 10);
+        if (!$lock) {
+            throw new \moodle_exception('locktimeout');
+        }
         try {
             $latest = self::get_latest($contentdesignerid, $userid);
             if ($latest && $onlyfirst) {
                 return $latest;
+            }
+            if ($check) {
+                $attempts = $DB->get_records(
+                    'contentdesigner_attempts',
+                    ['contentdesignerid' => $contentdesignerid, 'userid' => $userid],
+                    'attempt ASC, id ASC'
+                );
+                if ($existing = $check($attempts)) {
+                    return $existing;
+                }
             }
             $attempt = (object) [
                 'contentdesignerid' => $contentdesignerid,
@@ -131,9 +171,7 @@ class attempts {
             ];
             $attempt->id = $DB->insert_record('contentdesigner_attempts', $attempt);
         } finally {
-            if ($lock) {
-                $lock->release();
-            }
+            $lock->release();
         }
         return $attempt;
     }
