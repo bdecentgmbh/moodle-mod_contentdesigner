@@ -371,13 +371,13 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
          * @param {HTMLElement} item
          * @param {double} dataspeed
          * @param {HTMLElement} scrollElement
-         * @returns {bool}
+         * @returns {number|undefined}
          */
         const animateOnScroll = function(item, dataspeed, scrollElement = null) {
 
             var node = item.childNodes[1];
             if (node.dataset.scrolleffect == undefined || node.dataset.scrolleffect == '') {
-                return;
+                return undefined;
             }
             var data = JSON.parse(node.dataset.scrolleffect);
             let start = parseInt(data.start) || 100;
@@ -397,7 +397,7 @@ define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesig
                 var speed = scrolled * percent;
                 return speed;
             }
-            return;
+            return undefined;
         };
 
         return {

@@ -44,7 +44,7 @@ jobs:
         # The Video Time element has no hard dependency on mod_videotime: one job per release runs with Video Time,
         # the others without it, so both cases are tested.
         include:
-          - php: '8.2'
+          - php: '8.3'
             moodle-branch: 'MOODLE_502_STABLE'
             database: 'mariadb'
             videotime: ''
