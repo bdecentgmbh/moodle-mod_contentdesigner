@@ -28,10 +28,10 @@ require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \backup_contentdesigner_activity_structure_step
- * @covers     \restore_contentdesigner_activity_structure_step
- * @covers     \restore_contentdesigner_activity_task
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\backup_contentdesigner_activity_structure_step::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_contentdesigner_activity_structure_step::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_contentdesigner_activity_task::class)]
 final class backup_restore_test extends \advanced_testcase {
     /**
      * Duplicates a course by backup and restore, with or without user data.

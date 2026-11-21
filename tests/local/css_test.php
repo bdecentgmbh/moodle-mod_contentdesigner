@@ -22,8 +22,8 @@ namespace mod_contentdesigner\local;
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\local\css
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\local\css::class)]
 final class css_test extends \basic_testcase {
     /**
      * Margins and paddings: lengths only.

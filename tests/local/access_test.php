@@ -24,9 +24,9 @@ use mod_contentdesigner\editor;
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\local\access
- * @covers     \mod_contentdesigner\local\attempts
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\local\access::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\local\attempts::class)]
 final class access_test extends \advanced_testcase {
     /**
      * Ids from a request are only accepted for the activity whose access was checked.

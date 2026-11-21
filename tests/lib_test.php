@@ -36,8 +36,8 @@ global $CFG;
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\elements
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\elements::class)]
 final class lib_test extends \advanced_testcase {
     /**
      * Course.

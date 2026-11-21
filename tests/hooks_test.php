@@ -38,16 +38,16 @@ require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\local\extensions
- * @covers     \mod_contentdesigner\completion\custom_completion
- * @covers     \mod_contentdesigner\content_display
- * @covers     ::contentdesigner_supports
- * @covers     ::contentdesigner_add_instance
- * @covers     ::contentdesigner_update_instance
- * @covers     ::contentdesigner_delete_instance
- * @covers     ::contentdesigner_reset_userdata
- * @covers     ::contentdesigner_get_coursemodule_info
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\local\extensions::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\completion\custom_completion::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\content_display::class)]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_supports')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_add_instance')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_update_instance')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_delete_instance')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_reset_userdata')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('contentdesigner_get_coursemodule_info')]
 final class hooks_test extends \advanced_testcase {
     /**
      * Redirects the hooks of the addons that decide features and rules, and forgets the cached answers.

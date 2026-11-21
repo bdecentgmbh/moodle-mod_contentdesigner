@@ -22,8 +22,8 @@ namespace mod_contentdesigner;
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner_generator
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner_generator::class)]
 final class generator_test extends \advanced_testcase {
     /**
      * Test test_content_designer_create_instance

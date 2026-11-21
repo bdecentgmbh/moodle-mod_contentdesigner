@@ -27,10 +27,10 @@ use core_privacy\local\request\writer;
  * @package    mod_contentdesigner
  * @copyright  2026 bdecent GmbH <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_contentdesigner\privacy\provider
- * @covers     \cdelement_chapter\privacy\provider
- * @covers     \cdelement_h5p\privacy\provider
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_contentdesigner\privacy\provider::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\cdelement_chapter\privacy\provider::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\cdelement_h5p\privacy\provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /** @var \stdClass The activity. */
     private \stdClass $cd;
