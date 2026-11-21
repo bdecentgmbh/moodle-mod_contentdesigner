@@ -130,7 +130,8 @@ jobs:
 
       - name: Grunt
         if: ${{ !cancelled() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
+        # One warning is expected: ESLint notes that it skips the third-party amd/src/anime.js (thirdpartylibs.xml).
+        run: moodle-plugin-ci grunt --max-lint-warnings 1
 
       - name: PHPUnit tests
         if: ${{ !cancelled() }}
@@ -139,9 +140,10 @@ jobs:
       - name: Behat features
         id: behat
         if: ${{ !cancelled() }}
+        # Our features only (--tags replaces the default @mod_contentdesigner filter, all features carry that tag).
         # format_popups (optional image display) is not installed here; the Video Time scenarios need mod_videotime.
         run: |
-          TAGS='~@format_popups'
+          TAGS='@mod_contentdesigner&&~@format_popups'
           [ -n "${{ matrix.videotime }}" ] || TAGS="$TAGS&&~@mod_videotime"
           moodle-plugin-ci behat --profile chrome --tags="$TAGS"
 
