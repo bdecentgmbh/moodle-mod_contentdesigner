@@ -59,7 +59,7 @@ completion, saved H5P state). Install the bundle instead of the free plugin; it 
 | --- | --- | --- |
 | `mod/contentdesigner:addinstance` | Editing teacher, manager | Adding the activity to a course |
 | `mod/contentdesigner:view` | Guest, authenticated user | Viewing the content |
-| `mod/contentdesigner:viewcontenteditor` | Editing teacher, manager | Using the content editor (RISK_XSS: rich text is shown as entered, like in a page) |
+| `mod/contentdesigner:viewcontenteditor` | Editing teacher, manager | Using the editor (RISK_XSS: rich text is shown as entered, like in a page) |
 
 Elements and addons may define their own capabilities.
 

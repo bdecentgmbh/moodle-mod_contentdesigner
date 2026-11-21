@@ -25,14 +25,14 @@ Feature: Check content designer richtext element settings
 
   Scenario: Add a Richtext element
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=richtext]" "css_element" in the ".modal-body" "css_element"
     And I set the field "Rich Text Content" to "<b style='color: #7c7cff; background-color: #ffffff;'>Hard to read</b>"
     And I expand all fieldsets
     And I set the field "Title" to "Richtext 01"
     And I click on "Create element" "button"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Hard to read" in the ".chapter-elements-list li .richtext-content" "css_element"
     Then ".chapter-elements-list li .richtext-content" "css_element" should exist
 
@@ -81,10 +81,10 @@ Feature: Check content designer richtext element settings
       | Title             | Rich text Title           |
       | Description       | Rich text Description     |
       | showdescription   | 1                         |
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     And "Rich text Description" "text" should exist in the ".contentdesigner-wrapper .chapters-list .element-item .element-description" "css_element"
     And "Example richtext content" "text" should exist
     Then I edit "richtext" cdelement "Rich text Title" with the following fields to these values:
       | showdescription   | 0 |
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     And "Rich text Description" "text" should not exist

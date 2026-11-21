@@ -26,8 +26,8 @@ Feature: Verify the content designer global search support in table of contents 
 
   Scenario: Contentdesigner: Search: Add and edit tableofcontent element title and description
     Given I am on the "Demo content" "contentdesigner activity" page logged in as admin
-    Then I should see "Content editor"
-    And I click on "Content editor" "link"
+    Then I should see "Editor" in the ".secondary-navigation" "css_element"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".course-content-list .topinstance.element-item .action-item[data-action=edit] a" "css_element"
     And I reload the page
     And "Intro text" "text" should exist
@@ -44,8 +44,8 @@ Feature: Verify the content designer global search support in table of contents 
     Then I search for "intro text" using the header global search box
     And I should see "Demo content: TOC title" in the ".search-results" "css_element"
     And I am on the "Demo content" "contentdesigner activity" page
-    Then I should see "Content editor"
-    And I click on "Content editor" "link"
+    Then I should see "Editor" in the ".secondary-navigation" "css_element"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".course-content-list .topinstance.element-item .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Intro text  | TOC intro text    |

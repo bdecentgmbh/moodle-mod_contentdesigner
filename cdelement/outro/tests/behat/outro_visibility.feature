@@ -24,7 +24,7 @@ Feature: Check content designer outro element settings
 
   Scenario: Add a outro element
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     Then ".course-content-list .item-outro" "css_element" should exist
     And I click on ".course-content-list .item-outro .action-item[data-action=edit] a" "css_element"
     Then I should see "Outro element settings"
@@ -38,6 +38,6 @@ Feature: Check content designer outro element settings
     | Secondary button URL | https://www.example.com |
     | Title                | Demo Outro              |
     And I press "Update element"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Button 01"
     Then I should see "Button 02"

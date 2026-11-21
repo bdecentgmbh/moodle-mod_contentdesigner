@@ -25,7 +25,13 @@
 $string['calloutcontent'] = 'Callout content';
 $string['calloutcontent_help'] = 'The text of the callout box.';
 $string['callouttitle'] = 'Callout title';
-$string['callouttitle_help'] = 'Optional heading shown inside the callout box. Leave it empty to show only the content.';
+$string['callouttitle_help'] = 'Optional heading shown inside the callout box. Leave it empty to show only the content.
+
+For some types the title has its own role:
+
+* Speech bubble: the name of the speaker.
+* Expert quote: the source, shown below the quote.
+* Definition: the term that is defined.';
 $string['callouttype'] = 'Callout type';
 $string['callouttype_danger'] = 'Danger';
 $string['callouttype_definition'] = 'Definition';

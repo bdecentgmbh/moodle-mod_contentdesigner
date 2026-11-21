@@ -1,7 +1,8 @@
 # Callout element — Teacher guide
 
-The Callout element shows a coloured box with an icon, an optional title and rich text, to highlight a note, a tip, a
-warning or another part of the content that learners should notice.
+The Callout element highlights a note, a tip, a warning or another part of the content that learners should notice.
+Notes (information, tip, warning, danger, success, example) are shown as a tinted box with an icon. Speech bubble,
+expert quote, definition, reflection prompt and key takeaway have a layout of their own.
 
 ## Settings
 
@@ -13,7 +14,8 @@ warning or another part of the content that learners should notice.
   - Expert quote for quotations and testimonials.
   - Example for worked examples.
   - Key takeaway for the single most important point of a section; use it sparingly.
-- **Callout title**: an optional heading inside the box.
+- **Callout title**: an optional heading inside the box. For a speech bubble it is the name of the speaker, for an
+  expert quote the source shown below the quote, for a definition the term.
 - **Callout content**: the text of the box, with images and other files from the editor.
 
 Screen readers announce the type of the callout before its content.

@@ -24,8 +24,8 @@ Feature: Check content designer element options
 
   Scenario: Add contentdesigner elements.
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    Then I should see "Content editor"
-    And I click on "Content editor" "link"
+    Then I should see "Editor" in the ".secondary-navigation" "css_element"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     Then ".contentdesigner-addelement .fa-plus" "css_element" should exist
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I should see "Insert Element" in the ".modal-header" "css_element"
@@ -55,7 +55,7 @@ Feature: Check content designer element options
 
   Scenario: Edit contentdesigner element actions.
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:

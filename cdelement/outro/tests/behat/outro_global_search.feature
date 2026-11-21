@@ -26,8 +26,8 @@ Feature: Verify the content designer global search support in outro element
 
   Scenario: Contentdesigner: Search: Add outro element title and description
     Given I am on the "Demo content" "contentdesigner activity" page logged in as admin
-    Then I should see "Content editor"
-    And I click on "Content editor" "link"
+    Then I should see "Editor" in the ".secondary-navigation" "css_element"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".course-content-list .element-item.item-outro .action-item[data-action=edit] a" "css_element"
     And "Outro element settings" "text" should exist in the "#page-content #id_elementsettings" "css_element"
     And I set the following fields to these values:

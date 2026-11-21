@@ -7,7 +7,7 @@ chapter; a progress bar shows how far they are.
 ## Adding a Content Designer activity
 
 1. Turn editing on in your course.
-2. Choose *Add an activity or resource* and pick **Content Designer**.
+2. Choose *Add an activity or resource* and pick **Content** (the activity type of Content Designer).
 3. Enter a **Name** and, optionally, a **Description**.
 4. Under **Display**, choose the **Display mode**: **Scroll** (default) shows all chapters on one page, **Pages** shows
    every chapter on its own page with the buttons *Previous page* and *Next page*.
@@ -19,9 +19,9 @@ their progress stops; a new attempt starts on the first page. The outro is shown
 
 Addons may add more settings to this form, for example the navigation method or grading.
 
-## The content editor
+## The editor
 
-Open the activity and choose **Content editor** in its navigation. The editor shows the chapters with their elements
+Open the activity and choose **Editor** in its navigation. The editor shows the chapters with their elements
 and the outro at the end.
 
 - **Add**: the plus buttons add an element at the top or the bottom of a chapter, or a new chapter. Pick the element

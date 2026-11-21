@@ -9,7 +9,10 @@ Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
   paid, are now free. The paid features are separate subplugins in private repositories: the elements poll,
   question, rating and panels, and the addons `cdaddon_report` (activity report) and `cdaddon_pro` (free navigation,
   graded attempts, completion rules, automatic chapter completion, saved H5P states).
-- New element callout (free): a coloured box for information, tips, warnings and eight more types.
+- New element callout (free): notes (information, tip, warning, danger, success, example) as tinted boxes, and own
+  layouts for speech bubble, expert quote, definition, reflection prompt and key takeaway.
+- The activity type is called "Content" (plugin name stays Content Designer), the link to the editor "Editor"; new
+  activity icon.
 - New element panels (paid): tabs or an accordion; a mandatory panels element hides the next elements until every
   panel was opened.
 - Paged display (setting "Display mode"): every chapter on its own page with Previous and Next buttons, under the

@@ -7,7 +7,7 @@ far they are.
 
 ## Features
 
-- **Content editor**: add, edit, move, hide, duplicate and delete elements and chapters; rename them in place.
+- **Editor**: add, edit, move, hide, duplicate and delete elements and chapters; rename them in place.
 - **Elements**: chapter, heading, paragraph, rich text, callout (info, tip, warning and eight more types), image
   (slideshow and lightbox), table of contents, Video Time (when [Video Time](https://moodle.org/plugins/mod_videotime)
   is installed), interactive content (H5P) and outro (image, text and up to two buttons).
@@ -45,7 +45,7 @@ Upgrading from 1.x keeps all content; see the [administrator guide](docs/admin-g
 ## Documentation
 
 - [Administrator guide](docs/admin-guide.md): settings, permissions, backups, personal data
-- [Teacher guide](docs/teacher-guide.md): the content editor and the elements
+- [Teacher guide](docs/teacher-guide.md): the editor and the elements
 - [Student guide](docs/student-guide.md)
 - [Developer guide](docs/developer-guide.md): elements, addons, hooks
 

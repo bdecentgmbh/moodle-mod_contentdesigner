@@ -25,7 +25,7 @@ Feature: Check content designer header element settings
 
   Scenario: Add a heading element workflow
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=heading]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -37,11 +37,11 @@ Feature: Check content designer header element settings
       | Horizontal Alignment |  Right                  |
       | Vertical Alignment   |  Middle                 |
     And I press "Create element"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     Then ".chapter-elements-list li.element-item h2.element-heading.hl-right.vl-middle" "css_element" should exist
     Then ".chapter-elements-list li.element-item a[target=_self]" "css_element" should exist
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".chapters-list:nth-child(2) li.element-item:nth-child(1) .action-item[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Heading URL          | https://www.example.com |
@@ -51,7 +51,7 @@ Feature: Check content designer header element settings
       | Horizontal Alignment |  Center                 |
       | Vertical Alignment   |  Top                    |
     And I press "Update element"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should not see "Heading 01" in the ".chapter-elements-list li.element-item" "css_element"
     Then I should see "Heading First" in the ".chapter-elements-list li.element-item" "css_element"
     Then ".chapter-elements-list li.element-item h2.element-heading.hl-center.vl-top" "css_element" should exist
@@ -98,10 +98,10 @@ Feature: Check content designer header element settings
       | Title           | Heading Title       |
       | Description     | Heading Description |
       | showdescription | 1                   |
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     And "Heading Description" "text" should exist in the ".contentdesigner-wrapper .chapters-list .element-item .element-description" "css_element"
     Then I should see "Heading 01"
     Then I edit "heading" cdelement "Heading Title" with the following fields to these values:
       | showdescription | 0 |
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     And "Heading Description" "text" should not exist

@@ -26,7 +26,7 @@ Feature: Check content designer image element settings
 
   Scenario: CDElement: Image: Single image with caption and disabled lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -43,7 +43,7 @@ Feature: Check content designer image element settings
 
   Scenario: CDElement: Image: Single image with caption and lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -62,7 +62,7 @@ Feature: Check content designer image element settings
 
   Scenario: CDElement: Image: Multiple images with caption and disabled lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -87,7 +87,7 @@ Feature: Check content designer image element settings
 
   Scenario: CDElement: Image: Multiple images with caption and lightbox enabled
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -118,7 +118,7 @@ Feature: Check content designer image element settings
   @format_popups
   Scenario: CDElement: Image: Single image in popup format
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -143,7 +143,7 @@ Feature: Check content designer image element settings
   @format_popups
   Scenario: CDElement: Image: Single image in popup format with lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -170,7 +170,7 @@ Feature: Check content designer image element settings
   @format_popups
   Scenario: CDElement: Image: Multiple images in popup format without lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager
@@ -197,7 +197,7 @@ Feature: Check content designer image element settings
   @format_popups
   Scenario: CDElement: Image: Multiple images in popup format with lightbox
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=image]" "css_element" in the ".modal-body" "css_element"
     And I upload "/mod/contentdesigner/cdelement/image/tests/fixtures/elearning-course.jpg" file to "Images" filemanager

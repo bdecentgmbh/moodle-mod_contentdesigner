@@ -20,7 +20,7 @@ Feature: Check content designer chapter element bookmark tool support
       | course      | C1                           |
     And I log out
     And I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -29,7 +29,7 @@ Feature: Check content designer chapter element bookmark tool support
       | Visibility     | Visible       |
       | Learning Tools | Enabled       |
     And I press "Create element"
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=paragraph]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -41,17 +41,17 @@ Feature: Check content designer chapter element bookmark tool support
   @javascript
   Scenario: Learning tool status checked in chapter element settings.
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "First chapter"
     Then I should see "Bookmark" in the ".toolbar-block" "css_element"
     Then I should see "Notes" in the ".toolbar-block" "css_element"
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".element-item[data-elementshortname=chapter] .actions-list li[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Title          | First chapter - Learning tool disabled |
       | Learning Tools | Disabled                               |
     And I press "Update element"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "First chapter - Learning tool disabled"
     Then I should not see "Bookmark" in the ".toolbar-block" "css_element"
     Then I should not see "Notes" in the ".toolbar-block" "css_element"
@@ -64,7 +64,7 @@ Feature: Check content designer chapter element bookmark tool support
     And I press "Save changes"
     And I log out
     And I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -73,17 +73,17 @@ Feature: Check content designer chapter element bookmark tool support
       | Visibility     | Visible        |
     And I press "Create element"
     And I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "First chapter"
     Then I should see "Bookmark" in the ".chapters-list:nth-child(2) .toolbar-block .content-designer-learningtool-bookmark" "css_element"
     Then I should see "Notes" in the ".chapters-list:nth-child(2) .toolbar-block .content-designer-learningtool-note" "css_element"
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".chapters-list:nth-child(2) .element-item[data-elementshortname='chapter']  .actions-list li[data-action=edit] a" "css_element"
     And I set the following fields to these values:
       | Title          | Second chapter - Learning tool disabled |
       | Learning Tools | Disabled                                |
     And I press "Update element"
-    And I click on "Content Designer" "link"
+    And I click on "Content" "link" in the ".secondary-navigation" "css_element"
     Then I should see "Second chapter - Learning tool disabled"
     Then I should not see "Bookmark" in the ".chapters-list:nth-child(2) .toolbar-block" "css_element"
     Then I should not see "Notes" in the ".chapters-list:nth-child(2) .toolbar-block" "css_element"

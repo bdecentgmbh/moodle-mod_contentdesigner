@@ -24,7 +24,7 @@ Feature: Callout element of Content Designer
 
   Scenario: A teacher adds a callout in the editor and a student sees it
     Given I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=callout]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:

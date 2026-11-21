@@ -40,7 +40,7 @@ $string['content_help'] = 'Enter the main text for this element. This content wi
 $string['contentdesigner:addinstance'] = 'Add a new content designer';
 $string['contentdesigner:view'] = 'View content designer activity';
 $string['contentdesigner:viewcontenteditor'] = 'Access the content editor options';
-$string['contenteditor'] = 'Content editor';
+$string['contenteditor'] = 'Editor';
 $string['createnewelement'] = 'Create new element - Content Designer';
 $string['deletechecktype'] = 'Are you sure that you want to delete this {$a->element} element?';
 $string['disabled'] = 'Disabled';
@@ -96,7 +96,7 @@ $string['mandatory_help'] = 'Specify whether completing this element is required
 This setting is useful for creating a sequential flow, guiding users through the content step-by-step.';
 $string['margin'] = 'Margin';
 $string['margin_help'] = 'Margin controls the space outside the element, creating distance between it and other elements. Set a single value to apply the same margin on all sides of the element.<br> <b>Example:</b> 10px (This will apply a 10px margin on all four sides: top, right, bottom, and left).';
-$string['modulename'] = 'Content Designer';
+$string['modulename'] = 'Content';
 $string['modulename_help'] = '<p>The Content Designer activity enables teachers to create structured, interactive course content directly in Moodle without needing external authoring tools.</p>
 <p>Key features include:</p>
 <ul>
@@ -105,7 +105,7 @@ $string['modulename_help'] = '<p>The Content Designer activity enables teachers 
     <li>Micro-learning &amp; tracking: Enforce mandatory completion requirements on specific elements, display progress bars, and view detailed activity reports.</li>
 </ul>
 <p>For detailed setup instructions and feature guides, please visit the <a href="https://intercom.help/bdecent/en/collections/14008404-content-designer" target="_blank" rel="noopener">Content Designer documentation</a>. We are constantly improving the plugin, so please let us know if you have any <a href="mailto:support@bdecent.de">feedback for us</a>!</p>';
-$string['modulenameplural'] = 'Content Designers';
+$string['modulenameplural'] = 'Contents';
 $string['newvalue'] = 'New value for';
 $string['nextpage'] = 'Next page';
 $string['outro:btnbacktocourse'] = 'Back to course';

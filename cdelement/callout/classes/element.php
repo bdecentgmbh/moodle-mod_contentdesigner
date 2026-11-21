@@ -42,6 +42,19 @@ class element extends \mod_contentdesigner\elements {
     public const DEFAULT_TYPE = 'info';
 
     /**
+     * Types with a layout of their own; all other types use the note layout.
+     *
+     * @var array<string, string>
+     */
+    public const LAYOUTS = [
+        'speech' => 'speech',
+        'quote' => 'quote',
+        'definition' => 'definition',
+        'reflection' => 'reflection',
+        'keytakeaway' => 'keytakeaway',
+    ];
+
+    /**
      * The types of callouts with their Font Awesome icon. The keys are the only values stored and rendered.
      *
      * @var array<string, string>
@@ -243,6 +256,7 @@ class element extends \mod_contentdesigner\elements {
         // The stored values are restricted again, as backups may contain anything.
         $type = self::clean_type($instance->callouttype ?? '');
         $title = trim((string) ($instance->callouttitle ?? ''));
+        $layout = self::LAYOUTS[$type] ?? 'note';
 
         return $OUTPUT->render_from_template('cdelement_callout/callout', [
             'type' => $type,
@@ -250,6 +264,8 @@ class element extends \mod_contentdesigner\elements {
             'icon' => self::TYPES[$type],
             'title' => ($title !== '') ? format_string($title, true, ['context' => $context]) : '',
             'content' => $content,
+            'layout' => $layout,
+            'layout' . $layout => true,
         ]);
     }
 

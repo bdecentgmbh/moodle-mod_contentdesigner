@@ -310,4 +310,52 @@ final class element_test extends \advanced_testcase {
         ]);
         $this->assertEquals(FORMAT_HTML, $DB->get_field('cdelement_callout', 'contentformat', ['id' => $id]));
     }
+
+    /**
+     * Layout of each type and what the title becomes in it.
+     *
+     * @return array
+     */
+    public static function layout_provider(): array {
+        return [
+            'note' => ['warning', 'Mind the gap', 'callout-layout-note', 'callout-icon fa fa-triangle-exclamation'],
+            'speech' => ['speech', 'Alex', 'callout-layout-speech', 'callout-avatar'],
+            'quote' => ['quote', 'Course author', 'callout-layout-quote', '<blockquote class="callout-body">'],
+            'definition' => [
+                'definition', 'Spaced repetition', 'callout-layout-definition', '<p class="callout-label">Definition</p>',
+            ],
+            'reflection' => ['reflection', 'Pause', 'callout-layout-reflection', 'fa-circle-question'],
+            'keytakeaway' => ['keytakeaway', '', 'callout-layout-keytakeaway', '<p class="callout-label">Key takeaway</p>'],
+        ];
+    }
+
+    /**
+     * Every type is rendered in its layout.
+     *
+     * @param string $type Callout type.
+     * @param string $title Callout title.
+     * @param string $layoutclass Expected layout class.
+     * @param string $marker Markup expected in the layout.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('layout_provider')]
+    public function test_render_layout(string $type, string $title, string $layoutclass, string $marker): void {
+        $this->resetAfterTest();
+        [, $cd, $chapter] = $this->create_activity();
+        $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
+        $callout = $gen->create_element($cd, 'callout', [
+            'callouttype' => $type,
+            'callouttitle' => $title,
+            'content' => '<p>Text of the callout</p>',
+        ], $chapter);
+
+        $element = editor::get_element('callout', $cd->cmid);
+        $html = $element->render($element->prepare_formdata($callout->id));
+        $this->assertStringContainsString($layoutclass, $html);
+        $this->assertStringContainsString("callout-type-{$type}", $html);
+        $this->assertStringContainsString($marker, $html);
+        $this->assertStringContainsString('Text of the callout', $html);
+        if ($title !== '') {
+            $this->assertStringContainsString($title, $html);
+        }
+    }
 }

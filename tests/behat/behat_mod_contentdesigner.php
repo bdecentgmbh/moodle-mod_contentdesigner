@@ -48,7 +48,7 @@ class behat_mod_contentdesigner extends behat_base {
      * @param TableNode $data
      */
     public function i_create_cdelement_with_the_following_fields_to_these_values($element, TableNode $data) {
-        $this->execute('behat_general::i_click_on', ['Content editor', 'link']);
+        $this->execute('behat_general::i_click_on_in_the', ['Editor', 'link', '.secondary-navigation', 'css_element']);
         $this->execute('behat_general::i_click_on', ['.contentdesigner-addelement .fa-plus', 'css_element']);
         $this->execute('behat_general::i_click_on', ['.elements-list li[data-element=' . $element . ']', 'css_element']);
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', [$data]);
@@ -65,7 +65,7 @@ class behat_mod_contentdesigner extends behat_base {
      * @param TableNode $data
      */
     public function i_edit_cdelement_with_the_title_and_set_the_following_fields_to_these_values($elem, $title, TableNode $data) {
-        $this->execute('behat_general::i_click_on', ['Content editor', 'link']);
+        $this->execute('behat_general::i_click_on_in_the', ['Editor', 'link', '.secondary-navigation', 'css_element']);
 
         // Find the element item by element type and title.
         $xpath = "//li[contains(@class, 'element-item element-{$elem}') and @data-title=\"{$title}\"]//li[@data-action='edit']/a";
