@@ -170,8 +170,12 @@
     opacity: .35;
 }
 
+/* Resets the blockquote style of the theme (border, indent, muted colour). */
 .cdelement-callout.callout-layout-quote blockquote {
     margin: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
     font: italic 1.2rem/1.45 Georgia, "Times New Roman", serif;
 }
 
