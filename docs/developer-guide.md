@@ -121,5 +121,5 @@ on). Publishing a GitHub release runs `release.yml`: it attaches the ZIP of the 
 and sends it to the shop of bdecent.de; a pre-release goes to staging.bdecent.de only. The Moodle Marketplace step is
 off until the plugin is listed there. Then the workflow `stable-branches.yml` (started by hand with the tag) builds the
 `MOODLE_502_STABLE` and `MOODLE_503_STABLE` branches for git deployments, and the publish workflow of
-`moodle-mod_contentdesigner_pro` builds the bundle with the paid elements and addons. The availability condition is
-released from its own repository with the same tag.
+`moodle-mod_contentdesigner_pro` builds the bundle with the paid elements and addons and attaches the availability
+condition (private repository `moodle-availability_contentdesigner`, no releases of its own) as the second ZIP.
