@@ -408,15 +408,20 @@ class editor {
     /**
      * Render the module outro element.
      *
-     * @return array Rendered element box view of the outro.
+     * @return array The rendered outro for the content; ['hidden' => true] for a hidden one, [] without outro.
      */
     public function render_module_outro() {
         global $DB;
         $element = self::get_element('outro', $this->cm->id, $this->attempt);
         $editor = self::get_editor($this->cm->id);
         $instance = $DB->get_record('cdelement_outro', ['contentdesignerid' => $this->cm->instance]);
+        if ($instance && !$instance->visible) {
+            // A hidden outro is not shown, like every hidden element. The template still marks the end of the content
+            // (#outro-reached), which the completion rule "end reached" of cdaddon_pro watches.
+            return ['hidden' => true];
+        }
         if ($instance) {
-            $instance = $element->get_instance($instance->id, $instance->visible);
+            $instance = $element->get_instance($instance->id, true);
             $option = $editor->get_option($instance->id, $element->elementid);
             $element->load_option_classes($instance, $option);
             $instancedata = $element->prepare_formdata($instance->id);
@@ -599,7 +604,8 @@ class editor {
 
         // Only elements of this activity can be copied.
         if ($record = access::get_element_instance($elementobj, (int) $id, $this->cm->instance)) {
-            $record = $elementobj->get_instance($record->id);
+            // The stored description, not the formatted one: the copy must keep its source text and file references.
+            $record = $elementobj->get_instance($record->id, false, false);
 
             $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
             $chapter = isset($content->chapter) ? $content->chapter : 0;
@@ -637,15 +643,22 @@ class editor {
             // Get the element object for the chapter element.
             $elementobj = self::get_element('chapter', $this->cm->id);
 
-            // Retrieve the chapter instance data.
-            $record = $elementobj->get_instance($chapter->id);
+            // Retrieve the chapter instance data: the stored description, not the formatted one.
+            $record = $elementobj->get_instance($chapter->id, false, false);
 
             // Set the new chapter data.
             $record->instanceid = 0;
             $record->contents = null;
             $record->chapterid = $chapter->id;
             $record->contentdesignerid = $this->cm->instance;
+            $record->cmid = $this->cm->id;
+            $record->contextid = \context_module::instance($this->cm->id)->id;
+            $record->elementshortname = $elementobj->shortname;
             $record->timecreated = time();
+
+            // Draft copies of the description files and the background image of the source chapter, saved for the
+            // copy by save_areafiles().
+            $elementobj->prepare_standard_file_editor($record);
 
             // Duplicate the chapter.
             $newchapterid = $elementobj->update_instance($record);

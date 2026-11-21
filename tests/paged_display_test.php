@@ -387,6 +387,24 @@ final class paged_display_test extends \advanced_testcase {
     }
 
     /**
+     * A hidden outro is not shown to learners, but the end of the content is still marked for the completion rule.
+     */
+    public function test_hidden_outro(): void {
+        global $DB;
+        $this->without_addons();
+        $this->create_activity();
+        $DB->set_field('cdelement_outro', 'visible', 0, ['contentdesignerid' => $this->cd->id]);
+        $this->setUser($this->student);
+        $this->complete_chapter(1);
+        $this->complete_chapter(2);
+        $this->complete_chapter(3);
+
+        $html = $this->render();
+        $this->assertStringNotContainsString('Well done', $html);
+        $this->assertStringContainsString('outro-reached', $html);
+    }
+
+    /**
      * The links to the pages continue the attempt shown; refreshing the content keeps the page.
      */
     public function test_core_urls_and_refresh(): void {

@@ -27,6 +27,12 @@ namespace mod_contentdesigner\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class css {
+    /** @var int Size of the margin and padding columns of contentdesigner_options. */
+    public const MAX_SPACING = 30;
+
+    /** @var int Size of the abovecolorbg and belowcolorbg columns of contentdesigner_options. */
+    public const MAX_BACKGROUND = 100;
+
     /** @var string One CSS length, e.g. 10px, 1.5rem, -2%, 0, auto. */
     private const LENGTH = '(?:auto|0|-?\d+(?:\.\d+)?(?:px|em|rem|%|vh|vw|vmin|vmax|pt|ch|ex)?)';
 
@@ -38,6 +44,9 @@ class css {
      */
     public static function is_spacing(string $value): bool {
         $value = trim($value);
+        if (strlen($value) > self::MAX_SPACING) {
+            return false;
+        }
         return $value === '' || (bool) preg_match('/^' . self::LENGTH . '(?:\s+' . self::LENGTH . '){0,3}$/i', $value);
     }
 
@@ -52,7 +61,7 @@ class css {
         if ($value === '') {
             return true;
         }
-        if (strlen($value) > 500 || preg_match('/url\s*\(|expression|var\s*\(|attr\s*\(|image-set/i', $value)) {
+        if (strlen($value) > self::MAX_BACKGROUND || preg_match('/url\s*\(|expression|var\s*\(|attr\s*\(|image-set/i', $value)) {
             return false;
         }
         $color = '(?:#[0-9a-f]{3,8}|[a-z]+|(?:rgb|rgba|hsl|hsla)\(\s*[0-9.,%\s\/deg]+\))';

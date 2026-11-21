@@ -153,4 +153,43 @@ final class backup_restore_test extends \advanced_testcase {
         $h5p = $DB->get_record('cdelement_h5p', ['contentdesignerid' => $newcd->id], '*', MUST_EXIST);
         $this->assertEquals(0, $DB->count_records('cdelement_h5p_completion', ['instance' => $h5p->id]));
     }
+
+    /**
+     * Links to the activity and its course point to the restored ones; every element keeps exactly its own options;
+     * the maximum score of H5P elements is kept.
+     */
+    public function test_restore_links_options_and_maxscore(): void {
+        global $CFG, $DB;
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
+        $cd = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $course->id]);
+        $chapter = $gen->create_chapter($cd);
+        $links = '<a href="' . $CFG->wwwroot . '/mod/contentdesigner/view.php?id=' . $cd->cmid . '">View</a>'
+            . '<a href="' . $CFG->wwwroot . '/mod/contentdesigner/index.php?id=' . $course->id . '">Index</a>';
+        $richtext = $gen->create_element($cd, 'richtext', ['content' => $links, 'contentformat' => FORMAT_HTML], $chapter);
+        $DB->set_field('contentdesigner_options', 'description', $links, ['instance' => $richtext->id,
+            'element' => $DB->get_field('contentdesigner_elements', 'id', ['shortname' => 'richtext'])]);
+        $toc = $gen->create_element($cd, 'tableofcontents', [], $chapter);
+        $gen->create_element($cd, 'h5p', ['maxscore' => '5'], $chapter);
+
+        $newcourseid = $this->duplicate_course($course, false);
+        $newcd = $DB->get_record('contentdesigner', ['course' => $newcourseid], '*', MUST_EXIST);
+        $newcmid = get_coursemodule_from_instance('contentdesigner', $newcd->id, $newcourseid, false, MUST_EXIST)->id;
+        $expected = '<a href="' . $CFG->wwwroot . '/mod/contentdesigner/view.php?id=' . $newcmid . '">View</a>'
+            . '<a href="' . $CFG->wwwroot . '/mod/contentdesigner/index.php?id=' . $newcourseid . '">Index</a>';
+
+        $newrichtext = $DB->get_record('cdelement_richtext', ['contentdesignerid' => $newcd->id], '*', MUST_EXIST);
+        $this->assertSame($expected, $newrichtext->content);
+        $this->assertSame($expected, $DB->get_field('contentdesigner_options', 'description', ['instance' => $newrichtext->id,
+            'element' => $DB->get_field('contentdesigner_elements', 'id', ['shortname' => 'richtext'])]));
+
+        $newtoc = $DB->get_record('cdelement_tableofcontents', ['contentdesignerid' => $newcd->id], '*', MUST_EXIST);
+        $this->assertNotEquals($toc->id, $newtoc->id);
+        $this->assertEquals(1, $DB->count_records('contentdesigner_options', ['instance' => $newtoc->id,
+            'element' => $DB->get_field('contentdesigner_elements', 'id', ['shortname' => 'tableofcontents'])]));
+
+        $this->assertEquals('5', $DB->get_field('cdelement_h5p', 'maxscore', ['contentdesignerid' => $newcd->id]));
+    }
 }

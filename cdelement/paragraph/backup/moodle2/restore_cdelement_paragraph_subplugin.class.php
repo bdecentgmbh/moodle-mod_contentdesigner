@@ -60,4 +60,13 @@ class restore_cdelement_paragraph_subplugin extends restore_subplugin {
         $this->set_mapping('paragraph_instanceid', $oldinstance, $newinstance, true);
         $this->add_related_files('mod_contentdesigner', 'paragraphelementbg', 'paragraph_instanceid', null, $oldinstance);
     }
+
+    /**
+     * The contents of the element with links to decode after a restore.
+     *
+     * @return restore_decode_content[]
+     */
+    public static function define_decode_contents() {
+        return [new restore_decode_content('cdelement_paragraph', ['content'], 'paragraph_instanceid')];
+    }
 }

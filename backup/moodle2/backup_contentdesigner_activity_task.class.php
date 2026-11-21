@@ -50,12 +50,27 @@ class backup_contentdesigner_activity_task extends backup_activity_task {
     }
 
     /**
-     * No content encoding needed for this activity
+     * Encodes the links to the index and view pages of Content Designer activities, so that a restore points them to the
+     * restored course and activities (decoded by restore_contentdesigner_activity_task::define_decode_rules()).
      *
      * @param string $content some HTML text that eventually contains URLs to the activity instance scripts
-     * @return string the same content with no changes
+     * @return string the content with the links encoded
      */
     public static function encode_content_links($content) {
-        return $content;
+        global $CFG;
+
+        $base = preg_quote($CFG->wwwroot, '/');
+        // Links to the list of Content Designer activities of a course.
+        $content = preg_replace(
+            '/(' . $base . '\/mod\/contentdesigner\/index.php\?id\=)([0-9]+)/',
+            '$@CONTENTDESIGNERINDEX*$2@$',
+            $content
+        );
+        // Links to the view page of an activity.
+        return preg_replace(
+            '/(' . $base . '\/mod\/contentdesigner\/view.php\?id\=)([0-9]+)/',
+            '$@CONTENTDESIGNERVIEWBYID*$2@$',
+            $content
+        );
     }
 }

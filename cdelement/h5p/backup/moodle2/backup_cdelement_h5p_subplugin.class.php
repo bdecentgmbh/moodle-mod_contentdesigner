@@ -40,7 +40,7 @@ class backup_cdelement_h5p_subplugin extends backup_subplugin {
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
         $subpluginelement = new backup_nested_element('cdelement_h5p', ['id'], [
-            'contentdesignerid', 'title', 'visible', 'package', 'mandatory', 'timecreated', 'timemodified',
+            'contentdesignerid', 'title', 'visible', 'package', 'mandatory', 'maxscore', 'timecreated', 'timemodified',
         ]);
 
         $h5pcompletion = new backup_nested_element('elementh5p_completion');

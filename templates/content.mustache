@@ -355,6 +355,7 @@
                 {{^outrohidden}}
                 {{^chapterprevent}}
                 {{^prevent}}
+                {{#outro.instancedata.visible}}
                 <li class="element-item "
                     data-elementid="{{outro.element}}"
                     data-title="{{outro.instancedata.title}}"
@@ -382,6 +383,10 @@
                     </div>
 
                 </li>
+                {{/outro.instancedata.visible}}
+                {{#outro.hidden}}
+                <li class="element-item"><div class="complete-module" id="outro-reached"></div></li>
+                {{/outro.hidden}}
                 {{#extracontent}}
                 <li class="element-item contentdesigner-extracontent">
                     {{{extracontent}}}

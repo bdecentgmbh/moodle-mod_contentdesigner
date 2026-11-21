@@ -51,6 +51,7 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('contentdesigner', ['intro'], 'contentdesigner');
+        $contents[] = new restore_decode_content('contentdesigner_options', ['description'], 'contentdesigner_options');
 
         // The elements declare their contents with links in the static method define_decode_contents() of their
         // restore class, if they have such contents.
@@ -68,11 +69,14 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
     }
 
     /**
-     * No links to decode for this activity.
+     * The rules to decode the links encoded by backup_contentdesigner_activity_task::encode_content_links().
      *
      * @return array
      */
     public static function define_decode_rules() {
-        return [];
+        return [
+            new restore_decode_rule('CONTENTDESIGNERVIEWBYID', '/mod/contentdesigner/view.php?id=$1', 'course_module'),
+            new restore_decode_rule('CONTENTDESIGNERINDEX', '/mod/contentdesigner/index.php?id=$1', 'course'),
+        ];
     }
 }

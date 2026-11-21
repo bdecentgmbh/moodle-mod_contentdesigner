@@ -28,15 +28,21 @@
  * @param string $oldversion the version we are upgrading from.
  */
 function xmldb_contentdesigner_upgrade($oldversion) {
-    global $DB, $CFG, $SESSION;
+    global $DB, $CFG;
 
     $dbman = $DB->get_manager();
 
     // Verify the plugin is upgraded from the free edition 1.x, which has no contentdesigner_completion table. Its
-    // versions are higher than the steps of the pro edition, so these steps run regardless of the version. The
-    // elements read the flag in their upgrade (in the same request), so it is set on every upgrade.
+    // versions are higher than the steps of the pro edition, so these steps run regardless of the version.
     $upgradepro = !$dbman->table_exists('contentdesigner_completion');
-    $SESSION->contentdesigner_upgradepro = $upgradepro;
+    if ($upgradepro) {
+        // The elements chapter, H5P and outro run their steps of the pro edition as well. They are upgraded after this
+        // plugin (possibly in another request), when contentdesigner_completion exists, so each gets a flag in the
+        // config of mod_contentdesigner, which it removes once its upgrade has run.
+        foreach (['chapter', 'h5p', 'outro'] as $element) {
+            set_config('upgradefromfree_' . $element, 1, 'mod_contentdesigner');
+        }
+    }
 
     if ($oldversion < 2024092308 || $upgradepro) {
         // Contentdesigner table.

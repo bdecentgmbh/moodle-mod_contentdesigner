@@ -114,6 +114,7 @@ class general_element_form extends \moodleform {
 
         $mform->addElement('text', 'title', get_string('elementtitle', 'mod_contentdesigner'), 'maxlength="100" size="30"');
         $mform->setType('title', PARAM_NOTAGS);
+        $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'server');
         $mform->addHelpButton('title', 'elementtitle', 'mod_contentdesigner');
 
         // Description for General element.
@@ -212,7 +213,7 @@ class general_element_form extends \moodleform {
         $mform->setDefault('duration', $default ?: 'slow');
 
         $mform->addElement('text', 'delay', get_string('strdelay', 'mod_contentdesigner'));
-        $mform->setType('delay', PARAM_TEXT);
+        $mform->setType('delay', PARAM_INT);
         $mform->addHelpButton('delay', 'strdelay', 'mod_contentdesigner');
         $default = get_config('mod_contentdesigner', 'delay');
         $mform->setDefault('delay', $default ?: '');
@@ -280,6 +281,10 @@ class general_element_form extends \moodleform {
             if (isset($data[$field]) && !css::is_background($data[$field])) {
                 $errors[$field] = get_string('error:invalidbackground', 'mod_contentdesigner');
             }
+        }
+        // Seconds, stored in a column of 10 characters.
+        if (isset($data['delay']) && ((int) $data['delay'] < 0 || (int) $data['delay'] > 3600)) {
+            $errors['delay'] = get_string('error:invaliddelay', 'mod_contentdesigner');
         }
         return $errors;
     }

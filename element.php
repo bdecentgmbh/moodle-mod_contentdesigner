@@ -107,7 +107,7 @@ if ($mform->is_cancelled()) {
     redirect($editorurl, get_string('savechanges'), null, \core\output\notification::NOTIFY_INFO);
 }
 
-$data = (object) $elementobj->prepare_formdata($id);
+$data = (object) $elementobj->prepare_formdata($id, false);
 $data = $elementobj->prepare_standard_file_editor($data);
 
 $mform->set_data($data);

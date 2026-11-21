@@ -56,4 +56,20 @@ final class css_test extends \basic_testcase {
             $this->assertSame('', css::clean_background($invalid));
         }
     }
+
+    /**
+     * Values longer than their columns in contentdesigner_options are not valid.
+     */
+    public function test_column_sizes(): void {
+        $spacing = '100.25rem 100.25rem 100.25rem'; // 29 characters.
+        $this->assertTrue(css::is_spacing($spacing));
+        // Four valid lengths, but 33 characters.
+        $this->assertFalse(css::is_spacing($spacing . ' 1px'));
+
+        $gradient = 'linear-gradient(90deg, ' . implode(', ', array_fill(0, 5, 'rgba(10, 20, 30, 0.5)')) . ')';
+        $this->assertLessThanOrEqual(css::MAX_BACKGROUND, strlen('linear-gradient(90deg, rgba(10, 20, 30, 0.5), red)'));
+        $this->assertTrue(css::is_background('linear-gradient(90deg, rgba(10, 20, 30, 0.5), red)'));
+        $this->assertGreaterThan(css::MAX_BACKGROUND, strlen($gradient));
+        $this->assertFalse(css::is_background($gradient));
+    }
 }

@@ -144,7 +144,7 @@ class attempts {
         $lockfactory = \core\lock\lock_config::get_lock_factory(self::LOCK_COMPONENT);
         $lock = $lockfactory->get_lock(self::lock_resource($contentdesignerid, $userid), 10);
         if (!$lock) {
-            throw new \moodle_exception('locktimeout');
+            throw new \moodle_exception('locktimeout', 'moodle');
         }
         try {
             $latest = self::get_latest($contentdesignerid, $userid);

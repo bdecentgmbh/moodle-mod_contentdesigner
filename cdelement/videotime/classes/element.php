@@ -224,12 +224,13 @@ class element extends \mod_contentdesigner\elements {
      * Prepare data for the element moodle form.
      *
      * @param int $instanceid Element instance id.
+     * @param bool $formatted Whether to format the description for display; false for the edit form.
      * @return stdclass
      */
-    public function prepare_formdata($instanceid) {
+    public function prepare_formdata($instanceid, bool $formatted = true) {
         global $DB;
 
-        $instancedata = parent::prepare_formdata($instanceid);
+        $instancedata = parent::prepare_formdata($instanceid, $formatted);
 
         // Include the selected video time related courseid.
         if (!empty($instancedata->videotimeid) && self::videotime_available()) {

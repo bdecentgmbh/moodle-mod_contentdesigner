@@ -40,33 +40,16 @@ class backup_cdelement_tableofcontents_subplugin extends backup_subplugin {
             'contentdesignerid', 'title', 'visible', 'intro', 'introformat', 'actiontstatus', 'stickytype', 'chaptervisible',
             'modtitlevisible', 'timecreated', 'timemodified',
         ]);
-
-        $options = new backup_nested_element('cdelement_tableofcontentsopitons');
-        $tableofcontentsopitons = new backup_nested_element('cdelement_tableofcontents_options', ['id'], [
-            'element', 'instance', 'margin', 'padding', 'abovecolorbg', 'abovegradientbg', 'bgimage', 'belowcolorbg',
-            'belowgradientbg', 'animation', 'duration', 'delay', 'direction', 'speed', 'viewport', 'hidedesktop', 'hidetablet',
-            'hidemobile', 'timecreated', 'timemodified',
-        ]);
+        // The general options and their background images are in the backup of the activity (contentdesigner_options).
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
         $subpluginwrapper->add_child($subpluginelement);
 
-        $subplugin->add_child($options);
-        $options->add_child($tableofcontentsopitons);
-
         // Set source to populate the data.
         $subpluginelement->set_source_table('cdelement_tableofcontents', ['contentdesignerid' => backup::VAR_PARENTID]);
         $subpluginelement->annotate_ids('tableofcontents_instanceid', 'id');
         $subpluginelement->annotate_files('mod_contentdesigner', 'cdelement_tableofcontents_intro', null);
-
-        $sql = "SELECT cop.* FROM {contentdesigner_options} cop
-        JOIN {cdelement_tableofcontents} etoc ON etoc.id = cop.instance
-        JOIN {contentdesigner_elements} cee ON cee.id = cop.element
-        WHERE etoc.contentdesignerid = :contentdesignerid";
-
-        $tableofcontentsopitons->set_source_sql($sql, ['contentdesignerid' => backup::VAR_PARENTID]);
-        $tableofcontentsopitons->annotate_files('mod_contentdesigner', 'tableofcontentselementbg', null);
 
         return $subplugin;
     }

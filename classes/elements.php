@@ -583,11 +583,15 @@ abstract class elements {
     /**
      * Get the element instance data, merged with its general options. Filter by the visible status.
      *
+     * The description is formatted for display by default. Callers that edit or copy the data must ask for the
+     * stored text ($formatted = false), otherwise saving would store the filter output (e.g. collapsed multilang).
+     *
      * @param int $instanceid Instance id.
      * @param bool $visible Filter by visibility.
+     * @param bool $formatted Whether to format the description for display.
      * @return \stdClass|bool Instance record
      */
-    public function get_instance(int $instanceid, $visible = false) {
+    public function get_instance(int $instanceid, $visible = false, bool $formatted = true) {
         global $DB;
 
         if (!$this->is_table_exists()) {
@@ -604,7 +608,7 @@ abstract class elements {
         $record = (object) array_merge($options, (array) $instance);
         $record->optionid = $options['id'] ?? null;
 
-        if (!empty($record->description)) {
+        if ($formatted && !empty($record->description)) {
             $record->description = file_rewrite_pluginfile_urls(
                 $record->description,
                 'pluginfile.php',
@@ -649,13 +653,14 @@ abstract class elements {
     }
 
     /**
-     * Prepare data for the element moodle form.
+     * Prepare the data of an element instance, for its rendering or (with $formatted = false) for its edit form.
      *
      * @param int $instanceid Element instance id.
+     * @param bool $formatted Whether to format the description for display; false for the edit form.
      * @return object
      */
-    public function prepare_formdata($instanceid) {
-        $instancedata = (array) $this->get_instance($instanceid);
+    public function prepare_formdata($instanceid, bool $formatted = true) {
+        $instancedata = (array) $this->get_instance($instanceid, false, $formatted);
         $instancedata['cmid'] = $this->cmid;
         return (object) ($instancedata);
     }

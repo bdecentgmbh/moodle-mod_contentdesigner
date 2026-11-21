@@ -170,6 +170,7 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
     protected function process_contentdesigner_options($data) {
         global $DB;
         $data = (object) $data;
+        $oldid = $data->id;
         [$data->element, $data->instance] = $this->map_instance((int) $data->element, (int) $data->instance);
         if (
             !$data->element || !$data->instance
@@ -178,7 +179,9 @@ class restore_contentdesigner_activity_structure_step extends restore_activity_s
             return;
         }
         $data->timemodified = time();
-        $DB->insert_record('contentdesigner_options', $data);
+        $newid = $DB->insert_record('contentdesigner_options', $data);
+        // For the links in the description (restore_contentdesigner_activity_task::define_decode_contents()).
+        $this->set_mapping('contentdesigner_options', $oldid, $newid);
     }
 
     /**

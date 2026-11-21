@@ -35,7 +35,7 @@
  * @return bool True on successful upgrade.
  */
 function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
-    global $DB, $SESSION;
+    global $DB;
 
     $dbman = $DB->get_manager();
 
@@ -43,10 +43,10 @@ function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
     // If the plugin is renamed, we need to rename the existing table without upgrade the save point.
     $runwithoutupgradpoint = $rename;
 
-    // Verify the plugin is upgraded from a free version.
-    // Check if the contentdesigner_completion table exists.
-    // If it does not exist, it means the plugin is upgraded from a free version.
-    if ($rename || (property_exists($SESSION, 'contentdesigner_upgradepro') && $SESSION->contentdesigner_upgradepro)) {
+    // Upgraded from the free edition 1.x: run the steps of the pro edition as well. The flag is set by the upgrade of
+    // mod_contentdesigner (db/upgrade.php) and removed at the end of this upgrade.
+    $fromfree = (bool) get_config('mod_contentdesigner', 'upgradefromfree_h5p');
+    if ($rename || $fromfree) {
         $runwithoutupgradpoint = true;
     }
 
@@ -166,6 +166,10 @@ function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
         if (!$runwithoutupgradpoint) {
             upgrade_plugin_savepoint(true, 2025021306, 'cdelement', 'h5p');
         }
+    }
+
+    if ($fromfree) {
+        unset_config('upgradefromfree_h5p', 'mod_contentdesigner');
     }
 
     return true;

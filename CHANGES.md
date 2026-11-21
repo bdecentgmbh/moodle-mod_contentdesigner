@@ -39,6 +39,16 @@ Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
 - The chapter and the outro cannot be uninstalled; uninstalling another element deletes its contents, settings and
   files in all activities. Deleting an element deletes the files of all its areas.
 - Global search indexes an element again after it is shown or renamed in the editor.
+- Editing or duplicating an element or a chapter keeps the stored description (multi-language text, links of
+  filters and file links were saved as displayed before); duplicated chapters copy their description files and
+  background image.
+- A hidden outro is not shown to learners; the end of the content is still marked for the completion rule.
+- Element settings are checked against the size of their database columns (margins, paddings, backgrounds, delay,
+  title), so saving no longer fails on PostgreSQL or strict MySQL.
+- Backup and restore: links to Content Designer activities and their course point to the restored ones (also in
+  element descriptions and paragraphs); the maximum score of H5P elements is kept; the table of contents no longer
+  restores a second, wrongly linked copy of its options.
+- The upgrade from the free edition 1.x no longer passes its state between plugins in the session.
 - The unused site setting for a default background image of elements is removed.
 - Privacy: elements export and delete the data of learners through an extended interface
   (`contentdesignerelements_provider`), with user lists; the activity covers attempts and completion states.

@@ -70,6 +70,14 @@ Elements and addons may define their own capabilities.
   are skipped on restore.
 - A course reset can delete the progress of all learners (*Delete the progress of all learners*).
 
+## H5P content
+
+H5P elements are played by Moodle's H5P player (`/h5p/embed.php`). It checks that the user may see the activity, but
+not the visibility of the element or its chapter, nor whether the learner has reached it yet. A learner who knows the
+address of an H5P package (its file name and the element) can therefore open a hidden or not yet reached H5P element
+directly. Its results are saved only if the element is visible, and only in the learner's own attempt. The teacher
+guide tells teachers not to rely on hidden H5P elements for confidential content.
+
 ## Personal data
 
 The activity stores the attempts and the completion state of learners; the elements store their progress and answers

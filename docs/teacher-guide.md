@@ -74,6 +74,11 @@ complete a chapter with its **Mark as done** button at the end of the chapter.
 Inside a chapter, an element set as **Mandatory** (for example an H5P element) hides the elements after it until the
 learner completed it. Teachers always see the whole content.
 
+Hidden elements, hidden chapters and the elements a learner has not reached yet are not shown on the page. H5P
+content, however, is played by Moodle's H5P player, which only checks that the learner may see the activity: a learner
+who knows the address of an H5P package can open it directly. Do not rely on hiding an H5P element to keep its content
+confidential; use Moodle's own restrictions (for example a separate activity) for that.
+
 ## Completion
 
 Besides viewing the activity, addons may add completion conditions, for example reaching the end of the content or

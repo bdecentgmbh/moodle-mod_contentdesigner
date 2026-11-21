@@ -41,11 +41,8 @@ class restore_cdelement_tableofcontents_subplugin extends restore_subplugin {
         // We used get_recommended_name() so this works.
         $elepath = $this->get_pathfor('/cdelement_tableofcontents');
         $paths[] = new restore_path_element($elename, $elepath);
-
-        $paths[] = new restore_path_element(
-            'cdelement_tableofcontentsopitons',
-            '/activity/contentdesigner/cdelement_tableofcontentsopitons/cdelement_tableofcontents_options'
-        );
+        // The general options are restored with the activity (contentdesigner_options). Older backups have a second
+        // copy of them here, which is ignored.
 
         return $paths;
     }
@@ -73,25 +70,6 @@ class restore_cdelement_tableofcontents_subplugin extends restore_subplugin {
             null,
             $oldinstance
         );
-    }
-
-    /**
-     * Process the tableofcontents options.
-     *
-     * @param array $data
-     */
-    public function process_cdelement_tableofcontentsopitons($data) {
-        global $DB;
-
-        $data = (object)$data;
-        $oldid = $data->id;
-
-        // Map the tableofcontentid to the newly restored tableofcontentid.
-        $data->instance = $this->get_mappingid('tableofcontents_instanceid', $data->instance);
-        $data->timecreated = time();
-
-        // Insert the general options for the tableofcontents element instance.
-        $DB->insert_record('contentdesigner_options', $data);
     }
 
     /**

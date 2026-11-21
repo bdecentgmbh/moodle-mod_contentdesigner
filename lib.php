@@ -495,7 +495,8 @@ function mod_contentdesigner_inplace_editable($itemtype, $itemid, $itemvalue) {
     require_capability(access::EDIT, $context);
 
     $element = editor::get_element($elementname, $cm->id);
-    $title = clean_param($itemvalue, PARAM_TEXT);
+    // The title columns of the elements hold 255 characters.
+    $title = core_text::substr(clean_param($itemvalue, PARAM_TEXT), 0, 255);
     $DB->update_record($element->tablename(), (object) ['id' => $instanceid, 'title' => $title, 'timemodified' => time()]);
     $element->touch_options((int) $instanceid);
 
