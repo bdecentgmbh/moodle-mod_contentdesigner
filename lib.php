@@ -579,9 +579,7 @@ function contentdesigner_pluginfile($course, $cm, $context, $filearea, $args, $f
         if (isset($instance->visible) && !$instance->visible) {
             return false;
         }
-        $chapterid = $DB->get_field('contentdesigner_content', 'chapter', ['element' => $element->elementid,
-            'instance' => $itemid]);
-        if ($chapterid && !$DB->record_exists('cdelement_chapter', ['id' => $chapterid, 'visible' => 1])) {
+        if (access::in_hidden_chapter($element, $itemid)) {
             return false;
         }
     }

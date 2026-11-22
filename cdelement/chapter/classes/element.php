@@ -380,6 +380,25 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Whether the current user can reach an element instance: the content shows it to the user. The same rules as
+     * {@see can_complete()}, for the elements of the chapters.
+     *
+     * @param string $elementname The shortname of the element.
+     * @param int $instanceid The instance id.
+     * @return bool
+     */
+    public function can_reach(string $elementname, int $instanceid): bool {
+        foreach ($this->get_chapters_data(true, true, false, false) as $data) {
+            foreach ($data['contents'] as $content) {
+                if ($content['elementname'] === $elementname && (int) $content['instance'] === $instanceid) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Prevent the upcoming elements if the chapter not completed.
      *
      * @param stdclass $chapter Chapter element instance data.
@@ -462,8 +481,7 @@ class element extends \mod_contentdesigner\elements {
                 ]);
 
                 // Learning Tools may be installed without its note tool.
-                $dbman = $DB->get_manager();
-                if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
+                if (cdelement_chapter_learningtool_supports_chapters('note')) {
                     $learningtools['notescount'] = $DB->count_records('ltool_note_data', [
                         'itemtype' => 'chapter',
                         'itemid' => $chapter->id,
@@ -688,13 +706,13 @@ class element extends \mod_contentdesigner\elements {
 
         $DB->delete_records('cdelement_chapter_completion', ['instance' => $instanceid]);
 
-        // Delete the bookmarks and notes of Learning Tools on the chapter.
-        $dbman = $DB->get_manager();
-        if ($dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid')) {
-            $DB->delete_records('ltool_bookmarks_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+        // Delete the bookmarks and notes of Learning Tools on the chapter, in this activity only.
+        $conditions = ['itemid' => $instanceid, 'itemtype' => 'chapter', 'coursemodule' => $this->cmid];
+        if (cdelement_chapter_learningtool_supports_chapters('bookmarks')) {
+            $DB->delete_records('ltool_bookmarks_data', $conditions);
         }
-        if ($dbman->table_exists('ltool_note_data') && $dbman->field_exists('ltool_note_data', 'itemid')) {
-            $DB->delete_records('ltool_note_data', ['itemid' => $instanceid, 'itemtype' => 'chapter']);
+        if (cdelement_chapter_learningtool_supports_chapters('note')) {
+            $DB->delete_records('ltool_note_data', $conditions);
         }
 
         $installed = editor::get_element_names();

@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
  * Handles the upgrade process for the cdelement_videotime plugin in Moodle.
  *
@@ -36,22 +40,18 @@ function xmldb_cdelement_videotime_upgrade($oldversion, $rename = false) {
 
     if ($rename) {
         // Rename the table element_videotime to cdelement_videotime.
-        $table = new xmldb_table('element_videotime');
-        $cdelementtable = new xmldb_table('cdelement_videotime');
-
-        if ($dbman->table_exists($table)) {
-            if (!$dbman->table_exists($cdelementtable)) {
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_videotime');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdelementtable);
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_videotime');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_videotime', 'cdelement_videotime');
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_videotime', 'cdelement_videotime');
     }
+    if ($oldversion < 2026112100 || $rename) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_videotime', 'contentdesignerid', ['contentdesignerid']);
+
+        if (!$rename) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'videotime');
+        }
+    }
+
     return true;
 }

@@ -57,6 +57,7 @@ $string['elementdescription'] = 'Description';
 $string['elementdescription_help'] = 'The description is shown at the top of the element, providing additional context or instructions for users.';
 $string['elementnotavailable'] = 'This element is not available on this site, because a plugin it needs is missing or disabled.';
 $string['elementnotfound'] = 'The element does not exist or is not installed.';
+$string['elementnotreachable'] = 'This element is not available to you yet.';
 $string['elementsettings'] = '{$a} element settings';
 $string['elementstrgeneralsettings'] = 'Element general settings';
 $string['elementtitle'] = 'Title';
@@ -216,6 +217,7 @@ $string['titlestatus'] = 'Display title';
 $string['titlestatus_help'] = 'Enable this option to display the chapter\'s title to learners. When unchecked, the title will only be used for administrative purposes and will not be visible to learners. Checking this option makes the chapter title visible on the learner\'s view';
 $string['toleft'] = 'To left';
 $string['toright'] = 'To Right';
+$string['upgradelegacytable'] = 'The table {$a->table} holds data, and the table {$a->legacy} of an earlier version of the element exists as well. Decide which data to keep and remove the other table, then run the upgrade again.';
 $string['verticalalign'] = 'Vertical Alignment';
 $string['verticalalign_help'] = 'Select the vertical position of the text within the element:<br>
 <b>Top:</b> Aligns the text to the top of the element.<br>

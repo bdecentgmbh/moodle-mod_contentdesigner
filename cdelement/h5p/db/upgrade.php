@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
  * Handles the upgrade process for the cdelement_h5p plugin in Moodle.
  *
@@ -52,52 +56,13 @@ function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
 
     if ($runwithoutupgradpoint) {
         // Rename the table element_h5p to cdelement_h5p.
-        $h5ptable = new xmldb_table('element_h5p');
-        $cdh5ptable = new xmldb_table('cdelement_h5p');
-
-        if ($dbman->table_exists($h5ptable)) {
-            if (!$dbman->table_exists($cdh5ptable)) {
-                // Rename the existing table.
-                $dbman->rename_table($h5ptable, 'cdelement_h5p');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdh5ptable);
-                // Rename the existing table.
-                $dbman->rename_table($h5ptable, 'cdelement_h5p');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_h5p', 'cdelement_h5p');
 
         // Rename the table element_h5p_completion to cdelement_h5p_completion.
-        $h5pcompletiontable = new xmldb_table('element_h5p_completion');
-        $cdh5pcompletiontable = new xmldb_table('cdelement_h5p_completion');
-
-        if ($dbman->table_exists($h5pcompletiontable)) {
-            if (!$dbman->table_exists($cdh5pcompletiontable)) {
-                // Rename the existing table.
-                $dbman->rename_table($h5pcompletiontable, 'cdelement_h5p_completion');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdh5pcompletiontable);
-                // Rename the existing table.
-                $dbman->rename_table($h5pcompletiontable, 'cdelement_h5p_completion');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_h5p_completion', 'cdelement_h5p_completion');
 
         // Rename the table element_h5p_xapistates to cdelement_h5p_xapistates.
-        $h5pstatestable = new xmldb_table('element_h5p_xapistates');
-        $cdh5pstatestable = new xmldb_table('cdelement_h5p_xapistates');
-
-        if ($dbman->table_exists($h5pstatestable)) {
-            if (!$dbman->table_exists($cdh5pstatestable)) {
-                // Rename the existing table.
-                $dbman->rename_table($h5pstatestable, 'cdelement_h5p_xapistates');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdh5pstatestable);
-                // Rename the existing table.
-                $dbman->rename_table($h5pstatestable, 'cdelement_h5p_xapistates');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_h5p_xapistates', 'cdelement_h5p_xapistates');
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_h5p', 'cdelement_h5p', ['package']);
     }
@@ -165,6 +130,16 @@ function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
 
         if (!$runwithoutupgradpoint) {
             upgrade_plugin_savepoint(true, 2025021306, 'cdelement', 'h5p');
+        }
+    }
+
+    if ($oldversion < 2026112100 || $runwithoutupgradpoint) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_h5p', 'contentdesignerid', ['contentdesignerid']);
+        contentdesigner_add_index('cdelement_h5p_completion', 'instance_userid', ['instance', 'userid']);
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'h5p');
         }
     }
 

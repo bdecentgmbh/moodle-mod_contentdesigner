@@ -287,28 +287,65 @@ class element extends \mod_contentdesigner\elements {
     /**
      * The score of the learner of the attempt in an instance.
      *
+     * The browser reports the score and the maximum. With the maximum recorded by the player of an editor
+     * ({@see get_max_mark()}), the score is the reported share of that maximum, so a learner cannot give the element more
+     * weight than it has.
+     *
      * @param \stdClass $instance The instance of the H5P element.
      * @return float
      */
     public function get_mark($instance) {
         $result = $this->get_result($instance);
-        return $result ? (float) $result->score : 0;
+        if (!$result) {
+            return 0;
+        }
+        $score = max(0, (float) $result->score);
+        $maxscore = $this->get_stored_max_score($instance);
+        if ($maxscore <= 0) {
+            return $score;
+        }
+        $reportedmax = $this->get_reported_max_score($result);
+        $fraction = $reportedmax > 0 ? $score / $reportedmax : $score / $maxscore;
+        return min(1, $fraction) * $maxscore;
     }
 
     /**
-     * The maximum score of an instance: the one of the learner's result, otherwise the one reported to the teacher.
+     * The maximum score of an instance: the one recorded by the player of an editor, otherwise the one the browser of
+     * the learner reported.
      *
      * @param \stdClass $instance The instance of the H5P element.
      * @param int|null $userid The ID of the user.
      * @return float The maximum mark.
      */
     public function get_max_mark($instance, $userid = null) {
-        global $DB;
-        $result = $this->get_result($instance);
-        if ($result && ($scoredata = json_decode($result->scoredata ?? '')) && isset($scoredata->max)) {
-            return (float) $scoredata->max;
+        $maxscore = $this->get_stored_max_score($instance);
+        if ($maxscore > 0) {
+            return $maxscore;
         }
+        $result = $this->get_result($instance);
+        return $result ? $this->get_reported_max_score($result) : 0;
+    }
+
+    /**
+     * The maximum score of an instance, recorded when an editor views the content.
+     *
+     * @param \stdClass $instance The instance of the H5P element.
+     * @return float 0 if none is recorded.
+     */
+    protected function get_stored_max_score($instance): float {
+        global $DB;
         return (float) $DB->get_field('cdelement_h5p', 'maxscore', ['id' => $instance->id]);
+    }
+
+    /**
+     * The maximum score of a result, as the browser of the learner reported it.
+     *
+     * @param \stdClass $result The record of cdelement_h5p_completion.
+     * @return float 0 if none is reported.
+     */
+    protected function get_reported_max_score(\stdClass $result): float {
+        $scoredata = json_decode($result->scoredata ?? '');
+        return isset($scoredata->max) ? max(0, (float) $scoredata->max) : 0;
     }
 
     /**

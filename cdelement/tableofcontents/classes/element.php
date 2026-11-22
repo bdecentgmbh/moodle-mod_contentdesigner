@@ -451,10 +451,9 @@ class element extends \mod_contentdesigner\elements {
      * @return array Filemanager options.
      */
     public function editor_options($context) {
-        global $CFG;
         return [
             'subdirs' => 1,
-            'maxbytes' => $CFG->maxbytes,
+            'maxbytes' => $this->max_upload_bytes($context),
             'accepted_types' => '*',
             'context' => $context,
             'maxfiles' => EDITOR_UNLIMITED_FILES,

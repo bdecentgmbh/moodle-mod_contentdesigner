@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
  * Handles the upgrade process for the cdelement_heading plugin in Moodle.
  *
@@ -35,24 +39,19 @@ function xmldb_cdelement_heading_upgrade($oldversion, $rename = false) {
     $dbman = $DB->get_manager();
 
     if ($rename) {
-        // Rename the table local_pulsepro_credits to pulseaddon_credits.
-        $table = new xmldb_table('element_heading');
-        $cdelementtable = new xmldb_table('cdelement_heading');
-
-        if ($dbman->table_exists($table)) {
-            if (!$dbman->table_exists($cdelementtable)) {
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_heading');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdelementtable);
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_heading');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_heading', 'cdelement_heading');
 
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_heading', 'cdelement_heading');
+    }
+
+    if ($oldversion < 2026112100 || $rename) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_heading', 'contentdesignerid', ['contentdesignerid']);
+
+        if (!$rename) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'heading');
+        }
     }
 
     return true;

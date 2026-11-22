@@ -100,7 +100,51 @@ class access {
         if ($visibleonly) {
             $conditions['visible'] = 1;
         }
-        return $DB->get_record($element->tablename(), $conditions, '*', MUST_EXIST);
+        $instance = $DB->get_record($element->tablename(), $conditions, '*', MUST_EXIST);
+        // Hiding a chapter hides its elements, their own visibility stays as it is.
+        if ($visibleonly && self::in_hidden_chapter($element, $instanceid)) {
+            throw new \dml_missing_record_exception($element->tablename(), '', $conditions);
+        }
+        return $instance;
+    }
+
+    /**
+     * Whether an element instance is in a hidden chapter.
+     *
+     * @param elements $element The element.
+     * @param int $instanceid The instance id.
+     * @return bool
+     */
+    public static function in_hidden_chapter(elements $element, int $instanceid): bool {
+        global $DB;
+        if ($element->shortname === 'chapter') {
+            return false;
+        }
+        $chapterid = $DB->get_field('contentdesigner_content', 'chapter', ['element' => $element->elementid,
+            'instance' => $instanceid]);
+        return $chapterid && !$DB->record_exists('cdelement_chapter', ['id' => $chapterid, 'visible' => 1]);
+    }
+
+    /**
+     * Requires that the current user can reach an element instance: it is shown to the user, in a visible chapter
+     * that the user reached and, with sequential navigation, not after an incomplete mandatory element. These are
+     * the elements the content shows the user ({@see \cdelement_chapter\element::get_chapters_data()}).
+     *
+     * For requests that save something for an element (answers, results, progress).
+     *
+     * @param elements $element The element.
+     * @param int $instanceid The instance id.
+     * @param \cm_info $cm The activity.
+     * @param \stdClass|null $attempt The attempt of the user, the latest one if not given.
+     * @return void
+     */
+    public static function require_reachable(elements $element, int $instanceid, \cm_info $cm, ?\stdClass $attempt = null): void {
+        global $USER;
+        $attempt ??= attempts::get_latest($cm->instance, $USER->id);
+        $chapter = editor::get_element('chapter', $cm->id, $attempt);
+        if (!$chapter->can_reach($element->shortname, $instanceid)) {
+            throw new \moodle_exception('elementnotreachable', 'mod_contentdesigner');
+        }
     }
 
     /**

@@ -58,6 +58,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id" COMMENT="Primary key fo ID"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentdesignerid_userid" UNIQUE="false" FIELDS="contentdesignerid, userid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="contentdesigner_elements" COMMENT="contentdesigner_elements table retrofitted from MySQL">
       <FIELDS>
@@ -85,6 +88,11 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentdesignerid" UNIQUE="false" FIELDS="contentdesignerid"/>
+        <INDEX NAME="chapter" UNIQUE="false" FIELDS="chapter"/>
+        <INDEX NAME="element_instance" UNIQUE="false" FIELDS="element, instance"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="contentdesigner_options" COMMENT="contentdesigner_options table retrofitted from MySQL">
       <FIELDS>
@@ -115,6 +123,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="element_instance" UNIQUE="false" FIELDS="element, instance"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

@@ -18,6 +18,11 @@ namespace cdelement_chapter;
 
 use mod_contentdesigner\editor;
 
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
+
 /**
  * Tests of the chapter element: editing and ordering chapters.
  *
@@ -56,5 +61,38 @@ final class element_test extends \advanced_testcase {
         $this->assertTrue($element->move_chapter($second->id . ',' . $first->id));
         $this->assertEquals(1, $DB->get_field('cdelement_chapter', 'position', ['id' => $second->id]));
         $this->assertEquals(2, $DB->get_field('cdelement_chapter', 'position', ['id' => $first->id]));
+    }
+
+    /**
+     * Deleting a chapter deletes the bookmarks and notes of Learning Tools on it, only those of its activity.
+     */
+    public function test_delete_removes_the_learning_tools_items_of_the_chapter(): void {
+        global $DB;
+        $supported = cdelement_chapter_learningtool_supports_chapters('bookmarks')
+            && cdelement_chapter_learningtool_supports_chapters('note');
+        if (!$supported) {
+            $this->markTestSkipped('Learning Tools with bookmarks and notes of chapters is not installed.');
+        }
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
+        $course = $this->getDataGenerator()->create_course();
+        $cd = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $course->id]);
+        $chapter = $gen->create_chapter($cd);
+        $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $item = ['userid' => $user->id, 'course' => $course->id, 'contextlevel' => CONTEXT_MODULE,
+            'contextid' => \context_module::instance($cd->cmid)->id, 'pagetype' => 'mod-contentdesigner-view',
+            'pagetitle' => 'Page', 'pageurl' => '/mod/contentdesigner/view.php', 'itemtype' => 'chapter', 'itemid' => $chapter->id,
+            'timecreated' => time(), 'timemodified' => time()];
+        // The same chapter id, in another module (an item of another source).
+        foreach ([$cd->cmid, $cd->cmid + 1000] as $cmid) {
+            $DB->insert_record('ltool_bookmarks_data', $item + ['coursemodule' => $cmid]);
+            $DB->insert_record('ltool_note_data', $item + ['coursemodule' => $cmid, 'note' => 'Note', 'printstatus' => 0]);
+        }
+
+        editor::get_element('chapter', $cd->cmid)->delete_element($chapter->id);
+        foreach (['ltool_bookmarks_data', 'ltool_note_data'] as $table) {
+            $this->assertFalse($DB->record_exists($table, ['itemid' => $chapter->id, 'coursemodule' => $cd->cmid]));
+            $this->assertTrue($DB->record_exists($table, ['itemid' => $chapter->id, 'coursemodule' => $cd->cmid + 1000]));
+        }
     }
 }

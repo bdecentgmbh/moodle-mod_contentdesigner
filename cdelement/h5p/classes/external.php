@@ -91,6 +91,7 @@ class external extends external_api {
         if ($attempt->timefinish) {
             throw new \moodle_exception('attemptfinished', 'cdelement_h5p');
         }
+        access::require_reachable($element, $instance->id, $cm, $attempt);
 
         $result = $params['result'];
         $score = max(0, min((float) $result['score']['raw'], (float) $result['score']['max']));

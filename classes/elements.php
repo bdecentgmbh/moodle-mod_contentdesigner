@@ -360,14 +360,24 @@ abstract class elements {
      * @return array Filemanager options.
      */
     public function editor_options($context) {
-        global $CFG;
         return [
             'subdirs' => 1,
-            'maxbytes' => $CFG->maxbytes,
+            'maxbytes' => $this->max_upload_bytes($context),
             'accepted_types' => '*',
             'context' => $context,
             'maxfiles' => self::EDITOR_UNLIMITED_FILES,
         ];
+    }
+
+    /**
+     * The largest file that the current user may upload to the element: the limits of the site and of the course.
+     *
+     * @param \context $context The module context.
+     * @return int Bytes.
+     */
+    public function max_upload_bytes($context): int {
+        global $CFG;
+        return (int) get_user_max_upload_file_size($context, $CFG->maxbytes, $this->course->maxbytes ?? 0);
     }
 
     /**

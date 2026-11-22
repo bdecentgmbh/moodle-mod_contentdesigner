@@ -75,8 +75,13 @@ Elements and addons may define their own capabilities.
 H5P elements are played by Moodle's H5P player (`/h5p/embed.php`). It checks that the user may see the activity, but
 not the visibility of the element or its chapter, nor whether the learner has reached it yet. A learner who knows the
 address of an H5P package (its file name and the element) can therefore open a hidden or not yet reached H5P element
-directly. Its results are saved only if the element is visible, and only in the learner's own attempt. The teacher
-guide tells teachers not to rely on hidden H5P elements for confidential content.
+directly. Its results are saved only if the learner can reach the element (it is visible, in a visible chapter and
+not after an incomplete mandatory element), and only in the learner's own attempt. The teacher guide tells teachers
+not to rely on hidden H5P elements for confidential content.
+
+The score of an H5P element is reported by the learner's browser, as in Moodle's own H5P activity. When an editor
+views the element, its player records the maximum score of the content; from then on, the learner's score counts as
+the reported share of that maximum, so one element cannot outweigh the others in the attempt grade.
 
 ## Personal data
 

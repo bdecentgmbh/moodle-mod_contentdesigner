@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0 (2026112002)
+## 2.0 (2026112003)
 
 Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
 
@@ -61,6 +61,19 @@ Supports Moodle 5.2 and 5.3; requires Moodle 5.2.
 - The editor uses `core/modal`, required by Moodle 5.2 and later.
 - Documentation for the Documentation Center (`docs/`); tests and CI for Moodle 5.2 and 5.3, with and without
   Video Time; stable branches for deployments from git; release workflow.
+- Security: learners save answers, results and progress (H5P, Video Time and the paid elements) only for elements they
+  can reach: elements of hidden chapters are hidden, and with sequential navigation the elements after an
+  incomplete mandatory element cannot be answered yet.
+- H5P: the maximum score recorded by the player of an editor counts; the browser of a learner can no longer give an
+  H5P element more weight than it has.
+- The image element accepts images only; the editors of all elements use the upload limit of the course.
+- Learning Tools: deleting a chapter deletes the bookmarks and notes of this chapter only in its activity; Learning
+  Tools is detected by its version.
+- Indexes for the lookups of contents, element settings, completions and element instances.
+- Installing or upgrading an element replaces its table with the table of an earlier version (element_*) only if
+  the table is empty; otherwise the upgrade stops and names both tables.
+- The active bookmark and note buttons of Learning Tools on chapters use the primary colour of the theme again
+  (Bootstrap 5 colour variable).
 
 ## 1.6 and earlier
 

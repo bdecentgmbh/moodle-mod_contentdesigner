@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
  * Upgrede chapter element.
  *
@@ -46,37 +50,8 @@ function xmldb_cdelement_chapter_upgrade($oldversion, $rename = false) {
     }
 
     if ($runwithoutupgradpoint) {
-        // Rename the table local_pulsepro_credits to pulseaddon_credits.
-        $table = new xmldb_table('element_chapter');
-        $cdchaptertable = new xmldb_table('cdelement_chapter');
-
-        if ($dbman->table_exists($table)) {
-            if (!$dbman->table_exists($cdchaptertable)) {
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_chapter');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdchaptertable);
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_chapter');
-            }
-        }
-
-        // Rename the table local_pulsepro_credits to pulseaddon_credits.
-        $completiontable = new xmldb_table('element_chapter_completion');
-        $cdcompletiontable = new xmldb_table('cdelement_chapter_completion');
-
-        if ($dbman->table_exists($completiontable)) {
-            if (!$dbman->table_exists($cdcompletiontable)) {
-                // Rename the existing table.
-                $dbman->rename_table($completiontable, 'cdelement_chapter_completion');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdcompletiontable);
-                // Rename the existing table.
-                $dbman->rename_table($completiontable, 'cdelement_chapter_completion');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_chapter', 'cdelement_chapter');
+        contentdesigner_rename_legacy_table('element_chapter_completion', 'cdelement_chapter_completion');
 
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_chapter', 'cdelement_chapter');
@@ -179,6 +154,16 @@ function xmldb_cdelement_chapter_upgrade($oldversion, $rename = false) {
         // Don't run the upgrade savepoint if the plugin is renamed.
         if (!$runwithoutupgradpoint) {
             upgrade_plugin_savepoint(true, 2025050602, 'cdelement', 'chapter');
+        }
+    }
+
+    if ($oldversion < 2026112100 || $runwithoutupgradpoint) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_chapter', 'contentdesignerid', ['contentdesignerid']);
+        contentdesigner_add_index('cdelement_chapter_completion', 'instance_userid', ['instance', 'userid']);
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'chapter');
         }
     }
 

@@ -37,18 +37,22 @@ function cdelement_chapter_output_fragment_update_progressbar($args) {
 }
 
 /**
- * Check if the learning tools plugin is installed.
+ * Whether a tool of Learning Tools (local_learningtools) is installed in a version that keeps items of chapters
+ * (itemtype and itemid, since version 2025041701 of the bookmarks and the notes).
  *
- * @return bool True if the learning tools plugin is installed, false otherwise.
+ * @param string $tool The tool: bookmarks or note.
+ * @return bool
+ */
+function cdelement_chapter_learningtool_supports_chapters(string $tool): bool {
+    $info = \core_plugin_manager::instance()->get_plugin_info('ltool_' . $tool);
+    return $info && !empty($info->versiondb) && $info->versiondb >= 2025041701;
+}
+
+/**
+ * Whether Learning Tools is installed with bookmarks of chapters.
+ *
+ * @return bool
  */
 function cdelement_chapter_has_learningtools() {
-    global $DB;
-    $exists = array_key_exists('learningtools', \core_component::get_plugin_list('local'));
-    if ($exists) {
-        $dbman = $DB->get_manager();
-        $fieldsexists = $dbman->table_exists('ltool_bookmarks_data') && $dbman->field_exists('ltool_bookmarks_data', 'itemid');
-        return $fieldsexists;
-    }
-
-    return false;
+    return cdelement_chapter_learningtool_supports_chapters('bookmarks');
 }

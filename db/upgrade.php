@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/upgradelib.php');
+
 /**
  * Upgrade contentdesigner module.
  *
@@ -527,6 +531,17 @@ function xmldb_contentdesigner_upgrade($oldversion) {
         get_file_storage()->delete_area_files(context_system::instance()->id, 'mod_contentdesigner', 'elementbg');
 
         upgrade_mod_savepoint(true, 2026112002, 'contentdesigner');
+    }
+
+    if ($oldversion < 2026112003) {
+        // Indexes of the fields that the contents, options and completions are looked up by.
+        contentdesigner_add_index('contentdesigner_content', 'contentdesignerid', ['contentdesignerid']);
+        contentdesigner_add_index('contentdesigner_content', 'chapter', ['chapter']);
+        contentdesigner_add_index('contentdesigner_content', 'element_instance', ['element', 'instance']);
+        contentdesigner_add_index('contentdesigner_options', 'element_instance', ['element', 'instance']);
+        contentdesigner_add_index('contentdesigner_completion', 'contentdesignerid_userid', ['contentdesignerid', 'userid']);
+
+        upgrade_mod_savepoint(true, 2026112003, 'contentdesigner');
     }
 
     return true;

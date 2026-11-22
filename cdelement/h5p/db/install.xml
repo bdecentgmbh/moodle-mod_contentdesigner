@@ -19,6 +19,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentdesignerid" UNIQUE="false" FIELDS="contentdesignerid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="cdelement_h5p_completion" COMMENT="cdelement_h5p_completion table retrofitted from MySQL">
       <FIELDS>
@@ -38,6 +41,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="instance_userid" UNIQUE="false" FIELDS="instance, userid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="cdelement_h5p_xapistates" COMMENT="cdelement_h5p_xapistates table retrofitted from MySQL">
       <FIELDS>

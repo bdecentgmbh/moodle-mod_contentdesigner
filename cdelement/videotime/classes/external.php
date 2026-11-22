@@ -153,6 +153,7 @@ class external extends external_api {
         [, $cm] = access::from_cmid($params['cmid'], access::VIEW);
         $element = editor::get_element('videotime', $cm->id);
         $instance = access::get_element_instance($element, $params['instanceid'], $cm->instance, true);
+        access::require_reachable($element, $instance->id, $cm);
 
         $completed = (bool) $element->is_videotime_completed($instance, $USER->id);
         // Guests cannot save progress, so addons are not told about it.

@@ -123,4 +123,49 @@ final class access_test extends \advanced_testcase {
         $this->expectException(\dml_missing_record_exception::class);
         attempts::get_for_render($cd->id, $user2->id, $attempt->id);
     }
+
+    /**
+     * Learners reach the elements that the content shows them: not those in hidden chapters, not those after an
+     * incomplete mandatory element.
+     */
+    public function test_reachable_elements(): void {
+        global $DB;
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $gen = $this->getDataGenerator()->get_plugin_generator('mod_contentdesigner');
+        $cd = $this->getDataGenerator()->create_module('contentdesigner', ['course' => $course->id]);
+        [, $cm] = get_course_and_cm_from_cmid($cd->cmid, 'contentdesigner');
+        $chapter1 = $gen->create_chapter($cd);
+        $h5p = $gen->create_element($cd, 'h5p', ['title' => 'Exercise', 'mandatory' => 1], $chapter1);
+        $after = $gen->create_element($cd, 'heading', ['heading' => 'After the exercise'], $chapter1);
+        $chapter2 = $gen->create_chapter($cd);
+        $next = $gen->create_element($cd, 'heading', ['heading' => 'Next chapter'], $chapter2);
+        $hiddenchapter = $gen->create_chapter($cd, ['visible' => 0]);
+        $DB->set_field('cdelement_chapter', 'visible', 0, ['id' => $hiddenchapter->id]);
+        $hidden = $gen->create_element($cd, 'heading', ['heading' => 'Hidden chapter'], $hiddenchapter);
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $this->setUser($student);
+        $attempt = $gen->create_attempt($cd, $student->id);
+        $h5pelement = editor::get_element('h5p', $cd->cmid, $attempt);
+        $heading = editor::get_element('heading', $cd->cmid, $attempt);
+
+        // The mandatory element is reached, the elements after it are not.
+        access::require_reachable($h5pelement, $h5p->id, $cm, $attempt);
+        foreach ([$after, $next] as $instance) {
+            try {
+                access::require_reachable($heading, $instance->id, $cm, $attempt);
+                $this->fail('An element after an incomplete mandatory element was reached.');
+            } catch (\moodle_exception $e) {
+                $this->assertSame('elementnotreachable', $e->errorcode);
+            }
+        }
+
+        // Elements of a hidden chapter are hidden, whatever their own visibility.
+        $this->assertTrue(access::in_hidden_chapter($heading, $hidden->id));
+        $this->assertFalse(access::in_hidden_chapter($heading, $next->id));
+        $this->assertEquals($next->id, access::get_element_instance($heading, $next->id, $cd->id, true)->id);
+        $this->assertEquals($hidden->id, access::get_element_instance($heading, $hidden->id, $cd->id)->id);
+        $this->expectException(\dml_missing_record_exception::class);
+        access::get_element_instance($heading, $hidden->id, $cd->id, true);
+    }
 }

@@ -22,6 +22,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentdesignerid" UNIQUE="false" FIELDS="contentdesignerid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

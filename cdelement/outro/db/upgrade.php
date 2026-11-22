@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
  * Upgrede outro element.
  *
@@ -47,20 +51,7 @@ function xmldb_cdelement_outro_upgrade($oldversion, $rename = false) {
 
     if ($runwithoutupgradpoint) {
         // Rename the table element_outro to cdelement_outro.
-        $table = new xmldb_table('element_outro');
-        $cdelementtable = new xmldb_table('cdelement_outro');
-
-        if ($dbman->table_exists($table)) {
-            if (!$dbman->table_exists($cdelementtable)) {
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_outro');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdelementtable);
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_outro');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_outro', 'cdelement_outro');
 
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_outro', 'cdelement_outro', [
@@ -192,6 +183,15 @@ function xmldb_cdelement_outro_upgrade($oldversion, $rename = false) {
 
         if (!$runwithoutupgradpoint) {
             upgrade_plugin_savepoint(true, 2025021304, 'cdelement', 'outro');
+        }
+    }
+
+    if ($oldversion < 2026112100 || $runwithoutupgradpoint) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_outro', 'contentdesignerid', ['contentdesignerid']);
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'outro');
         }
     }
 

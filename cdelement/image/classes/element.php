@@ -99,6 +99,22 @@ class element extends \mod_contentdesigner\elements {
     }
 
     /**
+     * Options of the file manager of the images: images only, within the upload limits of the course.
+     *
+     * @param \context_module $context
+     * @return array Filemanager options.
+     */
+    public function editor_options($context) {
+        return [
+            'subdirs' => 1,
+            'maxbytes' => $this->max_upload_bytes($context),
+            'accepted_types' => ['web_image'],
+            'context' => $context,
+            'maxfiles' => self::EDITOR_UNLIMITED_FILES,
+        ];
+    }
+
+    /**
      * Element form element definition.
      *
      * @param moodle_form $mform
