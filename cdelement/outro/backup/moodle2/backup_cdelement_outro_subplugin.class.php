@@ -53,7 +53,6 @@ class backup_cdelement_outro_subplugin extends backup_subplugin {
 
         $subpluginelement->annotate_files('mod_contentdesigner', 'cdelement_outro_outroimage', null);
         $subpluginelement->annotate_files('mod_contentdesigner', 'cdelement_outro_outrocontent', null);
-        $subpluginelement->annotate_files('mod_contentdesigner', 'outroelementbg', null);
 
         return $subplugin;
     }

@@ -55,6 +55,10 @@ class restore_cdelement_richtext_subplugin extends restore_subplugin {
 
         $oldinstance = $data->id;
         $data->contentdesignerid = $this->get_new_parentid('contentdesigner');
+        // Trust is not taken from the backup: the content is shown without cleaning only if the restoring user may
+        // trust content.
+        $context = \context::instance_by_id($this->task->get_contextid());
+        $data->contenttrust = (int) \cdelement_richtext\element::can_trust_content($context);
 
         $newinstance = $DB->insert_record('cdelement_richtext', $data);
         $this->set_mapping('richtext_instanceid', $oldinstance, $newinstance, true);
@@ -68,5 +72,14 @@ class restore_cdelement_richtext_subplugin extends restore_subplugin {
      */
     public function after_execute_contentdesigner() {
         $this->add_related_files('mod_contentdesigner', 'cdelement_richtext_content', 'richtext_instanceid');
+    }
+
+    /**
+     * The contents of the element with links to decode after a restore.
+     *
+     * @return restore_decode_content[]
+     */
+    public static function define_decode_contents() {
+        return [new restore_decode_content('cdelement_richtext', ['content'], 'richtext_instanceid')];
     }
 }

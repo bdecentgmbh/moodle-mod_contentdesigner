@@ -15,31 +15,137 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element h5p upgrade code defined.
+ * Upgrade script for Moodle.
  *
- * @package   cdelement_h5p
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @package    cdelement_h5p
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
 
 /**
  * Handles the upgrade process for the cdelement_h5p plugin in Moodle.
  *
+ * This function checks the current version of the plugin and performs
+ * necessary database schema updates if the version is less than the specified
+ * upgrade version. It creates the 'cdelement_h5p_xapistates' table with the
+ * required fields, keys, and indexes if it does not already exist.
+ *
  * @param int $oldversion The version of the plugin before the upgrade.
+ * @param bool $rename Due to changing the plugin name, we need to rename the existing table.
  * @return bool True on successful upgrade.
  */
-function xmldb_cdelement_h5p_upgrade($oldversion) {
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
+function xmldb_cdelement_h5p_upgrade($oldversion, $rename = false) {
+    global $DB;
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
+    $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
+    // Check if the plugin is renamed.
+    // If the plugin is renamed, we need to rename the existing table without upgrade the save point.
+    $runwithoutupgradpoint = $rename;
 
-    // Automatically generated Moodle v4.4.0 release upgrade line.
-    // Put any upgrade step following this.
+    // Upgraded from the free edition 1.x: run the steps of the pro edition as well. The flag is set by the upgrade of
+    // mod_contentdesigner (db/upgrade.php) and removed at the end of this upgrade.
+    $fromfree = (bool) get_config('mod_contentdesigner', 'upgradefromfree_h5p');
+    if ($rename || $fromfree) {
+        $runwithoutupgradpoint = true;
+    }
+
+    if ($runwithoutupgradpoint) {
+        // Rename the table element_h5p to cdelement_h5p.
+        contentdesigner_rename_legacy_table('element_h5p', 'cdelement_h5p');
+
+        // Rename the table element_h5p_completion to cdelement_h5p_completion.
+        contentdesigner_rename_legacy_table('element_h5p_completion', 'cdelement_h5p_completion');
+
+        // Rename the table element_h5p_xapistates to cdelement_h5p_xapistates.
+        contentdesigner_rename_legacy_table('element_h5p_xapistates', 'cdelement_h5p_xapistates');
+        // Rename admin configuration settings.
+        mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_h5p', 'cdelement_h5p', ['package']);
+    }
+
+    // Check if the version is less than the version where the table was added/modified.
+    if ($oldversion < 2024110801 || $runwithoutupgradpoint) {
+        // Define table cdelement_h5p_xapistates to be created.
+        $table = new xmldb_table('cdelement_h5p_xapistates');
+
+        // Adding fields to table cdelement_h5p_xapistates.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('component', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '18', null, null, null, null);
+        $table->add_field('itemid', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('stateid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('statedata', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('registration', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '18', null, null, null, null);
+
+        // Adding keys to table cdelement_h5p_xapistates.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table cdelement_h5p_xapistates.
+        $table->add_index('mdl_xapistat_comite_ix', XMLDB_INDEX_NOTUNIQUE, ['component', 'itemid']);
+        $table->add_index('mdl_xapistat_use_ix', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+        $table->add_index('mdl_xapistat_tim_ix', XMLDB_INDEX_NOTUNIQUE, ['timemodified']);
+
+        // Conditionally launch create table for cdelement_h5p_xapistates.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        if (!$runwithoutupgradpoint) {
+            // H5p savepoint reached.
+            upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'h5p');
+        }
+    }
+
+    if ($oldversion < 2025021306 || $runwithoutupgradpoint) {
+        // Contentdesigner table.
+        $table = new xmldb_table('cdelement_h5p_completion');
+        $field = new xmldb_field('cdattemptid', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, '0', 'userid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Contentdesigner table.
+        $table = new xmldb_table('cdelement_h5p');
+        $field = new xmldb_field('maxscore', XMLDB_TYPE_CHAR, '255', null, null, null, 0, 'mandatory');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Element question attempts table.
+        $h5pcompletiontable = new xmldb_table('cdelement_h5p_completion');
+        $field = new xmldb_field('cdattemptid', XMLDB_TYPE_INTEGER, '18', null, XMLDB_NOTNULL, null, '0', 'userid');
+
+        if ($dbman->field_exists($h5pcompletiontable, $field)) {
+            // Ensure existing NULL values are replaced with the default value.
+            $DB->execute("UPDATE {cdelement_h5p_completion} SET cdattemptid = '0' WHERE cdattemptid IS NULL");
+            // Change the field to NOT NULL.
+            $dbman->change_field_notnull($h5pcompletiontable, $field);
+        }
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2025021306, 'cdelement', 'h5p');
+        }
+    }
+
+    if ($oldversion < 2026112100 || $runwithoutupgradpoint) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_h5p', 'contentdesignerid', ['contentdesignerid']);
+        contentdesigner_add_index('cdelement_h5p_completion', 'instance_userid', ['instance', 'userid']);
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'h5p');
+        }
+    }
+
+    if ($fromfree) {
+        unset_config('upgradefromfree_h5p', 'mod_contentdesigner');
+    }
 
     return true;
 }

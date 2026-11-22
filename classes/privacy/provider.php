@@ -14,70 +14,108 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy implementation for contentdesigner module
- *
- * @package   mod_contentdesigner
- * @copyright 2022, bdecent gmbh bdecent.de
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 namespace mod_contentdesigner\privacy;
 
-use stdClass;
-use context;
 use core_privacy\local\metadata\collection;
-use core_privacy\local\request\contextlist;
-use core_privacy\local\request\userlist;
-use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use core_privacy\manager;
 
 /**
- * The contentdesigner module stores user completion and invitation notified details.
+ * Privacy provider of Content Designer: the attempts and the completion state of the learners, plus the data of
+ * the elements (subplugins implementing {@see contentdesignerelements_provider}).
+ *
+ * @package   mod_contentdesigner
+ * @copyright 2022, bdecent gmbh bdecent.de
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
     /**
-     * Get metadata about this plugin's data usage.
+     * The personal data stored by the activity.
      *
-     * @param \core_privacy\local\metadata\collection $collection
-     * @return \core_privacy\local\metadata\collection
+     * @param collection $collection
+     * @return collection
      */
-    public static function get_metadata(\core_privacy\local\metadata\collection $collection): collection {
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_database_table('contentdesigner_attempts', [
+            'contentdesignerid' => 'privacy:metadata:attempts:contentdesignerid',
+            'userid' => 'privacy:metadata:attempts:userid',
+            'attempt' => 'privacy:metadata:attempts:attempt',
+            'grade' => 'privacy:metadata:attempts:grade',
+            'timestart' => 'privacy:metadata:attempts:timestart',
+            'timefinish' => 'privacy:metadata:attempts:timefinish',
+        ], 'privacy:metadata:attempts');
+        $collection->add_database_table('contentdesigner_completion', [
+            'contentdesignerid' => 'privacy:metadata:completion:contentdesignerid',
+            'userid' => 'privacy:metadata:completion:userid',
+            'completion' => 'privacy:metadata:completion:completion',
+            'mandatorycompletion' => 'privacy:metadata:completion:mandatorycompletion',
+            'starttime' => 'privacy:metadata:completion:starttime',
+            'timecreated' => 'privacy:metadata:completion:timecreated',
+        ], 'privacy:metadata:contentdesignercompletion');
+        $collection->add_subsystem_link('core_grades', [], 'privacy:metadata:core_grades');
+        $collection->add_plugintype_link('cdelement', [], 'privacy:metadata:cdelement');
         return $collection;
     }
 
     /**
-     * Get the list of contexts that contain user information for the specified user.
+     * The contexts in which the user has attempts, a completion state or data of an element.
      *
-     * @param  int         $userid    The user to search.
-     * @return contextlist $contextlist The list of contexts used in this plugin.
+     * @param int $userid The user.
+     * @return contextlist
      */
     public static function get_contexts_for_userid(int $userid): contextlist {
-        $contextlist = new \core_privacy\local\request\contextlist();
+        $contextlist = new contextlist();
+        $params = ['modname' => 'contentdesigner', 'contextlevel' => CONTEXT_MODULE, 'userid' => $userid];
+        foreach (['contentdesigner_attempts', 'contentdesigner_completion'] as $table) {
+            $sql = "SELECT c.id
+                      FROM {context} c
+                      JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+                      JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                      JOIN {{$table}} t ON t.contentdesignerid = cm.instance
+                     WHERE t.userid = :userid";
+            $contextlist->add_from_sql($sql, $params);
+        }
+        manager::plugintype_class_callback(
+            'cdelement',
+            contentdesignerelements_provider::class,
+            'add_contexts_for_userid',
+            [$contextlist, $userid]
+        );
         return $contextlist;
     }
 
     /**
-     * Get the list of users who have data within a context.
+     * The users who have data in a context.
      *
-     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     * @param userlist $userlist The userlist with the context.
      */
     public static function get_users_in_context(userlist $userlist) {
-        $context = $userlist->get_context();
-
-        if (!$context instanceof \context_module) {
+        $instanceid = self::get_instanceid($userlist->get_context());
+        if (!$instanceid) {
             return;
         }
-
-        // Handle the 'contentdesigner' subplugin.
+        $params = ['instanceid' => $instanceid];
+        $userlist->add_from_sql(
+            'userid',
+            'SELECT userid FROM {contentdesigner_attempts} WHERE contentdesignerid = :instanceid',
+            $params
+        );
+        $userlist->add_from_sql(
+            'userid',
+            'SELECT userid FROM {contentdesigner_completion} WHERE contentdesignerid = :instanceid',
+            $params
+        );
         manager::plugintype_class_callback(
-            'contentdesignerelements',
+            'cdelement',
             contentdesignerelements_provider::class,
             'get_users_in_context',
             [$userlist]
@@ -85,34 +123,95 @@ class provider implements
     }
 
     /**
-     * Delete multiple users within a single context.
+     * Exports the data of the user in the contexts.
      *
-     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     * @param approved_contextlist $contextlist The approved contexts and the user.
      */
-    public static function delete_data_for_users(approved_userlist $userlist) {
-        // Handle the 'contentdesigner' subplugin.
+    public static function export_user_data(approved_contextlist $contextlist) {
+        global $DB;
+
+        $user = $contextlist->get_user();
+        foreach ($contextlist->get_contexts() as $context) {
+            $instanceid = self::get_instanceid($context);
+            if (!$instanceid) {
+                continue;
+            }
+            $data = helper::get_context_data($context, $user);
+            helper::export_context_files($context, $user);
+
+            $attempts = $DB->get_records(
+                'contentdesigner_attempts',
+                ['contentdesignerid' => $instanceid, 'userid' => $user->id],
+                'attempt ASC'
+            );
+            $data->attempts = array_values(array_map(fn($attempt) => [
+                'attempt' => $attempt->attempt,
+                'grade' => $attempt->timefinish ? $attempt->grade : null,
+                'timestart' => transform::datetime($attempt->timestart),
+                'timefinish' => $attempt->timefinish ? transform::datetime($attempt->timefinish) : null,
+            ], $attempts));
+
+            $completion = $DB->get_record(
+                'contentdesigner_completion',
+                ['contentdesignerid' => $instanceid, 'userid' => $user->id],
+                '*',
+                IGNORE_MULTIPLE
+            );
+            if ($completion) {
+                $data->completion = [
+                    'reachedend' => transform::yesno($completion->completion),
+                    'completedmandatory' => transform::yesno($completion->mandatorycompletion),
+                    'starttime' => $completion->starttime ? transform::datetime($completion->starttime) : null,
+                ];
+            }
+            writer::with_context($context)->export_data([], $data);
+        }
+
         manager::plugintype_class_callback(
-            'contentdesignerelements',
+            'cdelement',
             contentdesignerelements_provider::class,
-            'delete_data_for_users',
-            [$userlist]
+            'export_element_user_data',
+            [$contextlist]
         );
     }
 
     /**
-     * Delete user completion data for multiple context.
+     * Deletes the data of all users in a context.
      *
-     * @param approved_contextlist $contextlist The approved context and user information to delete information for.
+     * @param \context $context The context.
      */
-    public static function delete_data_for_user(approved_contextlist $contextlist) {
-
-        if (empty($contextlist->count())) {
+    public static function delete_data_for_all_users_in_context(\context $context) {
+        global $DB;
+        $instanceid = self::get_instanceid($context);
+        if (!$instanceid) {
             return;
         }
-
-        // Handle the 'contentdesigner' subplugin.
+        $DB->delete_records('contentdesigner_attempts', ['contentdesignerid' => $instanceid]);
+        $DB->delete_records('contentdesigner_completion', ['contentdesignerid' => $instanceid]);
         manager::plugintype_class_callback(
-            'contentdesignerelements',
+            'cdelement',
+            contentdesignerelements_provider::class,
+            'delete_data_for_all_users_in_context',
+            [$context]
+        );
+    }
+
+    /**
+     * Deletes the data of the user in the contexts.
+     *
+     * @param approved_contextlist $contextlist The approved contexts and the user.
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
+        global $DB;
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($instanceid = self::get_instanceid($context)) {
+                $DB->delete_records('contentdesigner_attempts', ['contentdesignerid' => $instanceid, 'userid' => $userid]);
+                $DB->delete_records('contentdesigner_completion', ['contentdesignerid' => $instanceid, 'userid' => $userid]);
+            }
+        }
+        manager::plugintype_class_callback(
+            'cdelement',
             contentdesignerelements_provider::class,
             'delete_data_for_user',
             [$contextlist]
@@ -120,105 +219,41 @@ class provider implements
     }
 
     /**
-     * Delete all completion data for all users in the specified context.
+     * Deletes the data of the users in a context.
      *
-     * @param context $context Context to delete data from.
+     * @param approved_userlist $userlist The approved users and the context.
      */
-    public static function delete_data_for_all_users_in_context(\context $context) {
-
-        if ($context->contextlevel != CONTEXT_MODULE) {
-            return;
-        }
-
-        $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
-        if (!$cm) {
-            return;
-        }
-        // Handle the 'contentdesigner' subplugin.
-        manager::plugintype_class_callback(
-            'contentdesignerelements',
-            contentdesignerelements_provider::class,
-            'delete_subplugin_data_for_all_users_in_context',
-            [$context]
-        );
-    }
-
-    /**
-     * Export all user data for the specified user, in the specified contexts, using the supplied exporter instance.
-     *
-     * @param approved_contextlist $contextlist The approved contexts to export information for.
-     */
-    public static function export_user_data(approved_contextlist $contextlist) {
+    public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
-
-        if (empty($contextlist->count())) {
+        $instanceid = self::get_instanceid($userlist->get_context());
+        $userids = $userlist->get_userids();
+        if (!$instanceid || !$userids) {
             return;
         }
-        // Context user.
-        $user = $contextlist->get_user();
-        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
-
-        $sql = "SELECT cm.id AS cmid, c.id AS contextid,
-            p.id AS pid, p.course AS pcourse
-            FROM {context} c
-            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
-            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-            INNER JOIN {contentdesigner} p ON p.id = cm.instance
-            WHERE c.id {$contextsql}
-            ORDER BY cm.id";
-
-        $params = [
-            'modname' => 'contentdesigner',
-            'contextlevel' => CONTEXT_MODULE,
-        ];
-        $instances = $DB->get_records_sql($sql, $params + $contextparams);
-
-        $contentdesignerids = array_column((array) $instances, 'pid');
-        $components = \core_component::get_plugin_list('cdelement');
-        $exportparams = [
-            $contentdesignerids,
-            $user,
-        ];
-        foreach (array_keys($components) as $component) {
-            $classname = manager::get_provider_classname_for_component("cdelement_$component");
-            if (class_exists($classname) && is_subclass_of($classname, contentdesignerelements_provider::class)) {
-                $results = component_class_callback($classname, 'export_element_user_data', $exportparams);
-                $instances = self::group_by_property($results, 'contentdesignerid');
-
-                foreach ($instances as $instanceid => $element) {
-                    if (empty($element)) {
-                        continue;
-                    }
-                    $cm = get_coursemodule_from_instance('contentdesigner', $element[0]->contentdesignerid);
-                    $context = \context_module::instance($cm->id);
-                    // Fetch the generic module data for the questionnaire.
-                    $contextdata = helper::get_context_data($context, $user);
-                    unset($element['contentdesignerid']);
-                    $contextdata = (object)array_merge((array)$contextdata, $element);
-                    writer::with_context($context)->export_data(
-                        [get_string('privacy:' . $component, 'cdelement_' . $component)],
-                        $contextdata
-                    );
-                }
-            }
+        [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        $params['instanceid'] = $instanceid;
+        foreach (['contentdesigner_attempts', 'contentdesigner_completion'] as $table) {
+            $DB->delete_records_select($table, "contentdesignerid = :instanceid AND userid $insql", $params);
         }
+        manager::plugintype_class_callback(
+            'cdelement',
+            contentdesignerelements_provider::class,
+            'delete_data_for_users',
+            [$userlist]
+        );
     }
 
     /**
-     * Helper function to group an array of stdClasses by a common property.
+     * The id of the Content Designer activity of a module context.
      *
-     * @param array $classes An array of classes to group.
-     * @param string $property A common property to group the classes by.
-     * @return array list of element seperated by given property.
+     * @param \context $context The context.
+     * @return int The instance id, 0 if the context is not a Content Designer activity.
      */
-    private static function group_by_property(array $classes, string $property): array {
-        return array_reduce(
-            $classes,
-            function (array $classes, stdClass $class) use ($property): array {
-                $classes[$class->{$property}][] = $class;
-                return $classes;
-            },
-            []
-        );
+    public static function get_instanceid(\context $context): int {
+        if ($context->contextlevel != CONTEXT_MODULE) {
+            return 0;
+        }
+        $cm = get_coursemodule_from_id('contentdesigner', $context->instanceid);
+        return $cm ? (int) $cm->instance : 0;
     }
 }

@@ -22,13 +22,13 @@
  * manipulation, and includes features such as entrance animations and scrolling
  * effects for elements in the viewport.
  *
- * @module mod_contentdesigner/editor
+ * @module mod_contentdesigner/elements
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/notification', 'mod_contentdesigner/anime'],
-    function($, Fragment, Templates, LoadingIcon, Notification, anime) {
+define(['core/fragment', 'core/templates', 'core/loadingicon', 'mod_contentdesigner/anime', 'core/notification'],
+    function(Fragment, Templates, LoadingIcon, anime, Notification) {
 
         /**
          * Selectors.
@@ -37,9 +37,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
             chapter: '[data-elementshortname="chapter"]',
             chapterList: '.chapter-elements-list',
             elementContent: '.element-content',
-            fragments: {
-                nextContents: 'load_remain_capter_contents'
-            },
             contentWrapper: '.contentdesigner-wrapper',
         };
 
@@ -51,13 +48,15 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
          * @param {int} cmID
          * @param {int} contextID
          * @param {int} contentdesignerID
+         * @param {int} attemptID
          * @returns {object}
          */
-        function contentDesignerElementsData(cmID, contextID, contentdesignerID) {
+        function contentDesignerElementsData(cmID, contextID, contentdesignerID, attemptID) {
             var data = {
                 cmid: cmID,
                 contextid: contextID,
-                contentdesignerid: contentdesignerID
+                contentdesignerid: contentdesignerID,
+                attemptid: attemptID,
             };
             return data;
         }
@@ -78,9 +77,21 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
 
         const contentWrapper = () => document.querySelector(SELECTORS.contentWrapper);
 
+        /**
+         * The page shown in the paged display, 0 in the scrolling display.
+         *
+         * @returns {int}
+         */
+        const currentPage = () => {
+            var wrapper = contentWrapper();
+            return wrapper && wrapper.dataset.page ? parseInt(wrapper.dataset.page) : 0;
+        };
+
         const refreshContent = () => {
             var params = {
-                cmid: contentDesignerData().cmid
+                cmid: contentDesignerData().cmid,
+                attemptid: contentDesignerData().attemptid,
+                page: currentPage(),
             };
             var promise = Fragment.loadFragment('mod_contentdesigner', 'load_elements', contentDesignerData().contextid, params);
             promise.done((html, js) => {
@@ -90,6 +101,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 var filterChapter = [];
 
                 chapters.forEach((chapter) => {
+
                     var elementSelector = 'li.element-item[data-instanceid="' + chapter.dataset.instanceid + '"]';
                     elementSelector += '[data-elementshortname="' + chapter.dataset.elementshortname + '"]';
                     let chapterSelector = 'li.chapters-list[data-id="' + chapter.dataset.id + '"]';
@@ -97,17 +109,35 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                     if (!document.querySelector(chapterSelector) && !document.querySelector(elementSelector)) {
                         filterChapter.push(chapter);
                     } else {
+                        // Chapters are completed automatically only once their mandatory elements are completed.
+                        var chapterInDocument = document.querySelector(chapterSelector);
+                        if (chapterInDocument !== null && chapter.dataset.autocompletion) {
+                            chapterInDocument.dataset.autocompletion = chapter.dataset.autocompletion;
+                        } else if (chapterInDocument !== null) {
+                            delete chapterInDocument.dataset.autocompletion;
+                        }
                         var elements = chapter.querySelectorAll('.element-item') ?? [];
                         elements.forEach((element) => {
-                            var dataset = element.children[0].dataset;
+                            var content = element.querySelector('.element-content');
+                            if (!content) {
+                                return;
+                            }
+                            var dataset = content.dataset;
                             var selector = 'li.element-item .element-content[data-instanceid="' + dataset.instanceid + '"]';
                             selector += '[data-elementshortname="' + dataset.elementshortname + '"]';
                             var elementindocument = document.querySelector(selector);
 
                             if (!document.querySelector(selector)
                                 && document.querySelector(chapterSelector + ' .chapter-elements-list') !== undefined) {
-                                document.querySelector(chapterSelector + ' .chapter-elements-list').appendChild(element);
+
+                                Templates.appendNodeContents(chapterSelector + ' .chapter-elements-list', element, '');
+
                             } else if (elementindocument !== null && elementindocument.dataset.replaceonrefresh == true) {
+                                // Elements above the content (e.g. a table of contents) are replaced with their list item.
+                                if (elementindocument.closest('.topinstance') !== null) {
+                                    elementindocument = elementindocument.closest('li.element-item');
+                                }
+
                                 Templates.replaceNode(elementindocument, element, '');
                             }
                         });
@@ -117,6 +147,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                         if (chapter.querySelector('.chapter-title') !== null) {
                             chapter.querySelector('.chapter-title').remove();
                         }
+
                         if (chapter.children.length > 0 && document.querySelector(chapterSelector) != undefined) {
                             removeMarkBtn(chapterSelector);
                             document.querySelector(chapterSelector).append(chapter.children[0]);
@@ -125,6 +156,12 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 });
 
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
+
+                // Paged display: the Next button may be enabled now.
+                var pageNav = fakeDiv.querySelector('.contentdesigner-pagenav');
+                if (pageNav !== null && document.querySelector('.contentdesigner-pagenav') !== null) {
+                    Templates.replaceNode('.contentdesigner-pagenav', pageNav, '');
+                }
                 animateElements();
                 contentWrapper().dispatchEvent(new CustomEvent('elementupdate')); // Dispatch the element update event.
             }
@@ -143,21 +180,26 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
          * Remove the warning from response.
          */
         const removeWarning = () => {
-            if (courseContent() !== null && courseContent().querySelector('.label.label-warning') !== null) {
-                courseContent().querySelector('.label.label-warning').remove();
+            if (courseContent() !== null && courseContent().querySelector('.contentdesigner-warning') !== null) {
+                courseContent().querySelector('.contentdesigner-warning').remove();
             }
         };
 
         const loadNextChapters = function(currentChapter) {
             var params = {
                 cmid: contentDesignerData().cmid,
-                chapter: currentChapter
+                chapter: currentChapter,
+                attemptid: contentDesignerData().attemptid,
             };
             var promise = Fragment.loadFragment('mod_contentdesigner', 'load_next_chapters',
                 contentDesignerData().contextid, params);
             promise.done((html, js) => {
                 var fakeDiv = document.createElement('div');
                 fakeDiv.innerHTML = html;
+                // Nothing is returned when the learner cannot get past the chapter.
+                if (fakeDiv.querySelector('.course-content-list') === null) {
+                    return;
+                }
                 var chapters = fakeDiv.querySelector('.course-content-list').children;
                 var filterChapter = [];
                 chapters.forEach((chapter) => {
@@ -171,22 +213,9 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 });
                 Templates.appendNodeContents('.contentdesigner-content .course-content-list', filterChapter, js);
                 animateElements();
-            }).catch((error) => Notification.exception(error));
+            }).catch(Notification.exception);
 
             LoadingIcon.addIconToContainerRemoveOnCompletion(button(), promise);
-        };
-
-        const loadNextElements = function (currentElement) {
-
-            Fragment.loadFragment(
-                'mod_contentdesigner', SELECTORS.fragments.nextContents,
-                contentDesignerData().contextid, {contentid: currentElement.dataset.contentid}
-            ).done((html, js) => {
-
-                const selector = currentElement.parentNode.parentNode;
-
-                Templates.appendNodeContents(selector, html, js);
-            });
         };
 
         /**
@@ -342,13 +371,13 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
          * @param {HTMLElement} item
          * @param {double} dataspeed
          * @param {HTMLElement} scrollElement
-         * @returns {bool}
+         * @returns {number|undefined}
          */
         const animateOnScroll = function(item, dataspeed, scrollElement = null) {
 
             var node = item.childNodes[1];
             if (node.dataset.scrolleffect == undefined || node.dataset.scrolleffect == '') {
-                return;
+                return undefined;
             }
             var data = JSON.parse(node.dataset.scrolleffect);
             let start = parseInt(data.start) || 100;
@@ -368,7 +397,7 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
                 var speed = scrolled * percent;
                 return speed;
             }
-            return;
+            return undefined;
         };
 
         return {
@@ -380,7 +409,6 @@ define(['jquery', 'core/fragment', 'core/templates', 'core/loadingicon',  'core/
             animateElements: animateElements,
             courseContent: courseContent,
             removeWarning: removeWarning,
-            loadNextElements: loadNextElements,
             contentDesignerElementsData: contentDesignerElementsData,
             selectors: SELECTORS
         };

@@ -24,7 +24,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-
     'cdelement/h5p:viewstudentrecords' => [
         'riskbitmask' => RISK_SPAM,
         'captype'      => 'read',

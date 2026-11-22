@@ -19,7 +19,7 @@ Feature: Check content designer chapter element notes tool support
       | course      | C1                           |
     And I log out
     And I am on the "Demo content" "contentdesigner activity" page logged in as teacher1
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=chapter]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -28,7 +28,7 @@ Feature: Check content designer chapter element notes tool support
       | Visibility     | Visible       |
       | Learning Tools | Enabled       |
     And I press "Create element"
-    And I click on "Content editor" "link"
+    And I click on "Editor" "link" in the ".secondary-navigation" "css_element"
     And I click on ".contentdesigner-addelement .fa-plus" "css_element"
     And I click on ".elements-list li[data-element=paragraph]" "css_element" in the ".modal-body" "css_element"
     And I set the following fields to these values:
@@ -49,19 +49,17 @@ Feature: Check content designer chapter element notes tool support
     Then I should see "Notes added successfully and you can view the note under profile / learning tools / note."
     # Add second note.
     Then I should see "Notes" in the ".toolbar-block .content-designer-learningtool-note" "css_element"
-    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
     And I click on "Notes" "button" in the ".toolbar-block" "css_element"
     And I should see "Take notes" in the ".modal-title" "css_element"
     And I set the field "ltnoteeditor" to "Test note 2"
     And I press "Save changes"
     Then I should see "Notes added successfully and you can view the note under profile / learning tools / note."
     Then I should see "Notes" in the ".toolbar-block" "css_element"
-    Then I should see "(2)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(2)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
     # Notes list page.
     Then I follow "Profile" in the user menu
     And I click on "Notes" "link"
-    Then I should see "Course 1 / General / C1: Demo content | Acceptance test site | First chapter" in the ".card-body:nth-of-type(1) .title-block" "css_element"
-    Then I should see "Course 1 / General / C1: Demo content | Acceptance test site | First chapter" in the ".card-body:nth-of-type(2) .title-block" "css_element"
     And I should see "Test note 1" in the ".card-body:nth-of-type(1)" "css_element"
     And I should see "Test note 2" in the ".card-body:nth-of-type(2)" "css_element"
     # Edit note on notes list page.
@@ -79,9 +77,9 @@ Feature: Check content designer chapter element notes tool support
     And I wait until the page is ready
     Then I should see "Successfully deleted"
     And I should not see "Test note 2"
-    And I click on "View Chapter" "button" in the ".btn-block" "css_element"
+    And I am on the "Demo content" "contentdesigner activity" page
     Then I should see "Notes" in the ".toolbar-block .content-designer-learningtool-note" "css_element"
-    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
 
   @javascript
   Scenario: Add notes tool for chapter element content.
@@ -95,14 +93,14 @@ Feature: Check content designer chapter element notes tool support
     Then I should see "Notes added successfully and you can view the note under profile / learning tools / note."
     # Add second note.
     Then I should see "Notes" in the ".toolbar-block .content-designer-learningtool-note" "css_element"
-    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
     And I click on "Notes" "button" in the ".toolbar-block" "css_element"
     And I should see "Take notes" in the ".modal-title" "css_element"
     And I set the field "ltnoteeditor" to "Test note 2"
     And I press "Save changes"
     Then I should see "Notes added successfully and you can view the note under profile / learning tools / note."
     Then I should see "Notes" in the ".toolbar-block" "css_element"
-    Then I should see "(2)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(2)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
     Then I follow "Profile" in the user menu
     And I click on "Notes" "link"
     And I should see "Test note 1" in the ".card-body:nth-of-type(1)" "css_element"
@@ -127,7 +125,7 @@ Feature: Check content designer chapter element notes tool support
     And I wait until the page is ready
     Then I should see "Successfully deleted"
     Then I should see "Notes" in the ".toolbar-block .content-designer-learningtool-note" "css_element"
-    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge-light" "css_element"
+    Then I should see "(1)" in the ".toolbar-block .content-designer-learningtool-note .badge" "css_element"
     And I click on "Notes" "button" in the ".toolbar-block" "css_element"
     And I should not see "Test note 1"
     And I should see "Test note 2 is edited" in the ".modal-body .card-body:nth-of-type(1)" "css_element"

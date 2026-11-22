@@ -27,6 +27,7 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/contentdesigner/cdelement/chapter/lib.php');
 
+
 // Chapter visibility.
 $name = 'cdelement_chapter/visibility';
 $title = get_string('visibility', 'mod_contentdesigner');

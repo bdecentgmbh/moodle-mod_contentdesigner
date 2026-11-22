@@ -15,9 +15,12 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_contentdesigner/chapter
+    @template mod_contentdesigner/content
 
     Template for the module render view of elements.
+
+    @copyright  2022 bdecent gmbh <https://bdecent.de>
+    @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
     Example context (json):
     {
@@ -170,21 +173,69 @@
             "description": ""
           }
         },
-        "prevent": false
+        "prevent": false,
+        "guestnotice": "",
+        "outrohidden": false,
+        "pagenav": {
+            "page": 1,
+            "pages": 2,
+            "pageof": "Page 1 of 2",
+            "hasprevious": false,
+            "previousurl": "",
+            "hasnext": true,
+            "cangonext": true,
+            "nexturl": "https://example.com/mod/contentdesigner/view.php?id=1&page=2",
+            "chapterurls": "{}"
+        }
     }
 }}
-<div class="contentdesigner-content limitedwidth">
-    <div class="contentdesigner-wrapper">
+<div class="contentdesigner-content limitedwidth{{#pagenav}} contentdesigner-paged{{/pagenav}}">
+    <div class="contentdesigner-wrapper"{{#pagenav}} data-page="{{page}}"{{/pagenav}}>
         {{{cmdetails}}}
+        {{#guestnotice}}
+        <div class="alert alert-info contentdesigner-guestnotice">{{guestnotice}}</div>
+        {{/guestnotice}}
         <div class="content">
             <div class="contentdesigner-progress">{{{progressbar}}}</div>
             <ul class="course-content-list">
+                {{#topinstance.instancedata.visible}}
+                <li class="topinstance" data-instanceid="{{topinstance.instancedata.id}}"
+                  data-elementshortname="{{topinstance.info.shortname}}">
+                  <ul>
+                    <li class="element-item item-{{topinstance.info.shortname}} toc-block"
+                        data-elementid="{{topinstance.element}}"
+                        data-elementshortname="{{topinstance.info.shortname}}"
+                        data-instanceid="{{topinstance.instancedata.id}}">
+                        <div class="element-content general-options {{topinstance.instancedata.classes}}"
+                          data-elementid="{{topinstance.element}}"
+                          data-elementshortname="{{topinstance.info.shortname}}"
+                          data-instanceid="{{topinstance.instancedata.id}}"
+                          data-contentid="{{id}}"
+                          data-entranceanimation="{{topinstance.instancedata.entranceanimation}}"
+                          data-replaceonrefresh="{{topinstance.instancedata.replaceonrefresh}}"
+                          style="{{topinstance.instancedata.style}}"
+                          data-scrolleffect="{{topinstance.instancedata.scrolleffect}}"
+                          data-margin="{{topinstance.instancedata.margin}}"
+                          data-padding="{{topinstance.instancedata.padding}}">
+
+                            <div class="background-options">
+                                <div class="bg-color" style="{{topinstance.instancedata.belowcolorbg}}"></div>
+                                <div class="bg-image" style="{{topinstance.instancedata.backimage}}"></div>
+                                <div class="bg-overlay" style="{{topinstance.instancedata.abovecolorbg}}"></div>
+                            </div>
+                            {{{topinstance.contents}}}
+                        </div>
+                    </li>
+                  </ul>
+                </li>
+                {{/topinstance.instancedata.visible}}
                 {{#chapters}}
                     <li id="chapters-list-{{instancedata.id}}" class="chapters-list {{^count}} no-elements {{/count}} {{#completion}} completed {{/completion}}"
-                      data-id="{{instancedata.id}}" data-elementshortname="chapter">
+                      data-id="{{instancedata.id}}" data-elementshortname="chapter"
+                      {{#autocompletion}}{{^prevent}}data-autocompletion="1"{{/prevent}}{{/autocompletion}}>
                         {{#instancedata.titlestatus}}
                             <div class="chapter-title" data-chapter="{{instancedata.id}}">
-                                <h4>{{instancedata.chaptertitle}}</h4>
+                                <h4>{{{instancedata.chaptertitle}}}</h4>
                             </div>
                         {{/instancedata.titlestatus}}
                         {{#instancedata.showdescription}}
@@ -194,21 +245,21 @@
                         {{/instancedata.showdescription}}
                         <ul class="chapter-elements-list">
                             {{#contents}}
-                            <li class="element-item">
-                                <div class="element-content general-options {{{instancedata.classes}}}"
-                                  data-elementid="{{{element}}}"
+                            <li class="element-item element-{{info.shortname}}">
+                                <div class="element-content general-options {{instancedata.classes}}"
+                                  data-elementid="{{element}}"
                                   data-elementshortname="{{info.shortname}}"
                                   data-instanceid="{{instancedata.id}}"
                                   data-contentid="{{id}}"
                                   data-entranceanimation="{{instancedata.entranceanimation}}"
                                   data-replaceonrefresh="{{instancedata.replaceonrefresh}}"
-                                  style="{{{instancedata.style}}}"
+                                  style="{{instancedata.style}}"
                                   data-scrolleffect="{{instancedata.scrolleffect}}">
 
                                     <div class="background-options">
-                                        <div class="bg-color" style="{{{instancedata.belowcolorbg}}}"></div>
-                                        <div class="bg-image" style="{{{instancedata.backimage}}}"></div>
-                                        <div class="bg-overlay" style="{{{instancedata.abovecolorbg}}}"></div>
+                                        <div class="bg-color" style="{{instancedata.belowcolorbg}}"></div>
+                                        <div class="bg-image" style="{{instancedata.backimage}}"></div>
+                                        <div class="bg-overlay" style="{{instancedata.abovecolorbg}}"></div>
                                     </div>
 
                                     {{#content.general.showdescription}}
@@ -262,62 +313,69 @@
                                 <i class="fa fa-pencil-square-o"></i>
                                 {{#str}}strnotes, mod_contentdesigner{{/str}}
                                   {{#learningtools.notescount}}
-                                    <span class="badge badge-light">({{learningtools.notescount}})</span>
+                                    <span class="badge text-bg-light">({{learningtools.notescount}})</span>
                                   {{/learningtools.notescount}}
                                 </button>
                               {{/hasnotecapability}}
                           </div>
                           {{/learningtools.show}}
 
-                        {{^prevent}}
-                        {{#chaptercta}}
-                        {{#count}}
-                            {{#completion}}
-                                <button class="btn btn-success btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
-                                    {{#pix}} e/tick, core {{/pix}}
-                                    {{#str}} completion_manual:done, course {{/str}}
+
+                          {{^prevent}}
+                          {{#chaptercta}}
+                          {{#count}}
+                              {{#completion}}
+                                {{#completionmode}}
+                                  <button class="btn btn-success w-100 text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                      {{#pix}} e/tick, core {{/pix}}
+                                      {{#str}} completion_manual:done, course {{/str}}
+                                  </button>
+                                {{/completionmode}}
+                              {{/completion}}
+                              {{^completion}}
+                                {{#completionmode}}
+                                <button class="btn btn-outline-secondary w-100 text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
+                                    {{#str}} completion_manual:markdone, course {{/str}}
                                 </button>
-                            {{/completion}}
-                            {{^completion}}
-                              <button class="btn btn-outline-secondary btn-block text-nowrap complete-chapter" data-chapterid="{{instancedata.id}}">
-                                  {{#str}} completion_manual:markdone, course {{/str}}
-                              </button>
-                            {{/completion}}
-                        {{/count}}
-                        {{/chaptercta}}
-                        {{/prevent}}
+                                {{/completionmode}}
+                              {{/completion}}
+                          {{/count}}
+                          {{/chaptercta}}
+                          {{/prevent}}
                         </div>
                     </li>
 
                     {{#prevent}}
-                    <div class="label label-warning">
-                        <span>{{#pix}} i/caution, core {{/pix}}</span><label>{{#str}} completeprevelement, mod_contentdesigner {{/str}}</label>
+                    <div class="alert alert-warning contentdesigner-warning">
+                        <span>{{#pix}} i/caution, core {{/pix}}</span><span>{{#str}} completeprevelement, mod_contentdesigner {{/str}}</span>
                     </div>
                     {{/prevent}}
                 {{/chapters}}
 
+                {{^outrohidden}}
                 {{^chapterprevent}}
                 {{^prevent}}
+                {{#outro.instancedata.visible}}
                 <li class="element-item "
-                    data-elementid="{{{outro.element}}}"
+                    data-elementid="{{outro.element}}"
                     data-title="{{outro.instancedata.title}}"
                     data-elementshortname="{{outro.info.shortname}}"
                     data-instanceid="{{outro.instancedata.id}}">
 
-                    <div class="element-content general-options {{{outro.instancedata.classes}}}"
-                        data-elementid="{{{element}}}"
+                    <div class="element-content general-options {{outro.instancedata.classes}}"
+                        data-elementid="{{element}}"
                         data-elementshortname="{{outro.info.shortname}}"
                         data-instanceid="{{outro.instancedata.id}}"
                         data-contentid="{{id}}"
                         data-entranceanimation="{{outro.instancedata.entranceanimation}}"
                         data-replaceonrefresh="{{outro.instancedata.replaceonrefresh}}"
-                        style="{{{outro.instancedata.style}}}"
+                        style="{{outro.instancedata.style}}"
                         data-scrolleffect="{{outro.instancedata.scrolleffect}}">
 
                         <div class="background-options">
-                            <div class="bg-color" style="{{{outro.instancedata.belowcolorbg}}}"></div>
-                            <div class="bg-image" style="{{{outro.instancedata.backimage}}}"></div>
-                            <div class="bg-overlay" style="{{{outro.instancedata.abovecolorbg}}}"></div>
+                            <div class="bg-color" style="{{outro.instancedata.belowcolorbg}}"></div>
+                            <div class="bg-image" style="{{outro.instancedata.backimage}}"></div>
+                            <div class="bg-overlay" style="{{outro.instancedata.abovecolorbg}}"></div>
                         </div>
                         <div class="element-outro element-content">
                             {{{outro.contents}}}
@@ -325,9 +383,40 @@
                     </div>
 
                 </li>
+                {{/outro.instancedata.visible}}
+                {{#outro.hidden}}
+                <li class="element-item"><div class="complete-module" id="outro-reached"></div></li>
+                {{/outro.hidden}}
+                {{#extracontent}}
+                <li class="element-item contentdesigner-extracontent">
+                    {{{extracontent}}}
+                </li>
+                {{/extracontent}}
                 {{/prevent}}
                 {{/chapterprevent}}
+                {{/outrohidden}}
             </ul>
+            {{#pagenav}}
+            <nav class="contentdesigner-pagenav d-flex align-items-center justify-content-between mt-4"
+                aria-label="{{#str}} pagenavigation, mod_contentdesigner {{/str}}" data-chapterurls="{{chapterurls}}">
+                <div class="contentdesigner-pagenav-previous">
+                    {{#hasprevious}}
+                    <a class="btn btn-outline-secondary" href="{{previousurl}}">{{#str}} previouspage, mod_contentdesigner {{/str}}</a>
+                    {{/hasprevious}}
+                </div>
+                <div class="contentdesigner-pagenav-position text-muted">{{pageof}}</div>
+                <div class="contentdesigner-pagenav-next">
+                    {{#hasnext}}
+                    {{#cangonext}}
+                    <a class="btn btn-primary" href="{{nexturl}}">{{#str}} nextpage, mod_contentdesigner {{/str}}</a>
+                    {{/cangonext}}
+                    {{^cangonext}}
+                    <button type="button" class="btn btn-primary" disabled>{{#str}} nextpage, mod_contentdesigner {{/str}}</button>
+                    {{/cangonext}}
+                    {{/hasnext}}
+                </div>
+            </nav>
+            {{/pagenav}}
         </div>
     </div>
 </div>

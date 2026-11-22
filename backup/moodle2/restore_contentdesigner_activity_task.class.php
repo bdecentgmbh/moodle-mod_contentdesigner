@@ -51,16 +51,32 @@ class restore_contentdesigner_activity_task extends restore_activity_task {
     public static function define_decode_contents() {
         $contents = [];
         $contents[] = new restore_decode_content('contentdesigner', ['intro'], 'contentdesigner');
-        $contents[] = new \restore_decode_content('cdelement_richtext', ['content'], 'richtext_instanceid');
-        $contents[] = new \restore_decode_content('cdelement_outro', ['outrocontent'], 'outro_instanceid');
+        $contents[] = new restore_decode_content('contentdesigner_options', ['description'], 'contentdesigner_options');
+
+        // The elements declare their contents with links in the static method define_decode_contents() of their
+        // restore class, if they have such contents.
+        foreach (core_component::get_plugin_list('cdelement') as $name => $dir) {
+            $file = $dir . '/backup/moodle2/restore_cdelement_' . $name . '_subplugin.class.php';
+            $class = 'restore_cdelement_' . $name . '_subplugin';
+            if (file_exists($file)) {
+                require_once($file);
+                if (method_exists($class, 'define_decode_contents')) {
+                    $contents = array_merge($contents, $class::define_decode_contents());
+                }
+            }
+        }
         return $contents;
     }
 
     /**
-     * Define the decoding rules for links belonging
-     * to the activity to be executed by the link decoder
+     * The rules to decode the links encoded by backup_contentdesigner_activity_task::encode_content_links().
+     *
+     * @return array
      */
     public static function define_decode_rules() {
-        return [];
+        return [
+            new restore_decode_rule('CONTENTDESIGNERVIEWBYID', '/mod/contentdesigner/view.php?id=$1', 'course_module'),
+            new restore_decode_rule('CONTENTDESIGNERINDEX', '/mod/contentdesigner/index.php?id=$1', 'course'),
+        ];
     }
 }

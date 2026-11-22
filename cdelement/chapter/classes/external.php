@@ -24,22 +24,24 @@
 
 namespace cdelement_chapter;
 
-defined('MOODLE_INTERNAL') || die('No direct access');
-
-use external_value;
-require_once($CFG->libdir . '/externallib.php');
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_value;
+use mod_contentdesigner\editor;
+use mod_contentdesigner\local\access;
+use mod_contentdesigner\local\attempts;
 
 /**
  * Chapter external service methods.
  */
-class external extends \external_api {
+class external extends external_api {
     /**
      * Paramters definition for the methos update chapter progress of user.
      *
      * @return external_function_parameters
      */
     public static function update_completion_parameters() {
-        return new \external_function_parameters(
+        return new external_function_parameters(
             [
                 'cmid' => new external_value(PARAM_INT, 'Course module id'),
                 'chapter' => new external_value(PARAM_INT, 'Chapter element instance id'),
@@ -48,34 +50,52 @@ class external extends \external_api {
     }
 
     /**
-     * Update the content designer chapter progress for the current logged in user.
+     * Marks a chapter of the activity as completed by the current user.
+     *
+     * The chapter must be one that the content shows to the user: the user reached it and, with sequential
+     * navigation, completed its mandatory elements. Guests cannot save progress.
      *
      * @param int $cmid Coursemodule id.
-     * @param int $chapter Content designer module instance id.
+     * @param int $chapter Chapter id.
      * @return bool true if everything updated fine, false if not.
      */
     public static function update_completion($cmid, $chapter) {
         global $DB, $USER;
 
-        $vaildparams = self::validate_parameters(self::update_completion_parameters(), ['cmid' => $cmid, 'chapter' => $chapter]);
-        self::validate_context(\context_module::instance($cmid));
-        $chapter = $vaildparams['chapter'];
-        $record = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter, 'userid' => $USER->id]);
-        $data = new \stdclass();
-        $data->instance = $chapter;
-        $data->userid = $USER->id;
-        $data->completion = true;
-        $data->timemodified = time();
-        if (isset($record->id)) {
+        $params = self::validate_parameters(
+            self::update_completion_parameters(),
+            ['cmid' => $cmid, 'chapter' => $chapter]
+        );
+
+        [, $cm] = access::from_cmid($params['cmid'], access::VIEW);
+        access::require_not_guest();
+        $chapter = access::get_chapter($params['chapter'], $cm->instance);
+        if (!$chapter->visible) {
+            throw new \moodle_exception('invalidrecord', 'error');
+        }
+        // Only a chapter that the learner can reach, and whose mandatory elements are completed in the attempt.
+        $attempt = attempts::get_current($cm->instance, $USER->id);
+        if (!editor::get_element('chapter', $cm->id, $attempt)->can_complete($chapter->id)) {
+            throw new \moodle_exception('chapternotreached', 'cdelement_chapter');
+        }
+
+        $record = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter->id, 'userid' => $USER->id]);
+        $data = (object) [
+            'instance' => $chapter->id,
+            'userid' => $USER->id,
+            'completion' => 1,
+            'timemodified' => time(),
+        ];
+        if ($record) {
             $data->id = $record->id;
-            return $DB->update_record('cdelement_chapter_completion', $data);
+            $DB->update_record('cdelement_chapter_completion', $data);
         } else {
             $data->timecreated = time();
-            if (!$DB->insert_record('cdelement_chapter_completion', $data)) {
-                return false;
-            }
+            $DB->insert_record('cdelement_chapter_completion', $data);
         }
-        return false;
+
+        editor::get_element('chapter', $cm->id)->progress_updated($USER->id);
+        return true;
     }
 
     /**

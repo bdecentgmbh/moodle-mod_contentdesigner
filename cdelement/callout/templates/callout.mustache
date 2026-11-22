@@ -1,0 +1,85 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template cdelement_callout/callout
+
+    Callout box. The notes (information, tip, warning, danger, success, example) share one layout: tinted box with an
+    accent bar, icon and title in one row. Speech bubble, expert quote, definition, reflection prompt and key takeaway
+    have a layout of their own. The colours of each type are set by the class callout-type-<type> in styles.css.
+
+    Context variables required for this template:
+    * type - Type of the callout, one of the keys of cdelement_callout\element::TYPES.
+    * typename - Name of the type, read by screen readers instead of the icon.
+    * icon - Font Awesome icon of the type.
+    * title - Optional title, formatted by format_string(). Speaker of a speech bubble, source of a quote, term of a
+      definition.
+    * content - Content, formatted by format_text().
+    * layout - One of note, speech, quote, definition, reflection, keytakeaway.
+    * layoutnote, layoutspeech, layoutquote, layoutdefinition, layoutreflection, layoutkeytakeaway - The layout as flags.
+
+    @copyright  2026 bdecent gmbh <https://bdecent.de>
+    @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+    Example context (json):
+    {
+        "type": "warning",
+        "typename": "Warning",
+        "icon": "fa-triangle-exclamation",
+        "title": "Important",
+        "content": "<p>Please read this carefully before proceeding.</p>",
+        "layout": "note",
+        "layoutnote": true
+    }
+}}
+<div class="cdelement-callout callout-layout-{{layout}} callout-type-{{type}}" role="note" aria-label="{{typename}}">
+    {{#layoutnote}}
+    <i class="callout-icon fa {{icon}}" aria-hidden="true"></i>
+    <div class="callout-main">
+        {{#title}}<p class="callout-title">{{{title}}}</p>{{/title}}
+        <div class="callout-body">{{{content}}}</div>
+    </div>
+    {{/layoutnote}}
+    {{#layoutspeech}}
+    <div class="callout-avatar" aria-hidden="true"><i class="fa fa-user"></i></div>
+    <div class="callout-bubble">
+        {{#title}}<p class="callout-title">{{{title}}}</p>{{/title}}
+        <div class="callout-body">{{{content}}}</div>
+    </div>
+    {{/layoutspeech}}
+    {{#layoutquote}}
+    <blockquote class="callout-body">{{{content}}}</blockquote>
+    {{#title}}<p class="callout-title"><span aria-hidden="true">&mdash; </span>{{{title}}}</p>{{/title}}
+    {{/layoutquote}}
+    {{#layoutdefinition}}
+    <p class="callout-label">{{typename}}</p>
+    {{#title}}<p class="callout-title">{{{title}}}</p>{{/title}}
+    <div class="callout-body">{{{content}}}</div>
+    {{/layoutdefinition}}
+    {{#layoutreflection}}
+    <i class="callout-icon fa {{icon}}" aria-hidden="true"></i>
+    {{#title}}<p class="callout-title">{{{title}}}</p>{{/title}}
+    <div class="callout-body">{{{content}}}</div>
+    {{/layoutreflection}}
+    {{#layoutkeytakeaway}}
+    <i class="callout-icon fa {{icon}}" aria-hidden="true"></i>
+    <div class="callout-main">
+        {{#title}}<p class="callout-title">{{{title}}}</p>{{/title}}
+        {{^title}}<p class="callout-label">{{typename}}</p>{{/title}}
+        <div class="callout-body">{{{content}}}</div>
+    </div>
+    {{/layoutkeytakeaway}}
+</div>

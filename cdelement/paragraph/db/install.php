@@ -28,7 +28,19 @@
  * @return bool
  */
 function xmldb_cdelement_paragraph_install() {
+    global $DB;
+
     $shortname = \cdelement_paragraph\element::SHORTNAME;
     $result = \mod_contentdesigner\elements::insertelement($shortname);
+
+    // Drop the table if it exists, rename the existing table.
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('element_paragraph');
+
+    if ($dbman->table_exists($table)) {
+        require_once(__DIR__ . '/upgrade.php');
+        xmldb_cdelement_paragraph_upgrade(0, true);
+    }
+
     return $result ? true : false;
 }

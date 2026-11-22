@@ -18,87 +18,87 @@
  * Strings for component 'Content designer', language 'en', branch 'MOODLE_20_STABLE'
  *
  * @package    mod_contentdesigner
- * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['abovecolorbg'] = "Background color/gradient (above)";
+$string['abovecolorbg'] = 'Background color/gradient (above)';
 $string['abovecolorbg_help'] = 'Apply a gradient as the background for the element. You can create a smooth transition between two or more colors. Use either linear or radial gradients and specify the colors and direction for the gradient.<br>
 <b>Gradient Example:</b>linear-gradient(#ff5733, #f1c40f) (This will create a gradient from red to yellow).<br>
 <b>Color Example:</b> #ff5733 (This will set the background color of the element to a shade of red).';
 $string['addelement'] = 'Insert Element';
-$string['animationheading'] = "Entrance animation";
 $string['animationtitle'] = 'Entrance Animation';
-$string['backbehindelement'] = "Background behind element";
-$string['backgroundtitle'] = "Background";
-$string['belowcolorbg'] = "Background color/gradient (below)";
+$string['backgroundtitle'] = 'Background';
+$string['belowcolorbg'] = 'Background color/gradient (below)';
 $string['belowcolorbg_help'] = 'Set the background color or gradient for the element. You can choose a single color or a gradient that smoothly transitions between two or more colors. The background color or gradient will be applied below the content area of the element.<br>
 <b>Gradient Example:</b>linear-gradient(#ff5733, #f1c40f) (This will create a gradient from red to yellow).<br>
 <b>Color Example:</b> #ff5733 (This will set the background color of the element to a shade of red).';
-$string['chapterdone'] = 'Done';
-$string['chaptertitle'] = "Chapter Title";
+$string['chaptertitle'] = 'Chapter Title';
 $string['completeprevelement'] = 'Complete the element above to continue.';
-$string['completionby'] = 'Completed BY';
-$string['completioncta'] = 'Complete chapter';
-$string['completiondetail:reachend'] = 'Reach the end of the contents to complete';
-$string['content'] = "Content";
+$string['content'] = 'Content';
 $string['content_help'] = 'Enter the main text for this element. This content will be displayed as body text, ideal for providing details, descriptions, or supporting information within your content layout.';
 $string['contentdesigner:addinstance'] = 'Add a new content designer';
 $string['contentdesigner:view'] = 'View content designer activity';
 $string['contentdesigner:viewcontenteditor'] = 'Access the content editor options';
-$string['contenteditor'] = "Content editor";
-$string['createchapter'] = "Create chapter";
-$string['creategeneral'] = 'Create general';
+$string['contenteditor'] = 'Editor';
 $string['createnewelement'] = 'Create new element - Content Designer';
 $string['deletechecktype'] = 'Are you sure that you want to delete this {$a->element} element?';
 $string['disabled'] = 'Disabled';
-$string['element:creategeneral'] = "Create a general element";
-$string['element:viewgeneral'] = "View the general element";
-$string['elementbgimage'] = "Background image";
+$string['displayhead'] = 'Display';
+$string['displaymode'] = 'Display mode';
+$string['displaymode_help'] = '<b>Scroll (default):</b> All chapters are shown on one page, one below the other.<br>
+<b>Pages:</b> Every chapter is shown on its own page, with the buttons Previous page and Next page. Learners reach the next page under the same conditions as the next chapter in the scrolling display: they complete the chapter and its mandatory elements. When learners return, they continue on the page where their progress stops; a new attempt starts on the first page. The outro is shown on the last page.';
+$string['displaymode_pages'] = 'Pages';
+$string['displaymode_scroll'] = 'Scroll';
+$string['elementbgimage'] = 'Background image';
 $string['elementbgimage_help'] = 'Set a background image for the element. You can upload an image or provide a URL to an image. The image will be displayed behind the content of the element.';
-$string['elementcreate'] = "Create element";
+$string['elementcreate'] = 'Create element';
 $string['elementdescription'] = 'Description';
 $string['elementdescription_help'] = 'The description is shown at the top of the element, providing additional context or instructions for users.';
+$string['elementnotavailable'] = 'This element is not available on this site, because a plugin it needs is missing or disabled.';
+$string['elementnotfound'] = 'The element does not exist or is not installed.';
+$string['elementnotreachable'] = 'This element is not available to you yet.';
 $string['elementsettings'] = '{$a} element settings';
-$string['elementstrgeneralsettings'] = "Element general settings";
-$string['elementtitle'] = "Title";
+$string['elementstrgeneralsettings'] = 'Element general settings';
+$string['elementtitle'] = 'Title';
 $string['elementtitle_help'] = 'Enter the title for the element. This title will only be displayed on the content editor page to help organize and identify the element within the editor. It will not appear on the final content page.';
-$string['elementupdate'] = "Update element";
+$string['elementupdate'] = 'Update element';
 $string['enabled'] = 'Enabled';
-$string['fadein'] = "Fade in";
-$string['generaltitle'] = "General settings";
-$string['gerneralsettings'] = "General settings";
-$string['headingtext'] = "Heading text";
+$string['error:invalidbackground'] = 'Enter a colour (e.g. #e66465, rgb(230, 100, 101) or red) or a gradient (e.g. linear-gradient(#e66465, #9198e5)), at most 100 characters.';
+$string['error:invaliddelay'] = 'Enter a number of seconds from 0 to 3600.';
+$string['error:invalidspacing'] = 'Enter one to four CSS lengths, e.g. 10px or 0 1rem 5% auto, at most 30 characters.';
+$string['fadein'] = 'Fade in';
+$string['generaltitle'] = 'General settings';
+$string['guestnoprogress'] = 'Guests cannot save their progress. Log in to complete the chapters and elements.';
+$string['h5pnumber'] = 'H5P {$a}';
+$string['headingtext'] = 'Heading text';
 $string['headingtext_help'] = 'Enter the main text for your heading. This will be prominently displayed to guide users through the content or section.';
-$string['headingurl'] = "Heading URL";
+$string['headingurl'] = 'Heading URL';
 $string['headingurl_help'] = 'Enter a URL if you want to make the heading clickable. When users click on the heading, they will be redirected to the specified link. Leave blank if no link is needed.';
-$string['hidden'] = "Hidden";
-$string['hideondesktop'] = "Hide on desktop";
-$string['hideondesktop_help'] = "Hide this element when viewed on a desktop screen.";
-$string['hideonmobile'] = "Hide on mobile";
-$string['hideonmobile_help'] = "Hide this element when viewed on a mobile screen.";
-$string['hideontablet'] = "Hide on tablet";
-$string['hideontablet_help'] = "Hide this element when viewed on a tablet screen.";
-$string['horizontalalign'] = "Horizontal Alignment";
+$string['hidden'] = 'Hidden';
+$string['hideondesktop'] = 'Hide on desktop';
+$string['hideondesktop_help'] = 'Hide this element when viewed on a desktop screen.';
+$string['hideonmobile'] = 'Hide on mobile';
+$string['hideonmobile_help'] = 'Hide this element when viewed on a mobile screen.';
+$string['hideontablet'] = 'Hide on tablet';
+$string['hideontablet_help'] = 'Hide this element when viewed on a tablet screen.';
+$string['horizontalalign'] = 'Horizontal Alignment';
 $string['horizontalalign_help'] = 'Choose the horizontal position for the text within the element:<br>
 <b>Left:</b> Aligns the text to the left side.<br>
 <b>Center:</b> Centers the text within the element.<br>
 <b>Right:</b> Aligns the text to the right side.<br>
 Selecting the alignment helps control the visual layout of your content.';
-$string['invaildelement'] = "Invalid content designer element";
-$string['invaildrecord'] = "Invaild record";
 $string['learningtools'] = 'Learning Tools';
 $string['learningtools_help'] = 'If enabled, learning tools such as bookmarks and notes will be available for this chapter.';
-$string['mainheading'] = "Main heading (h2)";
-$string['mandatory'] = "Mandatory";
+$string['mainheading'] = 'Main heading (h2)';
+$string['mandatory'] = 'Mandatory';
 $string['mandatory_help'] = 'Specify whether completing this element is required to unlock the next one:<br>
 <b>Yes:</b> The user must complete this element before the next one is displayed.<br>
 <b>No:</b> The next element is available regardless of whether this one is completed.<br>
 This setting is useful for creating a sequential flow, guiding users through the content step-by-step.';
-$string['margin'] = "Margin";
+$string['margin'] = 'Margin';
 $string['margin_help'] = 'Margin controls the space outside the element, creating distance between it and other elements. Set a single value to apply the same margin on all sides of the element.<br> <b>Example:</b> 10px (This will apply a 10px margin on all four sides: top, right, bottom, and left).';
-$string['modulename'] = 'Content Designer';
-$string['modulenameplural'] = "Content Designers";
+$string['modulename'] = 'Content';
 $string['modulename_help'] = '<p>The Content Designer activity enables teachers to create structured, interactive course content directly in Moodle without needing external authoring tools.</p>
 <p>Key features include:</p>
 <ul>
@@ -107,15 +107,20 @@ $string['modulename_help'] = '<p>The Content Designer activity enables teachers 
     <li>Micro-learning &amp; tracking: Enforce mandatory completion requirements on specific elements, display progress bars, and view detailed activity reports.</li>
 </ul>
 <p>For detailed setup instructions and feature guides, please visit the <a href="https://intercom.help/bdecent/en/collections/14008404-content-designer" target="_blank" rel="noopener">Content Designer documentation</a>. We are constantly improving the plugin, so please let us know if you have any <a href="mailto:support@bdecent.de">feedback for us</a>!</p>';
+$string['modulenameplural'] = 'Contents';
 $string['newvalue'] = 'New value for';
+$string['nextpage'] = 'Next page';
 $string['outro:btnbacktocourse'] = 'Back to course';
 $string['outro:btnbacktosection'] = 'Back to section';
 $string['outro:btncustom'] = 'Custom';
 $string['outro:btnnext'] = 'Next';
-$string['padding'] = "Padding";
+$string['padding'] = 'Padding';
 $string['padding_help'] = 'Padding controls the space inside the element, between the content and its borders. Set a single value to apply the same padding on all sides of the element.<br><b>Example:</b> 10px (This will apply a 10px padding on all four sides: top, right, bottom, and left).';
+$string['pagenavigation'] = 'Pages of the content';
+$string['pageof'] = 'Page {$a->page} of {$a->pages}';
 $string['pluginadministration'] = 'Content designer administration';
 $string['pluginname'] = 'Content Designer';
+$string['previouspage'] = 'Previous page';
 $string['primarybutton'] = 'Primary button';
 $string['primarybutton_help'] = '<b>Primary Button</b><br>
 <b>Disabled:</b> The primary button is hidden by default.<br>
@@ -123,16 +128,30 @@ $string['primarybutton_help'] = '<b>Primary Button</b><br>
 <b>Next:</b> Displays a "Next" button that links to the next activity in the course sequence.<br>
 <b>Back to Course:</b> Displays a button that redirects to the course overview page.<br>
 <b>Back to Section:</b> Displays a button that links back to the current activity\'s section within the course.';
-$string['primarybuttontext'] = "primary button text";
-$string['primarybuttontext_help'] = "Enter the text that will appear on the primary button. This button typically represents the main action, such as 'Continue', 'Next', or 'Submit'.";
-$string['primarybuttonurl'] = "primary button URL";
+$string['primarybuttontext'] = 'primary button text';
+$string['primarybuttontext_help'] = 'Enter the text that will appear on the primary button. This button typically represents the main action, such as \'Continue\', \'Next\', or \'Submit\'.';
+$string['primarybuttonurl'] = 'primary button URL';
 $string['primarybuttonurl_help'] = 'Enter the URL the primary button will link to when clicked. This can be a link to another page, an external website, or another section within the content.';
-
-$string['responsiveheading'] = "Responsive";
+$string['privacy:metadata:attempts'] = 'The attempts of the learners. Without the pro features, every learner has one attempt per activity, which groups the answers in its elements.';
+$string['privacy:metadata:attempts:attempt'] = 'The number of the attempt';
+$string['privacy:metadata:attempts:contentdesignerid'] = 'The activity';
+$string['privacy:metadata:attempts:grade'] = 'The grade of the attempt';
+$string['privacy:metadata:attempts:timefinish'] = 'When the attempt was finished';
+$string['privacy:metadata:attempts:timestart'] = 'When the attempt was started';
+$string['privacy:metadata:attempts:userid'] = 'The learner';
+$string['privacy:metadata:cdelement'] = 'The elements of the activity store the progress and the answers of the learners.';
+$string['privacy:metadata:completion:completion'] = 'Whether the learner reached the end of the content';
+$string['privacy:metadata:completion:contentdesignerid'] = 'Content designer instance';
+$string['privacy:metadata:completion:mandatorycompletion'] = 'Whether the learner completed all mandatory elements';
+$string['privacy:metadata:completion:starttime'] = 'When the learner opened the activity for the first time';
+$string['privacy:metadata:completion:timecreated'] = 'When the record was created';
+$string['privacy:metadata:completion:userid'] = 'ID of the user';
+$string['privacy:metadata:contentdesignercompletion'] = 'Information about the user\'s completion of the content designer activity';
+$string['privacy:metadata:core_grades'] = 'The grades of graded activities are stored in the gradebook.';
+$string['resetprogress'] = 'Delete the progress of all learners (attempts, completions, answers)';
 $string['responsivetitle'] = 'Responsive settings';
-$string['richtext'] = "Rich Text";
-$string['richtext_help'] = "Use the rich text editor to add and format content with full styling options, including text formatting, lists, links, and media. This editor supports file uploads, so you can include images, videos, and other media to enhance your content.";
-$string['scrolleffectsheading'] = "Scrolling effects (horizontal)";
+$string['richtext'] = 'Rich Text Content';
+$string['richtext_help'] = 'Use the rich text editor to add and format content with full styling options, including text formatting, lists, links, and media. This editor supports file uploads, so you can include images, videos, and other media to enhance your content.';
 $string['scrollingeffectstitle'] = 'Scrolling Effects';
 $string['search:activity'] = 'Content designer';
 $string['search:elements'] = 'Content designer elements';
@@ -143,65 +162,69 @@ $string['secondarybutton_help'] = '<b>Secondary Button</b><br>
 <b>Next:</b> Displays a "Next" button that links to the next activity in the course sequence.<br>
 <b>Back to Course:</b> Displays a button that redirects to the course overview page.<br>
 <b>Back to Section:</b> Displays a button that links back to the current activity\'s section within the course.';
-$string['secondarybuttontext'] = "Secondary button text";
-$string['secondarybuttontext_help'] = "Enter the text for the secondary button. This button is typically used for alternative actions, such as 'Cancel', 'Back', or 'Skip'. Choose a label that clearly indicates the secondary action.";
-$string['secondarybuttonurl'] = "Secondary button URL";
+$string['secondarybuttontext'] = 'Secondary button text';
+$string['secondarybuttontext_help'] = 'Enter the text for the secondary button. This button is typically used for alternative actions, such as \'Cancel\', \'Back\', or \'Skip\'. Choose a label that clearly indicates the secondary action.';
+$string['secondarybuttonurl'] = 'Secondary button URL';
 $string['secondarybuttonurl_help'] = 'Enter the URL the secondary button will link to when clicked. This could direct users to an alternative action or page.';
 $string['showdescription'] = 'Show description';
 $string['showdescription_help'] = 'If enabled, the description will be displayed at the top of the element.';
-$string['slidefromleft'] = "Slide in from left";
-$string['slidefromright'] = "Slide in from right";
-$string['speed'] = "Speed";
+$string['slidefromleft'] = 'Slide in from left';
+$string['slidefromright'] = 'Slide in from right';
+$string['speed'] = 'Speed';
 $string['speed_help'] = 'Set the speed of the scrolling effect. This controls how fast or slow the element will move as the user scrolls the page.<br>Example: Set 1 for a slower scroll';
-$string['stranimation'] = "Animation";
-$string['stranimation_help'] = "Choose an entrance animation for the element. This animation will play when the element first appears on the screen as the user scrolls into view or interacts with the content.<br>Select <b>None</b> if you don't want any animation effect for the element";
-$string['strblank'] = "Open a new window";
-$string['strbookmark'] = "Bookmark";
-$string['strbookmarked'] = "Bookmarked";
-$string['strbottom'] = "Bottom";
-$string['strcenter'] = "Center";
-$string['strdelay'] = "Delay";
+$string['stranimation'] = 'Animation';
+$string['stranimation_help'] = 'Choose an entrance animation for the element. This animation will play when the element first appears on the screen as the user scrolls into view or interacts with the content.<br>Select <b>None</b> if you don\'t want any animation effect for the element';
+$string['strblank'] = 'Open a new window';
+$string['strbookmark'] = 'Bookmark';
+$string['strbookmarked'] = 'Bookmarked';
+$string['strbottom'] = 'Bottom';
+$string['strcenter'] = 'Center';
+$string['strdelay'] = 'Delay';
 $string['strdelay_help'] = 'Set a delay before the entrance animation begins. This setting defines how much time should pass before the animation starts after the element comes into view.<br>Example: Set 2 (2 seconds delay).';
-$string['strdirection'] = "Direction";
+$string['strdirection'] = 'Direction';
 $string['strdirection_help'] = 'Apply scrolling effects to your element, making it move as the user scrolls through the page. These effects can help create dynamic interactions and draw attention to key content.<br><b>None: </b>No scrolling effect applied. The element will remain stationary as the user scrolls.<br><b>To Left: </b>The element will move from right to left as the user scrolls down the page.<br><b>To Right: </b>The element will move from left to right as the user scrolls down the page.';
-$string['strduration'] = "Duration";
+$string['strduration'] = 'Duration';
 $string['strduration_help'] = 'Choose the speed at which the entrance animation will occur. This setting determines how quickly or slowly the animation will play, adding different levels of emphasis and pacing.';
-$string['strfast'] = "Fast";
-$string['strheading'] = "Heading";
+$string['strfast'] = 'Fast';
+$string['strheading'] = 'Heading';
 $string['strheading_help'] = 'Choose the type of heading to display. You have two options:<br>
 <b>Main Heading (H2):</b> A larger, prominent heading typically used for main sections or titles.<br>
 <b>Sub Heading (H3):</b> A slightly smaller heading used for subsections or supporting information within a main section.
 Selecting the right heading type helps organize content and improves readability."';
-$string['strimage'] = "Image";
+$string['strimage'] = 'Image';
 $string['strimage_help'] = 'Upload an image to display in the outro section. This image will appear at the end of the content, adding a visual element to enhance the closing message or theme.';
-$string['strleft'] = "Left";
-$string['strmiddle'] = "Middle";
-$string['strnormal'] = "Normal";
-$string['strnotes'] = "Notes";
-$string['strright'] = "Right";
-$string['strself'] = "Open a same window";
-$string['strslow'] = "Slow";
-$string['strtop'] = "Top";
-$string['subheading'] = "Sub heading (h3)";
+$string['strleft'] = 'Left';
+$string['strmiddle'] = 'Middle';
+$string['strnormal'] = 'Normal';
+$string['strnotes'] = 'Notes';
+$string['strright'] = 'Right';
+$string['strself'] = 'Open a same window';
+$string['strslow'] = 'Slow';
+$string['strtop'] = 'Top';
+$string['subheading'] = 'Sub heading (h3)';
+$string['subplugintype_cdaddon'] = 'Content designer addon';
+$string['subplugintype_cdaddon_plural'] = 'Content designer addons';
 $string['subplugintype_cdelement'] = 'Element plugin';
 $string['subplugintype_cdelement_plural'] = 'Element plugins';
-$string['target'] = "Target";
+$string['tablenotfound'] = 'The table of the element does not exist.';
+$string['target'] = 'Target';
 $string['target_help'] = 'Select how the link should open if a Heading URL is provided:<br>
 <b>Same Window:</b> Opens the link in the current browser tab, replacing the current page.<br>
 <b>New Window:</b> Opens the link in a new browser tab, keeping the current page open.
 Choose ‘New Window’ if you want users to keep this page open while viewing the link.';
 $string['titleeditable'] = 'Edit instance title';
 $string['titlestatus'] = 'Display title';
-$string['titlestatus_help'] = 'Enable this option to display the chapter\'s title to learners. When unchecked, the title will only be used for administrative purposes and will not be visible to learners. Checking this option makes the chapter title visible on the learner\'s view.';
-$string['toleft'] = "To left";
-$string['toright'] = "To Right";
-$string['verticalalign'] = "Vertical Alignment";
+$string['titlestatus_help'] = 'Enable this option to display the chapter\'s title to learners. When unchecked, the title will only be used for administrative purposes and will not be visible to learners. Checking this option makes the chapter title visible on the learner\'s view';
+$string['toleft'] = 'To left';
+$string['toright'] = 'To Right';
+$string['upgradelegacytable'] = 'The table {$a->table} holds data, and the table {$a->legacy} of an earlier version of the element exists as well. Decide which data to keep and remove the other table, then run the upgrade again.';
+$string['verticalalign'] = 'Vertical Alignment';
 $string['verticalalign_help'] = 'Select the vertical position of the text within the element:<br>
 <b>Top:</b> Aligns the text to the top of the element.<br>
 <b>Middle:</b> Centers the text vertically within the element.<br>
 <b>Bottom:</b> Aligns the text to the bottom of the element.<br>
 This setting is useful for fine-tuning the text position within your design layout.';
-$string['viewport'] = "Viewport";
+$string['viewport'] = 'Viewport';
 $string['viewport_help'] = 'Define when the scrolling effect should start relative to the user\'s viewport. This helps control how soon the effect is triggered based on how much of the element is visible on the screen.';
-$string['visibility'] = "Visibility";
-$string['visibility_help'] = "Show / Hide the element";
+$string['visibility'] = 'Visibility';
+$string['visibility_help'] = 'Show / Hide the element';

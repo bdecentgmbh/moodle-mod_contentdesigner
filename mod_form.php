@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Content designer module instance add and update form.
+ * Content designer module form.
  *
  * @package    mod_contentdesigner
  * @copyright  2022 bdecent gmbh <https://bdecent.de>
@@ -27,6 +27,11 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/contentdesigner/lib.php');
 
+use mod_contentdesigner\hook\extend_mod_form;
+use mod_contentdesigner\hook\mod_form_validation;
+use mod_contentdesigner\local\extensions;
+use mod_contentdesigner\local\pages;
+
 /**
  * Content designer module form.
  */
@@ -36,7 +41,7 @@ class mod_contentdesigner_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
-        global $CFG;
+        global $CFG, $DB;
 
         $mform =& $this->_form;
 
@@ -53,8 +58,59 @@ class mod_contentdesigner_mod_form extends moodleform_mod {
 
         $this->standard_intro_elements();
 
+        // Display: all chapters on one page or every chapter on its own page.
+        $mform->addElement('header', 'displayhead', get_string('displayhead', 'mod_contentdesigner'));
+        $mform->addElement('select', 'displaymode', get_string('displaymode', 'mod_contentdesigner'), pages::get_display_options());
+        $mform->addHelpButton('displaymode', 'displaymode', 'mod_contentdesigner');
+        $mform->setDefault('displaymode', pages::DISPLAY_SCROLL);
+
+        // Addons add their settings, for example the navigation and the grading of attempts.
+        $instance = $this->_instance ? $DB->get_record('contentdesigner', ['id' => $this->_instance]) : null;
+        extensions::dispatch(new extend_mod_form($this, $mform, $instance ?: null));
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
+    }
+
+    /**
+     * The custom completion rules of the addons.
+     *
+     * @return array The names of the form elements.
+     */
+    public function add_completion_rules() {
+        $elements = [];
+        foreach (extensions::completion_rules() as $rule) {
+            $elements = array_merge($elements, $rule->add_form_elements($this->_form, $this->get_suffix()));
+        }
+        return $elements;
+    }
+
+    /**
+     * Whether a custom completion rule of the addons is enabled.
+     *
+     * @param array $data Input data not yet validated.
+     * @return bool True if one or more rules is enabled, false if none are.
+     */
+    public function completion_rule_enabled($data) {
+        foreach (extensions::completion_rules() as $rule) {
+            if ($rule->is_enabled($data, $this->get_suffix())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Validate the form data.
+     *
+     * @param array $data Form data.
+     * @param array $files Form files.
+     * @return array Array of errors.
+     */
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        $hook = extensions::dispatch(new mod_form_validation($data, $files));
+        return array_merge($errors, $hook->get_errors());
     }
 }

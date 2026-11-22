@@ -1,0 +1,265 @@
+/**
+ * Styles of the callout element.
+ *
+ * --callout-color is the accent colour of a type (bar, icon, title), --callout-tint its light background. Text stays
+ * in the normal text colour. All accent colours pass WCAG AA on their tint and on white.
+ *
+ * Layouts (class callout-layout-<layout>, see element::LAYOUTS):
+ * - note: information, tip, warning, danger, success, example. Tint, accent bar left, icon and title in one row.
+ * - speech: avatar and chat bubble; the title is the speaker.
+ * - quote: large quotation mark, serif text; the title is the source.
+ * - definition: label, the title as the term, accent rule left.
+ * - reflection: centred, dashed border.
+ * - keytakeaway: solid accent box with white text.
+ *
+ * @package    cdelement_callout
+ * @copyright  2026 bdecent GmbH <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/* Colours per type. */
+.cdelement-callout.callout-type-info {
+    --callout-color: #00689f;
+    --callout-tint: #e8f4fb;
+}
+
+.cdelement-callout.callout-type-tip {
+    --callout-color: #6d28d9;
+    --callout-tint: #f3effc;
+}
+
+.cdelement-callout.callout-type-warning {
+    --callout-color: #b45309;
+    --callout-tint: #fdf3e6;
+}
+
+.cdelement-callout.callout-type-danger {
+    --callout-color: #b91c1c;
+    --callout-tint: #fdecec;
+}
+
+.cdelement-callout.callout-type-success {
+    --callout-color: #166534;
+    --callout-tint: #e9f5ee;
+}
+
+.cdelement-callout.callout-type-example {
+    --callout-color: #065f46;
+    --callout-tint: #e7f4ef;
+}
+
+.cdelement-callout.callout-type-speech {
+    --callout-color: #1e293b;
+    --callout-tint: #eef1f5;
+}
+
+.cdelement-callout.callout-type-quote {
+    --callout-color: #374151;
+    --callout-tint: #f2f3f5;
+}
+
+.cdelement-callout.callout-type-definition {
+    --callout-color: #1d4ed8;
+    --callout-tint: #ebf1fd;
+}
+
+.cdelement-callout.callout-type-reflection {
+    --callout-color: #4338ca;
+    --callout-tint: #eef0fc;
+}
+
+.cdelement-callout.callout-type-keytakeaway {
+    --callout-color: #a16207;
+    --callout-tint: #fdf6e3;
+}
+
+/* Shared. */
+.cdelement-callout {
+    margin: 1rem 0;
+}
+
+.cdelement-callout .callout-title {
+    margin: 0 0 .15rem;
+    font-weight: 700;
+}
+
+.cdelement-callout .callout-label {
+    margin: 0;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.cdelement-callout .callout-body > :last-child {
+    margin-bottom: 0;
+}
+
+/* Note. */
+.cdelement-callout.callout-layout-note {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .9rem 1.15rem;
+    background: var(--callout-tint);
+    border-left: 4px solid var(--callout-color);
+    border-radius: 4px 8px 8px 4px;
+}
+
+.cdelement-callout.callout-layout-note .callout-icon {
+    flex: 0 0 1.25rem;
+    color: var(--callout-color);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.cdelement-callout.callout-layout-note .callout-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.cdelement-callout.callout-layout-note .callout-title {
+    color: var(--callout-color);
+}
+
+/* Speech bubble. */
+.cdelement-callout.callout-layout-speech {
+    display: flex;
+    gap: .9rem;
+    align-items: flex-end;
+}
+
+.cdelement-callout.callout-layout-speech .callout-avatar {
+    flex: 0 0 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--callout-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.cdelement-callout.callout-layout-speech .callout-bubble {
+    flex: 1;
+    min-width: 0;
+    padding: .75rem 1rem;
+    background: var(--callout-tint);
+    border-radius: 1rem 1rem 1rem .25rem;
+}
+
+.cdelement-callout.callout-layout-speech .callout-title {
+    font-size: .875rem;
+}
+
+/* Expert quote. */
+.cdelement-callout.callout-layout-quote {
+    position: relative;
+    padding: .25rem .5rem .25rem 3.5rem;
+}
+
+.cdelement-callout.callout-layout-quote::before {
+    content: "\201C";
+    position: absolute;
+    left: 0;
+    top: -.85rem;
+    font: 700 4.75rem/1 Georgia, "Times New Roman", serif;
+    color: var(--callout-color);
+    opacity: .35;
+}
+
+/* Resets the blockquote style of the theme (border, indent, muted colour). */
+.cdelement-callout.callout-layout-quote blockquote {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    font: italic 1.2rem/1.45 Georgia, "Times New Roman", serif;
+}
+
+.cdelement-callout.callout-layout-quote .callout-title {
+    margin: .5rem 0 0;
+    font-size: .875rem;
+    font-weight: 400;
+    color: var(--callout-color);
+}
+
+/* Definition. */
+.cdelement-callout.callout-layout-definition {
+    padding: .25rem 0 .25rem 1.15rem;
+    border-left: 3px solid var(--callout-color);
+}
+
+.cdelement-callout.callout-layout-definition .callout-label {
+    color: var(--callout-color);
+}
+
+.cdelement-callout.callout-layout-definition .callout-title {
+    margin: .1rem 0 .25rem;
+    font: 700 1.3rem/1.3 Georgia, "Times New Roman", serif;
+}
+
+/* Reflection prompt. */
+.cdelement-callout.callout-layout-reflection {
+    padding: .9rem 1.15rem;
+    text-align: center;
+    border: 2px dashed var(--callout-color);
+    border-radius: 12px;
+}
+
+.cdelement-callout.callout-layout-reflection .callout-icon {
+    display: block;
+    margin-bottom: .25rem;
+    color: var(--callout-color);
+    font-size: 1.4rem;
+}
+
+.cdelement-callout.callout-layout-reflection .callout-title {
+    color: var(--callout-color);
+}
+
+/* Key takeaway. */
+.cdelement-callout.callout-layout-keytakeaway {
+    display: flex;
+    gap: .9rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: var(--callout-color);
+    border-radius: 10px;
+    color: #fff;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-icon {
+    flex: 0 0 auto;
+    font-size: 1.4rem;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-title,
+.cdelement-callout.callout-layout-keytakeaway .callout-label {
+    margin-bottom: .15rem;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-body {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-body *,
+.cdelement-callout.callout-layout-keytakeaway .callout-body a {
+    color: #fff;
+}
+
+.cdelement-callout.callout-layout-keytakeaway .callout-body a {
+    text-decoration: underline;
+}

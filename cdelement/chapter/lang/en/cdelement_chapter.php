@@ -22,13 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined("MOODLE_INTERNAL") || die();
-
+$string['chapternotreached'] = 'Complete the chapters and the required elements before this chapter first.';
 $string['elementdescription'] = 'Add a new chapter to group elements';
 $string['pluginname'] = "Chapter";
-$string['privacy:chapter'] = 'Chapter';
 $string['privacy:metadata:chaptercompletion'] = 'Information about the user\'s chapter completion.';
 $string['privacy:metadata:completion:chapterid'] = 'Chapter instance id';
 $string['privacy:metadata:completion:completion'] = 'Completion Status';
-$string['privacy:metadata:completion:timecreated'] = 'Time completed the chapter';
+$string['privacy:metadata:completion:timecreated'] = 'When the chapter was completed for the first time';
+$string['privacy:metadata:completion:timemodified'] = 'When the completion was last changed';
 $string['privacy:metadata:completion:userid'] = 'User id';

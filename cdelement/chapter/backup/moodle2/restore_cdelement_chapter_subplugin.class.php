@@ -41,7 +41,31 @@ class restore_cdelement_chapter_subplugin extends restore_subplugin {
         $elepath = $this->get_pathfor('/cdelement_chapter');
         $paths[] = new restore_path_element($elename, $elepath);
 
+        // The completions are not nested in the chapters (see the backup), but follow them.
+        if ($this->get_setting_value('userinfo')) {
+            $paths[] = new restore_path_element(
+                'cdelement_chapter_completion',
+                '/activity/contentdesigner/elementchapter_completion/cdelement_chapter_completion'
+            );
+        }
+
         return $paths;
+    }
+
+    /**
+     * Restores a chapter completion of a learner.
+     *
+     * @param array $data The completion.
+     */
+    public function process_cdelement_chapter_completion($data) {
+        global $DB;
+        $data = (object) $data;
+        $data->instance = $this->get_mappingid('chapterid', $data->instance);
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        if (!$data->instance || !$data->userid) {
+            return;
+        }
+        $DB->insert_record('cdelement_chapter_completion', $data);
     }
 
     /**

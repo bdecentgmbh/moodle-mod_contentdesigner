@@ -32,24 +32,26 @@ $PAGE->set_pagelayout('incourse');
 
 // Trigger instances list viewed event.
 $event = \mod_contentdesigner\event\course_module_instance_list_viewed::create(
-['context' => \context_course::instance($course->id)]);
+    ['context' => \context_course::instance($course->id)]
+);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$strcontentdesigner         = get_string('modulename', 'contentdesigner');
-$strcontentdesigners        = get_string('modulenameplural', 'contentdesigner');
-$strname         = get_string('name');
-$strintro        = get_string('moduleintro');
+$strcontentdesigner = get_string('modulename', 'contentdesigner');
+$strcontentdesigners = get_string('modulenameplural', 'contentdesigner');
+$strname  = get_string('name');
+$strintro = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
 
 $PAGE->set_url('/mod/contentdesigner/index.php', ['id' => $id]);
-$PAGE->set_title($course->shortname . ': ' . $strcontentdesigners);
-$PAGE->set_heading($course->fullname);
+$coursecontext = \context_course::instance($course->id);
+$PAGE->set_title(format_string($course->shortname, true, ['context' => $coursecontext]) . ': ' . $strcontentdesigners);
+$PAGE->set_heading(format_string($course->fullname, true, ['context' => $coursecontext]));
 $PAGE->navbar->add($strcontentdesigners);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strcontentdesigners);
 if (!$contentdesigners = get_all_instances_in_course('contentdesigner', $course)) {
-    notice(get_string('thereareno', 'moodle', $strcontentdesigners), "$CFG->wwwroot/course/view.php?id=$course->id");
+    notice(get_string('thereareno', 'moodle', $strcontentdesigners), new moodle_url('/course/view.php', ['id' => $course->id]));
     exit;
 }
 
@@ -83,14 +85,16 @@ foreach ($contentdesigners as $contentdesigner) {
             $currentsection = $contentdesigner->section;
         }
     } else {
-        $printsection = '<span class="smallinfo">' . userdate($contentdesigner->timemodified) . "</span>";
+        $printsection = html_writer::span(userdate($contentdesigner->timemodified), 'smallinfo');
     }
-
-    $class = $contentdesigner->visible ? '' : 'class="dimmed"'; // Hidden modules are dimmed.
 
     $table->data[] = [
         $printsection,
-        "<a $class href=\"view.php?id=$cm->id\">" . format_string($contentdesigner->name) . "</a>",
+        html_writer::link(
+            new moodle_url('/mod/contentdesigner/view.php', ['id' => $cm->id]),
+            format_string($contentdesigner->name, true, ['context' => $cm->context]),
+            $contentdesigner->visible ? [] : ['class' => 'dimmed'] // Hidden modules are dimmed.
+        ),
         format_module_intro('contentdesigner', $contentdesigner, $cm->id),
     ];
 }

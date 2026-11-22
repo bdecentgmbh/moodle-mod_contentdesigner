@@ -32,31 +32,24 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $chapter = optional_param('chapter', 0, PARAM_INT);
 $position = optional_param('position', 'bottom', PARAM_ALPHA);
 
-// Check element exist or not.
-$elements = contentdesigner_get_element_pluginnames();
-if (!in_array($element, $elements)) {
-    throw new moodle_exception('invaildelement', 'mod_contentdesigner');
-}
-
 [$course, $cm] = get_course_and_cm_from_cmid($cmid, 'contentdesigner');
-$context = \context_module::instance($cm->id);
-
-$elementobj = mod_contentdesigner\editor::get_element($element, $cmid);
-
-if ($id) {
-    $elementrecord = $DB->get_record("cdelement_" . $element, ['id' => $id]);
-    if (!$elementrecord) {
-        throw new moodle_exception('invaildrecord', 'mod_contentdesigner');
-    }
-    $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
-    $chapter = isset($content->chapter) ? $content->chapter : 0;
-}
+$context = context_module::instance($cm->id);
 
 require_login($course, true, $cm);
-
-require_sesskey();
-
 require_capability('mod/contentdesigner:viewcontenteditor', $context);
+
+// Only installed elements, and only instances and chapters of this activity.
+$elementobj = \mod_contentdesigner\local\access::get_element($element, $cm->id);
+if (!$elementobj->is_available()) {
+    throw new moodle_exception('elementnotavailable', 'mod_contentdesigner');
+}
+if ($id) {
+    $elementrecord = \mod_contentdesigner\local\access::get_element_instance($elementobj, $id, $cm->instance);
+    $content = $DB->get_record('contentdesigner_content', ['element' => $elementobj->elementid, 'instance' => $id]);
+    $chapter = isset($content->chapter) ? $content->chapter : 0;
+} else if ($chapter) {
+    \mod_contentdesigner\local\access::get_chapter($chapter, $cm->instance);
+}
 
 $record = new stdClass();
 $record->course = $course->id;
@@ -69,24 +62,37 @@ $urlparams = [
     'action' => $action,
     'cmid' => $cmid,
     'element' => $element,
-    'sesskey' => sesskey(),
+    'chapter' => $chapter,
+    'position' => $position,
 ];
 $url = new moodle_url('/mod/contentdesigner/element.php', $urlparams);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 $PAGE->set_title($course->shortname . ': ' . get_string('createnewelement', 'contentdesigner'));
 
-$mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(false), [
+$formdata = [
     'element' => $element,
     'context' => $context,
     'instanceid' => $id,
     'cmid' => $cmid,
     'chapterid' => $chapter,
     'position' => $position,
-]);
+    'courseid' => $course->id,
+    'elementobj' => $elementobj,
+];
+
+// Load the custom form if the element supports its own form definitions.
+// Otherwise use the general form and it includes the element form fields.
+if ($elementobj->supports_custom_form()) {
+    $dummyform = new stdClass();
+    $mformclass = $elementobj->element_form($dummyform, []);
+    $mform = new $mformclass($PAGE->url->out(false), $formdata);
+} else {
+    $mform = new \mod_contentdesigner\form\general_element_form($PAGE->url->out(false), $formdata);
+}
 
 if ($mform->is_cancelled()) {
-    redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]));
+    redirect(new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid]));
 } else if ($formdata = $mform->get_data()) {
     $formdata->course = $course->id;
     $formdata->cmid = $cm->id;
@@ -97,11 +103,11 @@ if ($mform->is_cancelled()) {
     $formdata->elementshortname = $elementobj->shortname;
 
     $elementobj->update_element($formdata);
-    $editorurl = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid, 'sesskey' => sesskey()]);
+    $editorurl = new moodle_url('/mod/contentdesigner/editor.php', ['id' => $cmid]);
     redirect($editorurl, get_string('savechanges'), null, \core\output\notification::NOTIFY_INFO);
 }
 
-$data = (object) $elementobj->prepare_formdata($id);
+$data = (object) $elementobj->prepare_formdata($id, false);
 $data = $elementobj->prepare_standard_file_editor($data);
 
 $mform->set_data($data);

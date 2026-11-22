@@ -1,5 +1,10 @@
 {
     "plugintypes": {
-        "cdelement": "mod\/contentdesigner\/cdelement"
+        "cdelement": "mod/contentdesigner/cdelement",
+        "cdaddon": "mod/contentdesigner/cdaddon"
+    },
+    "subplugintypes": {
+        "cdelement": "cdelement",
+        "cdaddon": "cdaddon"
     }
 }

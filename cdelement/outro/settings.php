@@ -41,6 +41,8 @@ $options = [
     outro::OUTRO_BUTTON_BACKTOCOURSE => get_string('outro:btnbacktocourse', 'mod_contentdesigner'),
     outro::OUTRO_BUTTON_BACKTOSECTION => get_string('outro:btnbacktosection', 'mod_contentdesigner'),
 ];
+// Addons offer more buttons, for example to finish an attempt.
+$options += \mod_contentdesigner\local\extensions::dispatch(new \mod_contentdesigner\hook\outro_button_types())->get_types();
 $name = 'cdelement_outro/primarybutton';
 $title = get_string('primarybutton', 'mod_contentdesigner');
 $description = get_string('primarybutton_help', 'mod_contentdesigner');

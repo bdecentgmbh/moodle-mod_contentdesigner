@@ -81,6 +81,7 @@ class element extends \mod_contentdesigner\elements {
     public function element_form(&$mform, $formobj) {
 
         $mform->addElement('textarea', 'content', get_string('content', 'mod_contentdesigner'), ['rows' => 15, 'cols' => 40]);
+        $mform->setType('content', PARAM_TEXT);
         $mform->addRule('content', null, 'required');
         $mform->addHelpButton('content', 'content', 'mod_contentdesigner');
         $horizontalalign = [
@@ -125,6 +126,7 @@ class element extends \mod_contentdesigner\elements {
      * @return string
      */
     public function render($instance) {
-        return html_writer::tag('p', format_string($instance->content), ['class' => "element-paragraph"]);
+        $content = format_string($instance->content, true, ['context' => $this->get_context()]);
+        return html_writer::tag('p', $content, ['class' => "element-paragraph"]);
     }
 }

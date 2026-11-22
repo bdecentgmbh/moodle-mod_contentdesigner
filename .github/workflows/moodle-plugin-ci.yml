@@ -1,0 +1,161 @@
+name: Moodle Plugin CI
+
+# Runs on every push to main and on every pull request (feature branches are tested through their pull request
+# only). The release workflow (release.yml) waits for the run on the tagged commit, which on main is a merge commit.
+#
+# Scope: the free mod_contentdesigner with its free elements. The paid elements and addons under cdelement/ and
+# cdaddon/ are private git submodules; they are NOT checked out here (submodules: false) and each of them runs its own
+# CI against mod_contentdesigner. Uninitialised submodules leave empty directories behind, which Moodle would treat as
+# broken plugins, so they are removed before the install step.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: 'postgres'
+          POSTGRES_HOST_AUTH_METHOD: 'trust'
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MYSQL_USER: 'root'
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
+          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
+        ports:
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval 10s --health-timeout 5s --health-retries 3
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The supported Moodle releases, each with its lowest and highest PHP version on alternating databases.
+        # The Video Time element has no hard dependency on mod_videotime: one job per release runs with Video Time,
+        # the others without it, so both cases are tested.
+        include:
+          - php: '8.3'
+            moodle-branch: 'MOODLE_502_STABLE'
+            database: 'mariadb'
+            videotime: ''
+          - php: '8.4'
+            moodle-branch: 'MOODLE_502_STABLE'
+            database: 'pgsql'
+            videotime: 'master'
+          - php: '8.3'
+            moodle-branch: 'MOODLE_503_STABLE'
+            database: 'mariadb'
+            videotime: 'dev'
+          - php: '8.4'
+            moodle-branch: 'MOODLE_503_STABLE'
+            database: 'pgsql'
+            videotime: ''
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          path: plugin
+          submodules: false
+
+      - name: Remove empty element and addon submodule placeholders
+        run: find plugin/cdelement plugin/cdaddon -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir {} + || true
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          ini-values: max_input_vars=5000
+          coverage: none
+
+      - name: Initialise moodle-plugin-ci
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
+          echo $(cd ci/bin; pwd) >> $GITHUB_PATH
+          echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
+          sudo locale-gen en_AU.UTF-8
+          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+
+      - name: Install moodle-plugin-ci
+        run: |
+          moodle-plugin-ci add-plugin --clone https://github.com/bdecentgmbh/moodle-local_learningtools.git --branch main
+          if [ -n "${{ matrix.videotime }}" ]; then
+            moodle-plugin-ci add-plugin --clone https://github.com/bdecentgmbh/moodle-mod_videotime.git --branch ${{ matrix.videotime }}
+          fi
+          moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+          # Third-party library (thirdpartylibs.xml).
+          IGNORE_PATHS: 'amd/src/anime.js'
+
+      - name: PHP Lint
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phplint
+
+      - name: PHP Mess Detector
+        continue-on-error: true
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpmd
+
+      - name: Moodle Code Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpcs --max-warnings 0
+
+      - name: Moodle PHPDoc Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0
+
+      - name: Validating
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci validate
+
+      - name: Check upgrade savepoints
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci savepoints
+
+      - name: Mustache Lint
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci mustache
+
+      - name: Grunt
+        if: ${{ !cancelled() }}
+        # One warning is expected: ESLint notes that it skips the third-party amd/src/anime.js (thirdpartylibs.xml).
+        run: moodle-plugin-ci grunt --max-lint-warnings 1
+
+      - name: PHPUnit tests
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpunit --fail-on-warning
+
+      - name: Behat features
+        id: behat
+        if: ${{ !cancelled() }}
+        # Our features only (--tags replaces the default @mod_contentdesigner filter, all features carry that tag).
+        # format_popups (optional image display) is not installed here; the Video Time scenarios need mod_videotime.
+        run: |
+          TAGS='@mod_contentdesigner&&~@format_popups'
+          [ -n "${{ matrix.videotime }}" ] || TAGS="$TAGS&&~@mod_videotime"
+          moodle-plugin-ci behat --profile chrome --tags="$TAGS"
+
+      - name: Upload Behat faildump
+        if: ${{ failure() && steps.behat.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Behat faildump (${{ join(matrix.*, ', ') }})
+          path: ${{ github.workspace }}/moodledata/behat_dump
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Mark cancelled jobs as failed.
+        if: ${{ cancelled() }}
+        run: exit 1

@@ -28,7 +28,19 @@
  * @return bool
  */
 function xmldb_cdelement_heading_install() {
+    global $DB;
+
     $shortname = \cdelement_heading\element::SHORTNAME;
     $result = \mod_contentdesigner\elements::insertelement($shortname);
+
+    // Drop the table if it exists, rename the existing table.
+    $dbman = $DB->get_manager();
+    $table = new xmldb_table('element_heading');
+
+    if ($dbman->table_exists($table)) {
+        require_once(__DIR__ . '/upgrade.php');
+        xmldb_cdelement_heading_upgrade(0, true);
+    }
+
     return $result ? true : false;
 }

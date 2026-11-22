@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/contentdesigner/cdelement/chapter/db" VERSION="20221224" COMMENT="XMLDB file for Moodle mod/contentdesigner/element/chapter"
+<XMLDB PATH="mod/contentdesigner/cdelement/chapter/db" VERSION="20221224" COMMENT="XMLDB file for Moodle mod/contentdesigner/cdelement/chapter"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
@@ -14,12 +14,16 @@
         <FIELD NAME="contents" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="position" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="titlestatus" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="completionmode" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="18" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="contentdesignerid" UNIQUE="false" FIELDS="contentdesignerid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="cdelement_chapter_completion" COMMENT="cdelement_chapter_completion table retrofitted from MySQL">
       <FIELDS>
@@ -33,6 +37,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="instance_userid" UNIQUE="false" FIELDS="instance, userid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

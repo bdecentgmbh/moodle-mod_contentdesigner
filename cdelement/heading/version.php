@@ -25,7 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'cdelement_heading';
-$plugin->version = 2025021301;
-$plugin->requires = 2020061500;
-$plugin->supported = [401, 405];
+$plugin->version = 2026112100;
+$plugin->release = '2.0';
+$plugin->requires = 2026042000; // Moodle 5.2.
+$plugin->supported = [502, 503];
 $plugin->maturity = MATURITY_STABLE;
+$plugin->dependencies = ['mod_contentdesigner' => 2026112000];

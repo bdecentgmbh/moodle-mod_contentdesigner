@@ -22,7 +22,5 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- defined("MOODLE_INTERNAL") || die();
-
 $string['pluginname'] = "Outro";
 $string['privacy:metadata'] = 'The outro only displays the outro content and does not store any user data.';

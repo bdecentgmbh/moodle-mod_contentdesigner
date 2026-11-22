@@ -19,6 +19,9 @@
 
     Template for the content editor view with list of elements in manage mode.
 
+    @copyright  2022 bdecent gmbh <https://bdecent.de>
+    @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
     Example context (json):
     {
         "cm": {
@@ -153,12 +156,17 @@
     <div class="contentdesigner-wrapper">
         <div class="content">
             <ul class="course-content-list">
+                {{#topinstance}}
+                <li class="topinstance element-item">
+                    {{{topinstance}}}
+                </li>
+                {{/topinstance}}
                 {{^chapterscount}}
                 <li>
                   <div class="contentdesigner-addelement" data-position="bottom">
                       <span><i class="fa fa-plus"> </i></span>
                   </div>
-                </li>
+                <li>
                 {{/chapterscount}}
                 {{#chapters}}
                 <li class="chapters-list {{^count}} no-elements {{/count}}">

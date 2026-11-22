@@ -46,4 +46,183 @@ class mod_contentdesigner_generator extends testing_module_generator {
 
         return parent::create_instance($record, (array)$options);
     }
+
+    /**
+     * Creates a chapter at the end of an activity.
+     *
+     * @param stdClass $instance The activity (as returned by create_module).
+     * @param array $record Values of cdelement_chapter.
+     * @return stdClass The chapter.
+     */
+    public function create_chapter(stdClass $instance, array $record = []): stdClass {
+        global $DB;
+        $position = (int) $DB->get_field_sql(
+            'SELECT MAX(position) FROM {cdelement_chapter} WHERE contentdesignerid = ?',
+            [$instance->id]
+        ) + 1;
+        $record = (object) ($record + [
+            'contentdesignerid' => $instance->id,
+            'title' => 'Chapter ' . $position,
+            'visible' => 1,
+            'learningtools' => 0,
+            'position' => $position,
+            'titlestatus' => 1,
+            'completionmode' => 0,
+            'contents' => '',
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $record->id = $DB->insert_record('cdelement_chapter', $record);
+        $this->create_options($record->id, 'chapter');
+        return $record;
+    }
+
+    /**
+     * Creates an element instance in a chapter of an activity (or outside the chapters, without chapter).
+     *
+     * @param stdClass $instance The activity (as returned by create_module).
+     * @param string $shortname The element.
+     * @param array $record Values of the element table cdelement_<shortname>.
+     * @param stdClass|null $chapter The chapter, null for elements outside chapters (outro).
+     * @return stdClass The element instance.
+     */
+    public function create_element(
+        stdClass $instance,
+        string $shortname,
+        array $record = [],
+        ?stdClass $chapter = null
+    ): stdClass {
+        global $DB;
+        $record = (object) ($record + [
+            'contentdesignerid' => $instance->id,
+            'title' => ucfirst($shortname),
+            'visible' => 1,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+        $record->id = $DB->insert_record('cdelement_' . $shortname, $record);
+        $this->create_options($record->id, $shortname);
+        if ($chapter) {
+            $elementid = $DB->get_field('contentdesigner_elements', 'id', ['shortname' => $shortname], MUST_EXIST);
+            $position = (int) $DB->get_field_sql(
+                'SELECT MAX(position) FROM {contentdesigner_content} WHERE chapter = ?',
+                [$chapter->id]
+            ) + 1;
+            $record->contentid = $DB->insert_record('contentdesigner_content', [
+                'contentdesignerid' => $instance->id,
+                'element' => $elementid,
+                'instance' => $record->id,
+                'chapter' => $chapter->id,
+                'position' => $position,
+                'timecreated' => time(),
+                'timemodified' => time(),
+            ]);
+            $contents = array_filter(explode(',', (string) $DB->get_field(
+                'cdelement_chapter',
+                'contents',
+                ['id' => $chapter->id]
+            )));
+            $contents[] = $record->contentid;
+            $DB->set_field('cdelement_chapter', 'contents', implode(',', $contents), ['id' => $chapter->id]);
+        }
+        return $record;
+    }
+
+    /**
+     * Creates the general options of an element instance.
+     *
+     * @param int $instanceid The element instance.
+     * @param string $shortname The element.
+     * @param array $record Values of contentdesigner_options.
+     * @return int The id of the options.
+     */
+    public function create_options(int $instanceid, string $shortname, array $record = []): int {
+        global $DB;
+        return $DB->insert_record('contentdesigner_options', $record + [
+            'element' => $DB->get_field('contentdesigner_elements', 'id', ['shortname' => $shortname], MUST_EXIST),
+            'instance' => $instanceid,
+            'delay' => 0,
+            'speed' => 0,
+            'hidedesktop' => 0,
+            'hidetablet' => 0,
+            'hidemobile' => 0,
+            'excludeungraded' => 0,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+    }
+
+    /**
+     * Creates an attempt of a user.
+     *
+     * @param stdClass $instance The activity.
+     * @param int $userid The user.
+     * @param array $record Values of contentdesigner_attempts.
+     * @return stdClass The attempt.
+     */
+    public function create_attempt(stdClass $instance, int $userid, array $record = []): stdClass {
+        global $DB;
+        $number = $DB->count_records('contentdesigner_attempts', ['contentdesignerid' => $instance->id, 'userid' => $userid]) + 1;
+        $record = (object) ($record + [
+            'contentdesignerid' => $instance->id,
+            'userid' => $userid,
+            'attempt' => $number,
+            'grade' => 0,
+            'timestart' => time(),
+            'timefinish' => 0,
+        ]);
+        $record->id = $DB->insert_record('contentdesigner_attempts', $record);
+        return $record;
+    }
+
+    /**
+     * Completes a chapter for a user, like the learner does with the button (again, if the chapter is completed).
+     *
+     * @param stdClass $chapter The chapter.
+     * @param int $userid The user.
+     * @param int|null $time The time of the completion, null for now.
+     * @return stdClass The record of cdelement_chapter_completion.
+     */
+    public function create_chapter_completion(stdClass $chapter, int $userid, ?int $time = null): stdClass {
+        global $DB;
+        $time = $time ?? time();
+        $record = (object) [
+            'instance' => $chapter->id,
+            'userid' => $userid,
+            'completion' => 1,
+            'timecreated' => $time,
+            'timemodified' => $time,
+        ];
+        $existing = $DB->get_record('cdelement_chapter_completion', ['instance' => $chapter->id, 'userid' => $userid]);
+        if ($existing) {
+            $record->id = $existing->id;
+            $record->timecreated = $existing->timecreated;
+            $DB->update_record('cdelement_chapter_completion', $record);
+        } else {
+            $record->id = $DB->insert_record('cdelement_chapter_completion', $record);
+        }
+        return $record;
+    }
+
+    /**
+     * Completes an H5P element in an attempt.
+     *
+     * @param stdClass $h5p The H5P element instance.
+     * @param stdClass $attempt The attempt, of the user who completes the element.
+     * @return stdClass The record of cdelement_h5p_completion.
+     */
+    public function create_h5p_completion(stdClass $h5p, stdClass $attempt): stdClass {
+        global $DB;
+        $record = (object) [
+            'instance' => $h5p->id,
+            'userid' => $attempt->userid,
+            'cdattemptid' => $attempt->id,
+            'completion' => 1,
+            'success' => 1,
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ];
+        $record->id = $DB->insert_record('cdelement_h5p_completion', $record);
+        return $record;
+    }
 }

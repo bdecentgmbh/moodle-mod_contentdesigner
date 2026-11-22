@@ -25,13 +25,20 @@
 defined('MOODLE_INTERNAL') || die;
 
 $functions = [
-
     'cdelement_h5p_store_result' => [
         'classname'     => 'cdelement_h5p\external',
         'methodname'    => 'store_result_data',
         'description'   => 'Store the user attempt result of H5P',
         'type'          => 'write',
         'capabilities'  => 'mod/contentdesigner:view',
+        'ajax'          => true,
+    ],
+    'cdelement_h5p_store_maxscore' => [
+        'classname'     => 'cdelement_h5p\external',
+        'methodname'    => 'store_max_score',
+        'description'   => 'Store the max score of H5P',
+        'type'          => 'write',
+        'capabilities'  => 'mod/contentdesigner:viewcontenteditor',
         'ajax'          => true,
     ],
 ];

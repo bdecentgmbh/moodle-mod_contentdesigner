@@ -15,64 +15,88 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Element outro upgrade code defined.
+ * Upgrade script for the outro element.
  *
- * @package   cdelement_outro
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @package    cdelement_outro
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__ . '/../../../db/upgradelib.php');
+
 /**
- * Handles the upgrade process for the cdelement_outro plugin in Moodle.
+ * Upgrede outro element.
  *
- * @param int $oldversion The version of the plugin before the upgrade.
- * @return bool True on successful upgrade.
+ * @param string $oldversion the version we are upgrading from.
+ * @param bool $rename whether to rename the existing table or not.
+ * @return bool
  */
-function xmldb_cdelement_outro_upgrade($oldversion) {
+function xmldb_cdelement_outro_upgrade($oldversion, $rename = false) {
     global $DB;
-
-    // Automatically generated Moodle v4.1.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 1) {
+    // Check if the plugin is renamed.
+    // If the plugin is renamed, we need to rename the existing table without upgrade the save point.
+    $runwithoutupgradpoint = $rename;
 
+    // Upgraded from the free edition 1.x: run the steps of the pro edition as well. The flag is set by the upgrade of
+    // mod_contentdesigner (db/upgrade.php) and removed at the end of this upgrade.
+    $fromfree = (bool) get_config('mod_contentdesigner', 'upgradefromfree_outro');
+    if ($rename || $fromfree) {
+        $runwithoutupgradpoint = true;
+    }
+
+    if ($runwithoutupgradpoint) {
         // Rename the table element_outro to cdelement_outro.
-        $table = new xmldb_table('element_outro');
-        $cdelementtable = new xmldb_table('cdelement_outro');
-        if ($dbman->table_exists($table)) {
-            if (!$dbman->table_exists($cdelementtable)) {
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_outro');
-            } else {
-                // Drop the existing table.
-                $dbman->drop_table($cdelementtable);
-                // Rename the existing table.
-                $dbman->rename_table($table, 'cdelement_outro');
-            }
-        }
+        contentdesigner_rename_legacy_table('element_outro', 'cdelement_outro');
 
         // Rename admin configuration settings.
         mod_contentdesigner\plugininfo\cdelement::update_plugins_config('element_outro', 'cdelement_outro', [
             'outroimage', 'outrocontent']);
     }
 
-    if ($oldversion < 2024110801 && $oldversion) {
+    if ($oldversion < 2024110801 || $runwithoutupgradpoint) {
         // Element outro table.
         $table = new xmldb_table('cdelement_outro');
+
         // Outrocontent.
         $outrocontent = new xmldb_field('outrocontent', XMLDB_TYPE_TEXT, null, null, null, null, null, 'secondaryurl');
         // Outrocontent format.
-        $outrocontentformat = new xmldb_field('outrocontentformat', XMLDB_TYPE_INTEGER, '2', null,
-        null, null, null, 'outrocontent');
+        $outrocontentformat = new xmldb_field(
+            'outrocontentformat',
+            XMLDB_TYPE_INTEGER,
+            '2',
+            null,
+            null,
+            null,
+            null,
+            'outrocontent'
+        );
         // Primary button.
-        $primarybutton = new xmldb_field('primarybutton', XMLDB_TYPE_INTEGER, '9', null, null, null, '0', 'outrocontentformat');
+        $primarybutton = new xmldb_field(
+            'primarybutton',
+            XMLDB_TYPE_INTEGER,
+            '9',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'outrocontentformat'
+        );
         // Secondary button.
-        $secondarybutton = new xmldb_field('secondarybutton', XMLDB_TYPE_INTEGER, '9', null, null, null, '0', 'primarybutton');
+        $secondarybutton = new xmldb_field(
+            'secondarybutton',
+            XMLDB_TYPE_INTEGER,
+            '9',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'primarybutton'
+        );
 
         if (!$dbman->field_exists($table, $outrocontent)) {
             $dbman->add_field($table, $outrocontent);
@@ -90,7 +114,89 @@ function xmldb_cdelement_outro_upgrade($oldversion) {
             $dbman->add_field($table, $secondarybutton);
         }
 
-        upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'outro');
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2024110801, 'cdelement', 'outro');
+        }
+    }
+
+    if ($oldversion < 2025021304 || $runwithoutupgradpoint) {
+        // Element outro table.
+        $table = new xmldb_table('cdelement_outro');
+
+        // Outrocontent format.
+        $outrocontentformat = new xmldb_field(
+            'outrocontentformat',
+            XMLDB_TYPE_INTEGER,
+            '4',
+            null,
+            null,
+            null,
+            '0',
+            'outrocontent'
+        );
+
+        // Launch change of default for field outrocontentformat.
+        if ($dbman->field_exists($table, $outrocontentformat)) {
+            $dbman->change_field_default($table, $outrocontentformat);
+            $dbman->change_field_precision($table, $outrocontentformat);
+        }
+
+        // Primary button.
+        $primarybutton = new xmldb_field(
+            'primarybutton',
+            XMLDB_TYPE_INTEGER,
+            '9',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'outrocontentformat'
+        );
+
+        if ($dbman->field_exists($table, $primarybutton)) {
+            // Ensure existing NULL values are replaced with the default value.
+            $DB->execute("UPDATE {cdelement_outro} SET primarybutton = '0' WHERE primarybutton IS NULL");
+
+            // Change the field to NOT NULL.
+            $dbman->change_field_notnull($table, $primarybutton);
+        }
+
+        // Secondary button.
+        $secondarybutton = new xmldb_field(
+            'secondarybutton',
+            XMLDB_TYPE_INTEGER,
+            '9',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'primarybutton'
+        );
+
+        if ($dbman->field_exists($table, $secondarybutton)) {
+            // Ensure existing NULL values are replaced with the default value.
+            $DB->execute("UPDATE {cdelement_outro} SET secondarybutton = '0' WHERE secondarybutton IS NULL");
+
+            // Change the field to NOT NULL.
+            $dbman->change_field_notnull($table, $secondarybutton);
+        }
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2025021304, 'cdelement', 'outro');
+        }
+    }
+
+    if ($oldversion < 2026112100 || $runwithoutupgradpoint) {
+        // Indexes of the fields that the element is looked up by.
+        contentdesigner_add_index('cdelement_outro', 'contentdesignerid', ['contentdesignerid']);
+
+        if (!$runwithoutupgradpoint) {
+            upgrade_plugin_savepoint(true, 2026112100, 'cdelement', 'outro');
+        }
+    }
+
+    if ($fromfree) {
+        unset_config('upgradefromfree_outro', 'mod_contentdesigner');
     }
 
     return true;
